@@ -1,0 +1,1 @@
+"use strict";window.onload=function(){var t=document.querySelector(".hitokoto");document.querySelector(".from");!function(){var e=new XMLHttpRequest;e.open("GET","https://v1.hitokoto.cn/?c=a"),e.send(),e.onreadystatechange=function(){if(4===e.readyState&&200===e.status){var o=JSON.parse(e.responseText);t.innerHTML=o.hitokoto}}}()};

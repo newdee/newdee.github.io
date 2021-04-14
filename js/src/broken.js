@@ -1,0 +1,1 @@
+"use strict";var OriginTitile=document.title,titleTime;document.addEventListener("visibilitychange",function(){document.hidden?($('[rel="icon"]').attr("href","/img/TEP.ico"),document.title="今年欢笑复明年",clearTimeout(titleTime)):($('[rel="icon"]').attr("href","/favicon.ico"),document.title="秋月春风等闲度"+OriginTitile,titleTime=setTimeout(function(){document.title=OriginTitile},2e3))});
