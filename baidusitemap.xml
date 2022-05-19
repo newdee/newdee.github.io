@@ -1,0 +1,1895 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/a64e7c3f/</loc>
+    <lastmod>2022-05-19T05:14:53.329Z</lastmod>
+    <data>
+        <display>
+        <title>小工具(三)</title>
+        <pubTime>2020-08-10T11:57:25.000Z</pubTime>
+        
+        <tag>bashtop</tag>
+         
+        <tag>xxd</tag>
+         
+        <tag>proxychains</tag>
+         
+         
+           
+             
+              <breadCrumb title="Share" url="http://dfine.tech/categories/Share/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/dc13723b/</loc>
+    <lastmod>2022-05-19T05:14:43.925Z</lastmod>
+    <data>
+        <display>
+        <title>四元数与旋转矩阵</title>
+        <pubTime>2020-01-08T08:08:57.000Z</pubTime>
+        
+        <tag>Quaternion</tag>
+         
+        <tag>Mathpix</tag>
+         
+        <tag>Pi-hole</tag>
+         
+         
+           
+             
+              <breadCrumb title="笔记" url="http://dfine.tech/categories/%E7%AC%94%E8%AE%B0/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/79707c4f/</loc>
+    <lastmod>2022-05-19T05:14:29.253Z</lastmod>
+    <data>
+        <display>
+        <title>相机小述</title>
+        <pubTime>2020-07-19T11:38:16.000Z</pubTime>
+        
+        <tag>Cameras</tag>
+         
+         
+           
+             
+              <breadCrumb title="博客" url="http://dfine.tech/categories/%E5%8D%9A%E5%AE%A2/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+    
+    
+    
+    
+  <url>
+    <loc>http://dfine.tech/posts/5a450135/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>昨日记梦</title>
+        <pubTime>2014-09-17T17:44:52.000Z</pubTime>
+        
+        <tag>日常</tag>
+         
+        <tag>心情</tag>
+         
+         
+           
+             
+              <breadCrumb title="呓语" url="http://dfine.tech/categories/%E5%91%93%E8%AF%AD/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/a0c49a8e/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>Time Machine</title>
+        <pubTime>2018-10-09T23:15:37.000Z</pubTime>
+        
+        <tag>Linux</tag>
+         
+        <tag>CUDA</tag>
+         
+        <tag>Docker</tag>
+         
+        <tag>TensorFlow</tag>
+         
+        <tag>OwnCloud</tag>
+         
+         
+           
+             
+              <breadCrumb title="博客" url="http://dfine.tech/categories/%E5%8D%9A%E5%AE%A2/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/3c4e255/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>FFmpeg常用命令</title>
+        <pubTime>2017-08-19T07:24:01.000Z</pubTime>
+        
+        <tag>ffmpeg</tag>
+         
+        <tag>ubuntu</tag>
+         
+         
+           
+             
+              <breadCrumb title="Linux" url="http://dfine.tech/categories/Linux/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/29103606/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>Git基本用法</title>
+        <pubTime>2019-03-21T14:01:44.000Z</pubTime>
+        
+        <tag>Linux</tag>
+         
+        <tag>Git</tag>
+         
+        <tag>版本控制</tag>
+         
+         
+           
+             
+              <breadCrumb title="Linux" url="http://dfine.tech/categories/Linux/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/4da30c7/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>Next主题的Gitalk移植</title>
+        <pubTime>2017-09-24T07:34:05.000Z</pubTime>
+        
+        <tag>Hexo</tag>
+         
+        <tag>Next</tag>
+         
+        <tag>Gitalk</tag>
+         
+        <tag>Github Issue</tag>
+         
+         
+           
+             
+              <breadCrumb title="博客" url="http://dfine.tech/categories/%E5%8D%9A%E5%AE%A2/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/8755e75b/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>GStreamer笔记一: GStreamer Concepts</title>
+        <pubTime>2017-12-01T02:30:34.000Z</pubTime>
+        
+        <tag>Linux</tag>
+         
+        <tag>GStreamer</tag>
+         
+        <tag>TX1</tag>
+         
+         
+           
+             
+              <breadCrumb title="TX1入坑" url="http://dfine.tech/categories/TX1%E5%85%A5%E5%9D%91/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/24b1a5e1/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>GStreamer笔记二: Dynamic Pipeline</title>
+        <pubTime>2017-12-01T07:52:43.000Z</pubTime>
+        
+        <tag>Linux</tag>
+         
+        <tag>GStreamer</tag>
+         
+        <tag>TX1</tag>
+         
+         
+           
+             
+              <breadCrumb title="TX1入坑" url="http://dfine.tech/categories/TX1%E5%85%A5%E5%9D%91/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/58b8a847/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>GStreamer笔记三: Time Management</title>
+        <pubTime>2017-12-03T06:41:37.000Z</pubTime>
+        
+        <tag>Linux</tag>
+         
+        <tag>GStreamer</tag>
+         
+        <tag>TX1</tag>
+         
+         
+           
+             
+              <breadCrumb title="TX1入坑" url="http://dfine.tech/categories/TX1%E5%85%A5%E5%9D%91/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/79fb69ed/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>GStreamer笔记五: Media Formats and Pad Capabilities</title>
+        <pubTime>2017-12-06T07:26:11.000Z</pubTime>
+        
+        <tag>Linux</tag>
+         
+        <tag>GStreamer</tag>
+         
+        <tag>TX1</tag>
+         
+         
+           
+             
+              <breadCrumb title="TX1入坑" url="http://dfine.tech/categories/TX1%E5%85%A5%E5%9D%91/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/413bb42a/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>多媒体框架GStreamer</title>
+        <pubTime>2017-11-23T01:54:51.000Z</pubTime>
+        
+        <tag>GStreamer</tag>
+         
+        <tag>TX1</tag>
+         
+        <tag>视频处理</tag>
+         
+        <tag>嵌入式开发</tag>
+         
+         
+           
+             
+              <breadCrumb title="TX1入坑" url="http://dfine.tech/categories/TX1%E5%85%A5%E5%9D%91/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/40a79901/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>GSreamer笔记四: GUI Toolkit Integration</title>
+        <pubTime>2017-12-04T08:23:14.000Z</pubTime>
+        
+        <tag>Linux</tag>
+         
+        <tag>GStreamer</tag>
+         
+        <tag>TX1</tag>
+         
+         
+           
+             
+              <breadCrumb title="TX1入坑" url="http://dfine.tech/categories/TX1%E5%85%A5%E5%9D%91/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/4f23e727/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>Hadoop搭建</title>
+        <pubTime>2016-03-13T04:24:07.000Z</pubTime>
+        
+        <tag>hadoop</tag>
+         
+        <tag>大数据</tag>
+         
+         
+           
+             
+              <breadCrumb title="Linux" url="http://dfine.tech/categories/Linux/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/1f4b713c/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>寒之岁碎言</title>
+        <pubTime>2013-01-23T01:05:55.000Z</pubTime>
+        
+        <tag>日常</tag>
+         
+        <tag>心情</tag>
+         
+         
+           
+             
+              <breadCrumb title="呓语" url="http://dfine.tech/categories/%E5%91%93%E8%AF%AD/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/bfb99b1f/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>Hadoop搭建之WordCount程序</title>
+        <pubTime>2016-03-13T05:04:29.000Z</pubTime>
+        
+        <tag>hadoop</tag>
+         
+        <tag>大数据</tag>
+         
+         
+           
+             
+              <breadCrumb title="Linux" url="http://dfine.tech/categories/Linux/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/b0550b46/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>Hashcat密码破解</title>
+        <pubTime>2019-03-14T11:25:21.000Z</pubTime>
+        
+        <tag>Linux</tag>
+         
+        <tag>Git</tag>
+         
+        <tag>Hashcat</tag>
+         
+         
+           
+             
+              <breadCrumb title="Linux" url="http://dfine.tech/categories/Linux/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/f7ade587/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>图床搭建</title>
+        <pubTime>2019-03-26T15:48:00.000Z</pubTime>
+        
+        <tag>Blog</tag>
+         
+        <tag>图床</tag>
+         
+        <tag>HTTPS</tag>
+         
+         
+           
+             
+              <breadCrumb title="博客" url="http://dfine.tech/categories/%E5%8D%9A%E5%AE%A2/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/8544442c/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>IPv4下使用IPv6</title>
+        <pubTime>2017-09-21T06:17:25.000Z</pubTime>
+        
+        <tag>ubuntu</tag>
+         
+        <tag>IPv6</tag>
+         
+        <tag>隧道</tag>
+         
+        <tag>HE</tag>
+         
+         
+           
+             
+              <breadCrumb title="Linux" url="http://dfine.tech/categories/Linux/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/179dffb0/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>借月章</title>
+        <pubTime>2013-08-13T17:15:35.000Z</pubTime>
+        
+        <tag>日常</tag>
+         
+        <tag>心情</tag>
+         
+         
+           
+             
+              <breadCrumb title="乱体诗" url="http://dfine.tech/categories/%E4%B9%B1%E4%BD%93%E8%AF%97/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/48f0e3fe/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>镜语</title>
+        <pubTime>2016-12-18T15:08:52.000Z</pubTime>
+        
+        <tag>年度总结</tag>
+         
+         
+           
+             
+              <breadCrumb title="呓语" url="http://dfine.tech/categories/%E5%91%93%E8%AF%AD/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/5f7ed589/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>JavaScript学习笔记（一）</title>
+        <pubTime>2016-03-20T12:58:22.000Z</pubTime>
+        
+        <tag>JavaScript</tag>
+         
+        <tag>前端</tag>
+         
+         
+           
+             
+              <breadCrumb title="笔记" url="http://dfine.tech/categories/%E7%AC%94%E8%AE%B0/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/a0a14ae3/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>剧闲词</title>
+        <pubTime>2015-03-29T04:30:08.000Z</pubTime>
+        
+        <tag>日常</tag>
+         
+        <tag>心情</tag>
+         
+         
+           
+             
+              <breadCrumb title="随笔" url="http://dfine.tech/categories/%E9%9A%8F%E7%AC%94/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/1e8f285/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>临风添</title>
+        <pubTime>2014-01-10T16:49:46.000Z</pubTime>
+        
+        <tag>日常</tag>
+         
+        <tag>心情</tag>
+         
+         
+           
+             
+              <breadCrumb title="乱体诗" url="http://dfine.tech/categories/%E4%B9%B1%E4%BD%93%E8%AF%97/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/b51bf43/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>离忧</title>
+        <pubTime>2013-10-25T16:55:09.000Z</pubTime>
+        
+        <tag>日常</tag>
+         
+        <tag>心情</tag>
+         
+         
+           
+             
+              <breadCrumb title="呓语" url="http://dfine.tech/categories/%E5%91%93%E8%AF%AD/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/c72229d1/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>楼赛</title>
+        <pubTime>2017-10-28T18:30:31.000Z</pubTime>
+        
+        <tag>Linux</tag>
+         
+        <tag>楼赛</tag>
+         
+         
+           
+             
+              <breadCrumb title="Linux" url="http://dfine.tech/categories/Linux/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/325daa6a/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>LXD搭设服务器</title>
+        <pubTime>2018-10-11T23:11:47.000Z</pubTime>
+        
+        <tag>Linux</tag>
+         
+        <tag>LXD</tag>
+         
+        <tag>容器</tag>
+         
+         
+           
+             
+              <breadCrumb title="Linux" url="http://dfine.tech/categories/Linux/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/360656f/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>Linux的文件IO和多进程</title>
+        <pubTime>2017-11-18T06:38:28.000Z</pubTime>
+        
+        <tag>Linux</tag>
+         
+        <tag>文件IO</tag>
+         
+        <tag>多进程</tag>
+         
+         
+           
+             
+              <breadCrumb title="Linux" url="http://dfine.tech/categories/Linux/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/b9c74ed9/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>Mathjax的LaTeX公式语法</title>
+        <pubTime>2017-10-21T06:09:55.000Z</pubTime>
+        
+        <tag>mathjax</tag>
+         
+        <tag>latex</tag>
+         
+        <tag>markdown</tag>
+         
+        <tag>hexo</tag>
+         
+         
+           
+             
+              <breadCrumb title="博客" url="http://dfine.tech/categories/%E5%8D%9A%E5%AE%A2/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/d617d273/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>你</title>
+        <pubTime>2013-04-12T11:39:48.000Z</pubTime>
+        
+        <tag>日常</tag>
+         
+        <tag>心情</tag>
+         
+         
+           
+             
+              <breadCrumb title="呓语" url="http://dfine.tech/categories/%E5%91%93%E8%AF%AD/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/6ed4d3bc/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>建站，阁子记</title>
+        <pubTime>2016-09-04T15:09:52.000Z</pubTime>
+        
+        <tag>myfirst</tag>
+         
+        <tag>helloworld</tag>
+         
+        <tag>建站</tag>
+         
+         
+           
+             
+              <breadCrumb title="博客" url="http://dfine.tech/categories/%E5%8D%9A%E5%AE%A2/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/ad27c4df/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>网易18校招题</title>
+        <pubTime>2017-11-09T13:11:04.000Z</pubTime>
+        
+        <tag>网易</tag>
+         
+        <tag>校招</tag>
+         
+        <tag>编程</tag>
+         
+         
+           
+             
+              <breadCrumb title="笔记" url="http://dfine.tech/categories/%E7%AC%94%E8%AE%B0/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/9b44f6cc/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>Nodeppt入坑</title>
+        <pubTime>2017-07-26T12:50:17.000Z</pubTime>
+        
+        <tag>markdown</tag>
+         
+        <tag>ppt</tag>
+         
+        <tag>nodeppt</tag>
+         
+         
+           
+             
+              <breadCrumb title="笔记" url="http://dfine.tech/categories/%E7%AC%94%E8%AE%B0/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/8c1f2c30/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>私有办公服务搭建</title>
+        <pubTime>2019-12-13T05:47:12.000Z</pubTime>
+        
+        <tag>Docker</tag>
+         
+        <tag>Office</tag>
+         
+        <tag>DzzOffice</tag>
+         
+        <tag>DrawIO</tag>
+         
+         
+           
+             
+              <breadCrumb title="博客" url="http://dfine.tech/categories/%E5%8D%9A%E5%AE%A2/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/aad6181/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>查询工具pkg-config</title>
+        <pubTime>2017-11-30T06:13:17.000Z</pubTime>
+        
+        <tag>Linux</tag>
+         
+        <tag>GCC</tag>
+         
+        <tag>pkg-config</tag>
+         
+         
+           
+             
+              <breadCrumb title="Linux" url="http://dfine.tech/categories/Linux/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/6d87f1ac/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>Hexo博客的优化</title>
+        <pubTime>2017-09-29T17:34:01.000Z</pubTime>
+        
+        <tag>Hexo</tag>
+         
+        <tag>Nofollow</tag>
+         
+        <tag>Emoji</tag>
+         
+        <tag>Gulp</tag>
+         
+         
+           
+             
+              <breadCrumb title="博客" url="http://dfine.tech/categories/%E5%8D%9A%E5%AE%A2/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/1dd5cd65/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>Bash和Tmux的Powerline</title>
+        <pubTime>2017-09-22T12:02:24.000Z</pubTime>
+        
+        <tag>ubuntu</tag>
+         
+        <tag>bash powerline</tag>
+         
+        <tag>tmux powerline</tag>
+         
+        <tag>powerline</tag>
+         
+         
+           
+             
+              <breadCrumb title="Linux" url="http://dfine.tech/categories/Linux/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/4521ac31/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>清辉孤月伴我行</title>
+        <pubTime>2010-11-29T14:29:54.000Z</pubTime>
+        
+        <tag>日常</tag>
+         
+        <tag>心情</tag>
+         
+         
+           
+             
+              <breadCrumb title="乱体诗" url="http://dfine.tech/categories/%E4%B9%B1%E4%BD%93%E8%AF%97/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/38270fed/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>伤逝</title>
+        <pubTime>2010-12-02T08:27:46.000Z</pubTime>
+        
+        <tag>日常</tag>
+         
+        <tag>心情</tag>
+         
+         
+           
+             
+              <breadCrumb title="乱体诗" url="http://dfine.tech/categories/%E4%B9%B1%E4%BD%93%E8%AF%97/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/14461a6d/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>Markdown制作幻灯片</title>
+        <pubTime>2017-07-25T17:03:00.000Z</pubTime>
+        
+        <tag>markdown</tag>
+         
+        <tag>PPT</tag>
+         
+        <tag>revealJS</tag>
+         
+         
+           
+             
+              <breadCrumb title="博客" url="http://dfine.tech/categories/%E5%8D%9A%E5%AE%A2/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+    
+  <url>
+    <loc>http://dfine.tech/posts/dfc9d3fd/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>三维建模中shape of silhouette 的简要理解</title>
+        <pubTime>2016-07-21T11:54:58.000Z</pubTime>
+        
+        <tag>三维重建</tag>
+         
+         
+           
+             
+              <breadCrumb title="笔记" url="http://dfine.tech/categories/%E7%AC%94%E8%AE%B0/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/9e3b7d7e/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>生命的意义</title>
+        <pubTime>2011-06-11T15:31:22.000Z</pubTime>
+        
+        <tag>日常</tag>
+         
+        <tag>心情</tag>
+         
+         
+           
+             
+              <breadCrumb title="呓语" url="http://dfine.tech/categories/%E5%91%93%E8%AF%AD/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/41f33d57/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>时虽予之</title>
+        <pubTime>2014-08-02T10:41:26.000Z</pubTime>
+        
+        <tag>日常</tag>
+         
+        <tag>心情</tag>
+         
+         
+           
+             
+              <breadCrumb title="乱体诗" url="http://dfine.tech/categories/%E4%B9%B1%E4%BD%93%E8%AF%97/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/d7476b87/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>实习日志2</title>
+        <pubTime>2013-06-26T09:06:29.000Z</pubTime>
+        
+        <tag>心情</tag>
+         
+        <tag>实习日志</tag>
+         
+         
+           
+             
+              <breadCrumb title="实习日记" url="http://dfine.tech/categories/%E5%AE%9E%E4%B9%A0%E6%97%A5%E8%AE%B0/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/4e4e3a3d/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>实习日志1</title>
+        <pubTime>2013-06-25T10:01:26.000Z</pubTime>
+        
+        <tag>心情</tag>
+         
+        <tag>实习日志</tag>
+         
+         
+           
+             
+              <breadCrumb title="实习日记" url="http://dfine.tech/categories/%E5%AE%9E%E4%B9%A0%E6%97%A5%E8%AE%B0/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/a0405b11/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>实习日志3</title>
+        <pubTime>2013-06-27T13:06:33.000Z</pubTime>
+        
+        <tag>心情</tag>
+         
+        <tag>实习日志</tag>
+         
+         
+           
+             
+              <breadCrumb title="实习日记" url="http://dfine.tech/categories/%E5%AE%9E%E4%B9%A0%E6%97%A5%E8%AE%B0/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/3e24ceb2/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>实习日志4</title>
+        <pubTime>2013-06-28T12:34:37.000Z</pubTime>
+        
+        <tag>心情</tag>
+         
+        <tag>实习日志</tag>
+         
+         
+           
+             
+              <breadCrumb title="实习日记" url="http://dfine.tech/categories/%E5%AE%9E%E4%B9%A0%E6%97%A5%E8%AE%B0/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/4923fe24/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>实习日志5</title>
+        <pubTime>2013-06-29T15:00:40.000Z</pubTime>
+        
+        <tag>心情</tag>
+         
+        <tag>实习日志</tag>
+         
+         
+           
+             
+              <breadCrumb title="实习日记" url="http://dfine.tech/categories/%E5%AE%9E%E4%B9%A0%E6%97%A5%E8%AE%B0/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/d02aaf9e/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>实习日志6</title>
+        <pubTime>2013-06-30T13:23:44.000Z</pubTime>
+        
+        <tag>日常</tag>
+         
+        <tag>实习日志</tag>
+         
+         
+           
+             
+              <breadCrumb title="实习日记" url="http://dfine.tech/categories/%E5%AE%9E%E4%B9%A0%E6%97%A5%E8%AE%B0/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/a72d9f08/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>实习日志7</title>
+        <pubTime>2013-07-01T13:02:47.000Z</pubTime>
+        
+        <tag>日常</tag>
+         
+        <tag>实习日志</tag>
+         
+         
+           
+             
+              <breadCrumb title="实习日记" url="http://dfine.tech/categories/%E5%AE%9E%E4%B9%A0%E6%97%A5%E8%AE%B0/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/41e08ba2/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>暑呓</title>
+        <pubTime>2013-08-01T16:33:56.000Z</pubTime>
+        
+        <tag>日常</tag>
+         
+        <tag>心情</tag>
+         
+         
+           
+             
+              <breadCrumb title="呓语" url="http://dfine.tech/categories/%E5%91%93%E8%AF%AD/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/37928299/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>实习日志8</title>
+        <pubTime>2013-07-02T12:31:50.000Z</pubTime>
+        
+        <tag>日常</tag>
+         
+        <tag>实习日志</tag>
+         
+         
+           
+             
+              <breadCrumb title="实习日记" url="http://dfine.tech/categories/%E5%AE%9E%E4%B9%A0%E6%97%A5%E8%AE%B0/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/778cc776/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>小工具(一)</title>
+        <pubTime>2019-08-18T17:57:25.000Z</pubTime>
+        
+        <tag>flashcards</tag>
+         
+        <tag>lsd</tag>
+         
+        <tag>tree2dotx</tag>
+         
+        <tag>graphviz</tag>
+         
+        <tag>gprof</tag>
+         
+         
+           
+             
+              <breadCrumb title="Share" url="http://dfine.tech/categories/Share/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/ac01029d/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>四岁杂谈</title>
+        <pubTime>2014-07-03T05:13:36.000Z</pubTime>
+        
+        <tag>日常</tag>
+         
+        <tag>心情</tag>
+         
+         
+           
+             
+              <breadCrumb title="随笔" url="http://dfine.tech/categories/%E9%9A%8F%E7%AC%94/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/f84e19c0/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>送</title>
+        <pubTime>2015-12-17T17:08:05.000Z</pubTime>
+        
+         
+           
+             
+              <breadCrumb title="随笔" url="http://dfine.tech/categories/%E9%9A%8F%E7%AC%94/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/b03b049f/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>Telegram接管聊天消息</title>
+        <pubTime>2019-03-20T14:49:44.000Z</pubTime>
+        
+        <tag>Docker</tag>
+         
+        <tag>Telegram</tag>
+         
+         
+           
+             
+              <breadCrumb title="Linux" url="http://dfine.tech/categories/Linux/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/6d156558/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>停调中秋吟</title>
+        <pubTime>2012-09-29T17:49:07.000Z</pubTime>
+        
+        <tag>日常</tag>
+         
+        <tag>心情</tag>
+         
+         
+           
+             
+              <breadCrumb title="乱体诗" url="http://dfine.tech/categories/%E4%B9%B1%E4%BD%93%E8%AF%97/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/8cfd1ed2/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>Tmux的会话配置</title>
+        <pubTime>2017-07-23T04:51:01.000Z</pubTime>
+        
+        <tag>tmux</tag>
+         
+        <tag>recurrect</tag>
+         
+        <tag>continuum</tag>
+         
+         
+           
+             
+              <breadCrumb title="Linux" url="http://dfine.tech/categories/Linux/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/d8bd5c14/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>小工具(二)</title>
+        <pubTime>2019-12-15T17:57:25.000Z</pubTime>
+        
+        <tag>Mathpix</tag>
+         
+        <tag>Pi-hole</tag>
+         
+        <tag>Xclip</tag>
+         
+         
+           
+             
+              <breadCrumb title="Share" url="http://dfine.tech/categories/Share/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+    
+  <url>
+    <loc>http://dfine.tech/posts/ebc78778/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>ubuntu下opencv的配置</title>
+        <pubTime>2016-07-24T14:08:06.000Z</pubTime>
+        
+        <tag>ubuntu</tag>
+         
+        <tag>linux</tag>
+         
+         
+           
+             
+              <breadCrumb title="Linux" url="http://dfine.tech/categories/Linux/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/9dfc9fe0/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>不满就折腾小记</title>
+        <pubTime>2018-10-08T11:40:58.000Z</pubTime>
+        
+        <tag>Linux</tag>
+         
+        <tag>Docker</tag>
+         
+        <tag>Ubuntu</tag>
+         
+        <tag>Vim</tag>
+         
+         
+           
+             
+              <breadCrumb title="博客" url="http://dfine.tech/categories/%E5%8D%9A%E5%AE%A2/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/7ad61e8d/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>一种计算Visual Hull的方法</title>
+        <pubTime>2016-07-28T07:21:22.000Z</pubTime>
+        
+        <tag>三维重建</tag>
+         
+        <tag>visual hull</tag>
+         
+         
+           
+             
+              <breadCrumb title="笔记" url="http://dfine.tech/categories/%E7%AC%94%E8%AE%B0/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/1420aa47/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>SS服务器搭建</title>
+        <pubTime>2017-07-25T07:43:01.000Z</pubTime>
+        
+        <tag>shadowsocks</tag>
+         
+        <tag>ss</tag>
+         
+        <tag>vultr</tag>
+         
+         
+           
+             
+              <breadCrumb title="Linux" url="http://dfine.tech/categories/Linux/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/e3091d2/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>无调自吟</title>
+        <pubTime>2011-06-09T09:57:33.000Z</pubTime>
+        
+        <tag>日常</tag>
+         
+        <tag>心情</tag>
+         
+         
+           
+             
+              <breadCrumb title="乱体诗" url="http://dfine.tech/categories/%E4%B9%B1%E4%BD%93%E8%AF%97/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/f71e8f70/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>销岁一记</title>
+        <pubTime>2014-11-02T14:59:12.000Z</pubTime>
+        
+        <tag>日常</tag>
+         
+        <tag>心情</tag>
+         
+         
+           
+             
+              <breadCrumb title="乱体诗" url="http://dfine.tech/categories/%E4%B9%B1%E4%BD%93%E8%AF%97/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/56ef94c8/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>新替</title>
+        <pubTime>2013-09-18T06:41:16.000Z</pubTime>
+        
+        <tag>日常</tag>
+         
+        <tag>心情</tag>
+         
+         
+           
+             
+              <breadCrumb title="随笔" url="http://dfine.tech/categories/%E9%9A%8F%E7%AC%94/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/6ad13995/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>寻涯临雪</title>
+        <pubTime>2011-01-04T01:35:40.000Z</pubTime>
+        
+        <tag>日常</tag>
+         
+        <tag>心情</tag>
+         
+         
+           
+             
+              <breadCrumb title="乱体诗" url="http://dfine.tech/categories/%E4%B9%B1%E4%BD%93%E8%AF%97/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/f9f66023/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>忆韩生</title>
+        <pubTime>2011-11-16T08:03:52.000Z</pubTime>
+        
+        <tag>心情</tag>
+         
+        <tag>怀古</tag>
+         
+         
+           
+             
+              <breadCrumb title="乱体诗" url="http://dfine.tech/categories/%E4%B9%B1%E4%BD%93%E8%AF%97/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/795d092a/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>豫让赋</title>
+        <pubTime>2013-09-09T05:27:24.000Z</pubTime>
+        
+        <tag>心情</tag>
+         
+        <tag>怀古</tag>
+         
+         
+           
+             
+              <breadCrumb title="乱体诗" url="http://dfine.tech/categories/%E4%B9%B1%E4%BD%93%E8%AF%97/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/d48d9dba/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>小聊乐理</title>
+        <pubTime>2018-11-17T05:51:28.000Z</pubTime>
+        
+        <tag>乐理</tag>
+         
+        <tag>和弦</tag>
+         
+        <tag>音律</tag>
+         
+         
+           
+             
+              <breadCrumb title="乐理" url="http://dfine.tech/categories/%E4%B9%90%E7%90%86/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/61fb1399/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>粘蝇板</title>
+        <pubTime>2012-03-04T13:00:24.000Z</pubTime>
+        
+        <tag>日常</tag>
+         
+        <tag>心情</tag>
+         
+         
+           
+             
+              <breadCrumb title="呓语" url="http://dfine.tech/categories/%E5%91%93%E8%AF%AD/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/e091e5ba/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>竹节记</title>
+        <pubTime>2013-08-07T16:39:43.000Z</pubTime>
+        
+        <tag>日常</tag>
+         
+        <tag>心情</tag>
+         
+         
+           
+             
+              <breadCrumb title="随笔" url="http://dfine.tech/categories/%E9%9A%8F%E7%AC%94/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/3e23e45/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>周郎忆</title>
+        <pubTime>2013-04-27T07:43:28.000Z</pubTime>
+        
+        <tag>心情</tag>
+         
+        <tag>怀古</tag>
+         
+         
+           
+             
+              <breadCrumb title="乱体诗" url="http://dfine.tech/categories/%E4%B9%B1%E4%BD%93%E8%AF%97/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/5e4725d8/</loc>
+    <lastmod>2022-05-19T04:23:59.331Z</lastmod>
+    <data>
+        <display>
+        <title>子夜</title>
+        <pubTime>2011-10-22T02:01:12.000Z</pubTime>
+        
+        <tag>日常</tag>
+         
+        <tag>心情</tag>
+         
+         
+           
+             
+              <breadCrumb title="乱体诗" url="http://dfine.tech/categories/%E4%B9%B1%E4%BD%93%E8%AF%97/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/6b278ddb/</loc>
+    <lastmod>2022-05-19T04:23:59.327Z</lastmod>
+    <data>
+        <display>
+        <title>Docker博客环境封装及自动化部署</title>
+        <pubTime>2019-03-05T07:25:21.000Z</pubTime>
+        
+        <tag>Linux</tag>
+         
+        <tag>Docker</tag>
+         
+        <tag>Blog</tag>
+         
+         
+           
+             
+              <breadCrumb title="博客" url="http://dfine.tech/categories/%E5%8D%9A%E5%AE%A2/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/dc21e617/</loc>
+    <lastmod>2022-05-19T04:23:59.327Z</lastmod>
+    <data>
+        <display>
+        <title>等</title>
+        <pubTime>2013-06-12T03:26:04.000Z</pubTime>
+        
+        <tag>日常</tag>
+         
+        <tag>心情</tag>
+         
+         
+           
+             
+              <breadCrumb title="呓语" url="http://dfine.tech/categories/%E5%91%93%E8%AF%AD/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+    
+    
+  <url>
+    <loc>http://dfine.tech/posts/66fca25e/</loc>
+    <lastmod>2022-05-19T04:23:59.327Z</lastmod>
+    <data>
+        <display>
+        <title>悼亡词</title>
+        <pubTime>2012-03-24T13:48:17.000Z</pubTime>
+        
+        <tag>日常</tag>
+         
+        <tag>心情</tag>
+         
+         
+           
+             
+              <breadCrumb title="乱体诗" url="http://dfine.tech/categories/%E4%B9%B1%E4%BD%93%E8%AF%97/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/f3656e8e/</loc>
+    <lastmod>2022-05-19T04:23:59.327Z</lastmod>
+    <data>
+        <display>
+        <title>Cvsba编译过程（在VS2015下的编译与测试）</title>
+        <pubTime>2016-09-02T11:38:16.000Z</pubTime>
+        
+        <tag>三维重建</tag>
+         
+        <tag>VS2015</tag>
+         
+         
+           
+             
+              <breadCrumb title="笔记" url="http://dfine.tech/categories/%E7%AC%94%E8%AE%B0/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/526f0d1a/</loc>
+    <lastmod>2022-05-19T04:23:59.327Z</lastmod>
+    <data>
+        <display>
+        <title>垂钓</title>
+        <pubTime>2015-03-11T17:03:28.000Z</pubTime>
+        
+        <tag>日常</tag>
+         
+        <tag>心情</tag>
+         
+         
+           
+             
+              <breadCrumb title="乱体诗" url="http://dfine.tech/categories/%E4%B9%B1%E4%BD%93%E8%AF%97/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/c33ea426/</loc>
+    <lastmod>2022-05-19T04:23:59.327Z</lastmod>
+    <data>
+        <display>
+        <title>回来</title>
+        <pubTime>2017-07-22T04:39:12.000Z</pubTime>
+        
+        <tag>日常</tag>
+         
+        <tag>心情</tag>
+         
+         
+           
+             
+              <breadCrumb title="杂记" url="http://dfine.tech/categories/%E6%9D%82%E8%AE%B0/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://dfine.tech/posts/5f159f2c/</loc>
+    <lastmod>2022-05-19T04:23:59.327Z</lastmod>
+    <data>
+        <display>
+        <title>不属于自己的高三</title>
+        <pubTime>2011-12-07T13:42:44.000Z</pubTime>
+        
+        <tag>日常</tag>
+         
+        <tag>心情</tag>
+         
+         
+           
+             
+              <breadCrumb title="呓语" url="http://dfine.tech/categories/%E5%91%93%E8%AF%AD/"/>
+          
+        </display>
+    </data>
+    </url>
+
+</urlset>

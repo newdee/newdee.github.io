@@ -1,0 +1,1679 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next mist" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+  <link rel="stylesheet" media="all" href="/lib/Han/dist/han.min.css?v=3.3">
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+  <link href="https://cdnjs.loli.net/ajax/libs/fancybox/3.1.25/jquery.fancybox.min.css" rel="stylesheet" type="text/css">
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.loli.net/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+  
+
+<link href="https://cdnjs.loli.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="Linux,GStreamer,TX1,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="阁子" type="application/atom+xml">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2">
+
+
+
+
+
+
+<meta name="description" content="主要也是关于建立Pipeline的，不过主要目的是建立动态的Pipeline，即在信息可用时随时创建Pipeline，而不是在应用程序开始时候定义单一Pipeline。">
+<meta name="keywords" content="Linux,GStreamer,TX1">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GStreamer笔记二: Dynamic Pipeline">
+<meta property="og:url" content="http://dfine.tech/posts/24b1a5e1/index.html">
+<meta property="og:site_name" content="阁子">
+<meta property="og:description" content="主要也是关于建立Pipeline的，不过主要目的是建立动态的Pipeline，即在信息可用时随时创建Pipeline，而不是在应用程序开始时候定义单一Pipeline。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://raw.githubusercontent.com/newdee/BlogImage/master/20190906113023.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/newdee/BlogImage/master/20190906135930.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/newdee/BlogImage/master/20190906140002.png">
+<meta property="og:updated_time" content="2022-05-19T04:23:59.331Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="GStreamer笔记二: Dynamic Pipeline">
+<meta name="twitter:description" content="主要也是关于建立Pipeline的，不过主要目的是建立动态的Pipeline，即在信息可用时随时创建Pipeline，而不是在应用程序开始时候定义单一Pipeline。">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/newdee/BlogImage/master/20190906113023.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: false,
+    duoshuo: {
+      userId: '0',
+      author: '鄙人'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    emojis: {
+      className: 'github-emoji'
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://dfine.tech/posts/24b1a5e1/">
+
+
+
+
+
+  <title>GStreamer笔记二: Dynamic Pipeline | 阁子</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-83650950-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//tajs.qq.com/stats?sId=58292227";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">阁子</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">dfine's Blog</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-talks">
+          <a href="/talks/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-comment"></i> <br>
+            
+            闲言
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-map"></i> <br>
+            
+            友人目
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/About/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://dfine.tech/posts/24b1a5e1/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="dfine">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/favo.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="阁子">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">GStreamer笔记二: Dynamic Pipeline</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-01T15:52:43+08:00">
+                2017-12-01
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/TX1入坑/" itemprop="url" rel="index">
+                    <span itemprop="name">TX1入坑</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+          
+          
+             <span id="/posts/24b1a5e1/" class="leancloud_visitors" data-flag-title="GStreamer笔记二: Dynamic Pipeline">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body han-init-context" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>主要也是关于建立Pipeline的，不过主要目的是建立动态的Pipeline，即在信息可用时随时创建Pipeline，而不是在应用程序开始时候定义单一Pipeline。<br><a id="more"></a></p>
+<h3 id="一些基本概念的重申"><a href="#一些基本概念的重申" class="headerlink" title="一些基本概念的重申"></a>一些基本概念的重申</h3><p>本次尝试: 将Pipeline在其未完全建立起来时设置为Playing状态。虽然这并没有什么问题，如果不做任何动作，当数据到达Pipeline末端时将会由Pipeline产生一个error并停止，所以尝试会采取进一步的操作。尝试打开一个多路复用(muxed)的文件，即视频和音频存在一个容器文件中。负责打开该容器的元素称之为分离器(demuxers)。容器格式例如: MKV(Matroska), QT/MOV(Quick Time), Ogg或高级系统格式如ASF, WMV, WMA等。  </p>
+<h4 id="pad"><a href="#pad" class="headerlink" title="pad"></a>pad</h4><p>如前<a href="/posts/8755e75b/">所述</a>，pad就是Gstreamer元素间互相通信的一个接口，也有人翻译为衬垫。数据通过sink pad流入，通过source pad流出。只包含source pad的称之为source元素，只包含sink pad的元素称为sink元素，两者兼有则称之为filter元素。如图所示:  </p>
+<center><br><img src="https://raw.githubusercontent.com/newdee/BlogImage/master/20190906113023.png" alt=""><br></center>
+
+<h4 id="分离器"><a href="#分离器" class="headerlink" title="分离器"></a>分离器</h4><p>如果一个容器嵌入多个流（例如一个视频和两个音频轨道），则分离器将分离它们并将其展示于不同的输出端口。通过这种方式，可以在流水线中创建不同的分支，处理不同类型的数据。<br>一个含有两个source pad和一个sink pad的分离器的例子如图所示:  </p>
+<p><center><br><img src="https://raw.githubusercontent.com/newdee/BlogImage/master/20190906135930.png" alt=""><br></center><br>使用分离器的一个Pipeline例子如下:</p>
+<p><center><br><img src="https://raw.githubusercontent.com/newdee/BlogImage/master/20190906140002.png" alt=""><br></center><br>该例是一个基本的Ogg播放器的Gstreamer Pipeline。<br>处理分离器的主要复杂性在于，只有在接收到一些数据且有机会查看容器并看到其内部信息之后，才能产生信息。即分离器开始时，没有任何其他元素能连接的source pad，因此Pipeline必须终止它们。<br>解决方法是建立一个从source向下到分离器的一个Pipeline，并将其设置为运行(Play)。当分离器了解了关于容器中数据流的数目和种类的足够信息之后，其会开始创建source pads。此时即是完成Pipeline创建并将其添加到新的分离器pads上的最佳时机。<br>简单起见，所用例子仅连接到audio pad，忽略video pad。  </p>
+<h3 id="动态建立示例"><a href="#动态建立示例" class="headerlink" title="动态建立示例"></a>动态建立示例</h3><p>一个动态的HelloWorld示例代码如下:<br><figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#include &lt;gst/gst.h&gt;</span></div><div class="line"></div><div class="line"><span class="comment">/* Structure to contain all our information, so we can pass it to callbacks */</span></div><div class="line">typedef struct _CustomData &#123;</div><div class="line">  GstElement *pipeline<span class="comment">;</span></div><div class="line">  GstElement *source<span class="comment">;</span></div><div class="line">  GstElement *convert<span class="comment">;</span></div><div class="line">  GstElement *sink<span class="comment">;</span></div><div class="line">&#125; CustomData<span class="comment">;</span></div><div class="line"></div><div class="line"><span class="comment">/* Handler for the pad-added signal */</span></div><div class="line">static void pad_added_handler (GstElement *src, GstPad *pad, CustomData *data)<span class="comment">;</span></div><div class="line"></div><div class="line">int main(int argc, char *argv[]) &#123;</div><div class="line">  CustomData data<span class="comment">;</span></div><div class="line">  GstBus *<span class="keyword">bus;</span></div><div class="line"><span class="keyword"> </span> GstMessage *msg<span class="comment">;</span></div><div class="line">  GstStateChangeReturn ret<span class="comment">;</span></div><div class="line">  gboolean terminate = FALSE<span class="comment">;</span></div><div class="line"></div><div class="line">  <span class="comment">/* Initialize GStreamer */</span></div><div class="line">  gst_init (&amp;argc, &amp;argv)<span class="comment">;</span></div><div class="line"></div><div class="line">  <span class="comment">/* Create the elements */</span></div><div class="line">  data.source = gst_element_factory_make (<span class="string">"uridecodebin"</span>, <span class="string">"source"</span>)<span class="comment">;</span></div><div class="line">  data.convert = gst_element_factory_make (<span class="string">"audioconvert"</span>, <span class="string">"convert"</span>)<span class="comment">;</span></div><div class="line">  data.sink = gst_element_factory_make (<span class="string">"autoaudiosink"</span>, <span class="string">"sink"</span>)<span class="comment">;</span></div><div class="line"></div><div class="line">  <span class="comment">/* Create the empty pipeline */</span></div><div class="line">  data.pipeline = gst_pipeline_new (<span class="string">"test-pipeline"</span>)<span class="comment">;</span></div><div class="line"></div><div class="line">  if (!data.pipeline <span class="title">||</span> !data.source <span class="title">||</span> !data.convert <span class="title">||</span> !data.sink) &#123;</div><div class="line">    g_printerr (<span class="string">"Not all elements could be created.\n"</span>)<span class="comment">;</span></div><div class="line">    return -<span class="number">1</span><span class="comment">;</span></div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="comment">/* Build the pipeline. Note that we are NOT linking the source at this</span></div><div class="line"><span class="comment">   * point. We will do it later. */</span></div><div class="line">  gst_bin_add_many (GST_BIN (data.pipeline), data.source, data.convert , data.sink, NULL)<span class="comment">;</span></div><div class="line">  if (!gst_element_link (data.convert, data.sink)) &#123;</div><div class="line">    g_printerr (<span class="string">"Elements could not be linked.\n"</span>)<span class="comment">;</span></div><div class="line">    gst_object_unref (data.pipeline)<span class="comment">;</span></div><div class="line">    return -<span class="number">1</span><span class="comment">;</span></div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="comment">/* Set the URI to play */</span></div><div class="line">  g_object_set (data.source, <span class="string">"uri"</span>, <span class="string">"https://www.freedesktop.org/software/gstreamer-sdk/data/media/sintel_trailer-480p.webm"</span>, NULL)<span class="comment">;</span></div><div class="line"></div><div class="line">  <span class="comment">/* Connect to the pad-added signal */</span></div><div class="line">  g_signal_connect (data.source, <span class="string">"pad-added"</span>, G_CALLBACK (pad_added_handler), &amp;data)<span class="comment">;</span></div><div class="line"></div><div class="line">  <span class="comment">/* Start playing */</span></div><div class="line">  ret = gst_element_set_state (data.pipeline, GST_STATE_PLAYING)<span class="comment">;</span></div><div class="line">  if (ret == GST_STATE_CHANGE_FAILURE) &#123;</div><div class="line">    g_printerr (<span class="string">"Unable to set the pipeline to the playing state.\n"</span>)<span class="comment">;</span></div><div class="line">    gst_object_unref (data.pipeline)<span class="comment">;</span></div><div class="line">    return -<span class="number">1</span><span class="comment">;</span></div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="comment">/* Listen to the bus */</span></div><div class="line">  <span class="keyword">bus </span>= gst_element_get_bus (data.pipeline)<span class="comment">;</span></div><div class="line">  do &#123;</div><div class="line">    msg = gst_bus_timed_pop_filtered (<span class="keyword">bus, </span>GST_CLOCK_TIME_NONE,</div><div class="line">        GST_MESSAGE_STATE_CHANGED <span class="title">| GST_MESSAGE_ERROR |</span> GST_MESSAGE_EOS)<span class="comment">;</span></div><div class="line"></div><div class="line">    <span class="comment">/* Parse message */</span></div><div class="line">    if (msg != NULL) &#123;</div><div class="line">      GError *err<span class="comment">;</span></div><div class="line">      gchar *debug_info<span class="comment">;</span></div><div class="line"></div><div class="line">      <span class="keyword">switch </span>(GST_MESSAGE_TYPE (msg)) &#123;</div><div class="line">        case GST_MESSAGE_ERROR:</div><div class="line">          gst_message_parse_error (msg, &amp;err, &amp;debug_info)<span class="comment">;</span></div><div class="line">          g_printerr (<span class="string">"Error received from element %s: %s\n"</span>, GST_OBJECT_NAME (msg-&gt;src), err-&gt;message)<span class="comment">;</span></div><div class="line">          g_printerr (<span class="string">"Debugging information: %s\n"</span>, debug_info ? debug_info : <span class="string">"none"</span>)<span class="comment">;</span></div><div class="line">          g_clear_error (&amp;err)<span class="comment">;</span></div><div class="line">          g_free (debug_info)<span class="comment">;</span></div><div class="line">          terminate = TRUE<span class="comment">;</span></div><div class="line">          <span class="keyword">break;</span></div><div class="line"><span class="keyword"> </span>       case GST_MESSAGE_EOS:</div><div class="line">          g_print (<span class="string">"End-Of-Stream reached.\n"</span>)<span class="comment">;</span></div><div class="line">          terminate = TRUE<span class="comment">;</span></div><div class="line">          <span class="keyword">break;</span></div><div class="line"><span class="keyword"> </span>       case GST_MESSAGE_STATE_CHANGED:</div><div class="line">          <span class="comment">/* We are only interested in state-changed messages from the pipeline */</span></div><div class="line">          if (GST_MESSAGE_SRC (msg) == GST_OBJECT (data.pipeline)) &#123;</div><div class="line">            GstState old_state, new_state, pending_state<span class="comment">;</span></div><div class="line">            gst_message_parse_state_changed (msg, &amp;old_state, &amp;new_state, &amp;pending_state)<span class="comment">;</span></div><div class="line">            g_print (<span class="string">"Pipeline state changed from %s to %s:\n"</span>,</div><div class="line">                gst_element_state_get_name (old_state), gst_element_state_get_name (new_state))<span class="comment">;</span></div><div class="line">          &#125;</div><div class="line">          <span class="keyword">break;</span></div><div class="line"><span class="keyword"> </span>       default:</div><div class="line">          <span class="comment">/* We should not reach here */</span></div><div class="line">          g_printerr (<span class="string">"Unexpected message received.\n"</span>)<span class="comment">;</span></div><div class="line">          <span class="keyword">break;</span></div><div class="line"><span class="keyword"> </span>     &#125;</div><div class="line">      gst_message_unref (msg)<span class="comment">;</span></div><div class="line">    &#125;</div><div class="line">  &#125; while (!terminate)<span class="comment">;</span></div><div class="line"></div><div class="line">  <span class="comment">/* Free resources */</span></div><div class="line">  gst_object_unref (<span class="keyword">bus);</span></div><div class="line"><span class="keyword"> </span> gst_element_set_state (data.pipeline, GST_STATE_NULL)<span class="comment">;</span></div><div class="line">  gst_object_unref (data.pipeline)<span class="comment">;</span></div><div class="line">  return <span class="number">0</span><span class="comment">;</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/* This function will be called by the pad-added signal */</span></div><div class="line">static void pad_added_handler (GstElement *src, GstPad *new_pad, CustomData *data) &#123;</div><div class="line">  GstPad *sink_pad = gst_element_get_static_pad (data-&gt;convert, <span class="string">"sink"</span>)<span class="comment">;</span></div><div class="line">  GstPadLinkReturn ret<span class="comment">;</span></div><div class="line">  GstCaps *new_pad_caps = NULL<span class="comment">;</span></div><div class="line">  GstStructure *new_pad_struct = NULL<span class="comment">;</span></div><div class="line">  const gchar *new_pad_type = NULL<span class="comment">;</span></div><div class="line"></div><div class="line">  g_print (<span class="string">"Received new pad '%s' from '%s':\n"</span>, GST_PAD_NAME (new_pad), GST_ELEMENT_NAME (src))<span class="comment">;</span></div><div class="line"></div><div class="line">  <span class="comment">/* If our converter is already linked, we have nothing to do here */</span></div><div class="line">  if (gst_pad_is_linked (sink_pad)) &#123;</div><div class="line">    g_print (<span class="string">"  We are already linked. Ignoring.\n"</span>)<span class="comment">;</span></div><div class="line">    goto exit<span class="comment">;</span></div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="comment">/* Check the new pad's type */</span></div><div class="line">  new_pad_caps = gst_pad_query_caps (new_pad, NULL)<span class="comment">;</span></div><div class="line">  new_pad_struct = gst_caps_get_structure (new_pad_caps, <span class="number">0</span>)<span class="comment">;</span></div><div class="line">  new_pad_type = gst_structure_get_name (new_pad_struct)<span class="comment">;</span></div><div class="line">  if (!g_str_has_prefix (new_pad_type, <span class="string">"audio/x-raw"</span>)) &#123;</div><div class="line">    g_print (<span class="string">"  It has type '%s' which is not raw audio. Ignoring.\n"</span>, new_pad_type)<span class="comment">;</span></div><div class="line">    goto exit<span class="comment">;</span></div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="comment">/* Attempt the link */</span></div><div class="line">  ret = gst_pad_link (new_pad, sink_pad)<span class="comment">;</span></div><div class="line">  if (GST_PAD_LINK_FAILED (ret)) &#123;</div><div class="line">    g_print (<span class="string">"  Type is '%s' but link failed.\n"</span>, new_pad_type)<span class="comment">;</span></div><div class="line">  &#125; else &#123;</div><div class="line">    g_print (<span class="string">"  Link succeeded (type '%s').\n"</span>, new_pad_type)<span class="comment">;</span></div><div class="line">  &#125;</div><div class="line"></div><div class="line"><span class="symbol">exit:</span></div><div class="line">  <span class="comment">/* Unreference the new pad's caps, if we got them */</span></div><div class="line">  if (new_pad_caps != NULL)</div><div class="line">    gst_caps_unref (new_pad_caps)<span class="comment">;</span></div><div class="line"></div><div class="line">  <span class="comment">/* Unreference the sink pad */</span></div><div class="line">  gst_object_unref (sink_pad)<span class="comment">;</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>该示例代码仅播放音频，由于是在线媒体，所以连接速度会与网速有关。  </p>
+<h3 id="代码分析"><a href="#代码分析" class="headerlink" title="代码分析"></a>代码分析</h3><p>首先定义了一个结构体:<br><figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/* Structure to contain all our information, so we can pass it to callbacks */</span></div><div class="line">typedef struct _CustomData &#123;</div><div class="line">  GstElement *pipeline<span class="comment">;</span></div><div class="line">  GstElement *source<span class="comment">;</span></div><div class="line">  GstElement *convert<span class="comment">;</span></div><div class="line">  GstElement *sink<span class="comment">;</span></div><div class="line">&#125; CustomData<span class="comment">;</span></div></pre></td></tr></table></figure></p>
+<p>简单情况下，通常可以使用一个局部变量(一个GstElement类型的基本指针)来表示所需要的信息。但大多数情况下（包括该例）是涉及到回调的，所以将其放在一个结构体中以便处理。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/* Handler for the pad-added signal */</span></div><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">pad_added_handler</span> <span class="params">(GstElement *src, GstPad *pad, CustomData *data)</span></span>;</div></pre></td></tr></table></figure></p>
+<p>此处是一个添加pad的前置函数声明。<br><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/* Create the elements */</span></div><div class="line"><span class="keyword">data</span>.source = gst_element_factory_make (<span class="string">"uridecodebin"</span>, <span class="string">"source"</span>);</div><div class="line"><span class="keyword">data</span>.convert = gst_element_factory_make (<span class="string">"audioconvert"</span>, <span class="string">"convert"</span>);</div><div class="line"><span class="keyword">data</span>.sink = gst_element_factory_make (<span class="string">"autoaudiosink"</span>, <span class="string">"sink"</span>);</div></pre></td></tr></table></figure></p>
+<p>该段是创建Element的代码。其中:<br><code>uridecodebin</code>通过将uri转化为原始音频或视频流来实例化所有的必要Element(source, 分离器，解码器)，其所做的是playbin的一半。由于含有分离器，其source pads最初并不可用，而且我们需要随时将其连接起来。<br><code>audioconvert</code>对于转换不同格式的音频很实用，由于解码器生成的格式可能和audio sink期望的不一样，所以为了确保其可以在任何平台上工作，使用<code>audioconvert</code>进行转换。<br><code>autoaudiosink</code>在音频中类似于视频中的<code>autovideosink</code>，其将会把音频流送给声卡。  </p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">if</span> (!gst_element_link (<span class="keyword">data</span>.convert, <span class="keyword">data</span>.sink)) &#123;</div><div class="line">  g_printerr (<span class="string">"Elements could not be linked.\n"</span>);</div><div class="line">  gst_object_unref (<span class="keyword">data</span>.pipeline);</div><div class="line">  <span class="keyword">return</span> <span class="number">-1</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>此处主要作用是将转换元素连接到sink，但是由于其不含source pads，所以没有将其连接到source上，仅仅是保持该分支(转换器+sink)为未连接状态，待后续处理。  </p>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/* Set the URI to play */</span></div><div class="line">g_object_set (data.<span class="keyword">source</span>, <span class="string">"uri"</span>, <span class="string">"https://www.freedesktop.org/software/gstreamer-sdk/data/media/sintel_trailer-480p.webm"</span>, <span class="keyword">NULL</span>);</div></pre></td></tr></table></figure>
+<p>这里通过设置文件uri属性方法来播放它们。  </p>
+<h4 id="信号"><a href="#信号" class="headerlink" title="信号"></a>信号</h4><p>GSignals是GStreamer中的一个关键部分。当一些你感兴趣的事发生时，它允许你通过回调的方式获得通知。信号(Signals)由名称标识，且每个GObject都有自己的signals。<br><figure class="highlight lisp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">/* Connect to the pad-added signal */</div><div class="line">g_signal_connect (<span class="name">data</span>.source, <span class="string">"pad-added"</span>, G_CALLBACK (<span class="name">pad_added_handler</span>), <span class="symbol">&amp;data</span>)<span class="comment">;</span></div></pre></td></tr></table></figure></p>
+<p>该行代码将一个”pad added”信号附加到我们的source(一个uridecoderbin元素)上。为此使用了<code>g_signal_connect</code>函数，并提供要使用的回调函数<code>pad_add_handler</code>和一个数据指针。GStreamer并未对数据指针做任何事，仅仅将它转发给回调函数，因此可以与其共享信息。在这种情况下，我们传递一个指向我们专门为此建立的一个结构体CustomData的指针。<br>GStreamer产生的信号可以通过其文档或者使用<code>gst-inspect-1.0</code>工具查询。<br>至此已经准备好了，只需要将Pipeline设置为PLAYING状态并开始监听总线(bus)上感兴趣的Message(如ERROR或EOS)。  </p>
+<h4 id="回调函数"><a href="#回调函数" class="headerlink" title="回调函数"></a>回调函数</h4><p>当source element有了足够的信息开始产生数据时，将会创建source pads，并触发“pad-added”信号。此时，回调函数就会被调用:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">pad_added_handler</span> <span class="params">(GstElement *src, GstPad *new_pad, CustomData *data)</span> </span>&#123;</div></pre></td></tr></table></figure>
+<p>其中，<br>信号处理的第一个参数始终是触发它的对象。src是触发这个信号的GstElement。此例中，它只能是<code>uridecodebin</code>，因为它是我们唯一附加的信号。<br>new_pad是刚刚添加到src element的GstPad, 通常是我们想要连接的pad。<br>data是我们附加到信号时提供的指针，例中用其传递CustomData指针。  </p>
+<figure class="highlight xl"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">G<span class="function"><span class="title">stPad</span> *sink_pad = gst_element_get_static_pad (<span class="keyword">data</span>-&gt;</span>convert, <span class="string">"sink"</span>);</div></pre></td></tr></table></figure>
+<p>从CustomData中提取转换元素，然后使用<code>gst_element_get_static_pad</code>函数取回其sink pad。这是我们希望连接到new_pad的pad。之前涉及的简单例子中直接将元素连接到元素，并由GStreamer选择合适的pad。现在我们直接将这些pad连接起来。  </p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="regexp">/* If our converter is already linked, we have nothing to do here */</span></div><div class="line"><span class="keyword">if</span> (gst_pad_is_linked (sink_pad)) &#123;</div><div class="line">  g_print (<span class="string">"  We are already linked. Ignoring.\n"</span>);</div><div class="line">  goto <span class="keyword">exit</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><code>uridecodebin</code>可以创建尽可能多的pad，而且每个pad都会调用这个回调函数。该行代码主要作用是阻止我们尝试连接到已经连接了的pad上。  </p>
+<figure class="highlight haxe"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/* Check the new pad's type */</span></div><div class="line"><span class="keyword">new</span><span class="type">_pad_caps</span> = gst_pad_query_caps (<span class="keyword">new</span><span class="type">_pad</span>, NULL);</div><div class="line"><span class="keyword">new</span><span class="type">_pad_struct</span> = gst_caps_get_structure (<span class="keyword">new</span><span class="type">_pad_caps</span>, <span class="number">0</span>);</div><div class="line"><span class="keyword">new</span><span class="type">_pad_type</span> = gst_structure_get_name (<span class="keyword">new</span><span class="type">_pad_struct</span>);</div><div class="line"><span class="keyword">if</span> (!g_str_has_prefix (<span class="keyword">new</span><span class="type">_pad_type</span>, <span class="string">"audio/x-raw"</span>)) &#123;</div><div class="line">  g_print (<span class="string">"  It has type '%s' which is not raw audio. Ignoring.\n"</span>, <span class="keyword">new</span><span class="type">_pad_type</span>);</div><div class="line">  goto exit;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>现在将会检查这个新pad要输出的数据类型，因为我们仅对产生音频的pad有兴趣。之前已经创建了一个处理音频的Pipeline(一个<code>autoaudioconver</code>连接到一个<code>autoaudiosink</code>)，例中我们将不能将其连接到产生视频的pad上。<br><code>gst_pad_query_caps</code>函数查询或检索pad的功能(这是一种它所支持的数据，封装在GstCaps结构体中)，一个pad可以提供许多功能(cap)，因此GstCap可能包含多个GstStructure，且每个表示不同的功能。<br>由于此例中我们知道我们想要的pad只有一个能力(audio)，所以使用<code>gst_caps_get_structure</code>函数获取第一个GstStructure。<br>最后使用<code>gst_structure_get_name</code>函数获取包含格式(实际是媒体类型)的主要描述的结构体名称。如果名称不是<code>audio/x-raw</code>，这就不是解码的音频pad，也不是我们所感兴趣的。否则，尝试连接:  </p>
+<figure class="highlight haxe"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/* Attempt the link */</span></div><div class="line">ret = gst_pad_link (<span class="keyword">new</span><span class="type">_pad</span>, sink_pad);</div><div class="line"><span class="keyword">if</span> (GST_PAD_LINK_FAILED (ret)) &#123;</div><div class="line">  g_print (<span class="string">"  Type is '%s' but link failed.\n"</span>, <span class="keyword">new</span><span class="type">_pad_type</span>);</div><div class="line">&#125; <span class="keyword">else</span> &#123;</div><div class="line">  g_print (<span class="string">"  Link succeeded (type '%s').\n"</span>, <span class="keyword">new</span><span class="type">_pad_type</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>其中，<code>gst_pad_link</code>函数尝试连接这两个pad。和<code>gst_element_link</code>函数一样，连接必须指定有source到sink，且这两个pad必须属于同一个bin(或Pipeline)中的元素。<br>至此已经基本完成，当出现一个正确类型的pad时，它将会被连接到音频处理Pipeline的其余部分，并执行且继续直到遇到ERROR或者EOS。但关于GStreamer的状态还是需要重申一下。  </p>
+<h4 id="关于GStreamer-States"><a href="#关于GStreamer-States" class="headerlink" title="关于GStreamer States"></a>关于GStreamer States</h4><p><a href="/posts/413bb42a/">之前</a>，已经解释过GStreamer的状态了，一共四种，如下所示:  </p>
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NULL</code></td>
+<td>the NULL state or initial state of an element.</td>
+</tr>
+<tr>
+<td><code>READY</code></td>
+<td>the element is ready to go to PAUSED.</td>
+</tr>
+<tr>
+<td><code>PAUSED</code></td>
+<td>the element is PAUSED, it is ready to accept and process data. Sink elements however only accept one buffer and then block.</td>
+</tr>
+<tr>
+<td><code>PLAYING</code></td>
+<td>the element is PLAYING, the clock is running and the data is flowing.</td>
+</tr>
+</tbody>
+</table>
+<p>四种状态只能在相邻状态之间移动，不能直接从<code>NULL</code>跳到<code>PLAYING</code>，必须经过中间的<code>READY</code>和<code>PAUSED</code>状态。但是如果将管道设置为<code>PLAYIING</code>状态，GStreamer将会为你进行中间转换。  </p>
+<figure class="highlight haxe"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">case</span> GST_MESSAGE_STATE_CHANGED:<span class="type"></span></div><div class="line"><span class="type">  </span>/* We are only interested <span class="keyword">in</span> state-changed messages from the pipeline */</div><div class="line">  <span class="keyword">if</span> (GST_MESSAGE_SRC (msg) == GST_OBJECT (data.pipeline)) &#123;</div><div class="line">    GstState old_state, <span class="keyword">new</span><span class="type">_state</span>, pending_state;</div><div class="line">    gst_message_parse_state_changed (msg, &amp;old_state, &amp;<span class="keyword">new</span><span class="type">_state</span>, &amp;pending_state);</div><div class="line">    g_print (<span class="string">"Pipeline state changed from %s to %s:\n"</span>,</div><div class="line">        gst_element_state_get_name (old_state), gst_element_state_get_name (<span class="keyword">new</span><span class="type">_state</span>));</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">break</span>;</div></pre></td></tr></table></figure>
+<p>此段代码的添加主要用于监听关于状态更改的总线消息(bus message)，并将其打印在屏幕上以帮助了解这个转换。每个元素都将关于其当前状态的信息放在总线上，因此我们将其过滤出来，并只收听来自Pipeline的信息。<br>大多数应用程序只需要关心去<code>PLAYING</code>来开始播放，然后<code>PAUSED</code>来暂停，然后在程序退出时返回<code>NULL</code>来释放所有资源。  </p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        
+
+      </div>
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    dfine
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://dfine.tech/posts/24b1a5e1/" title="GStreamer笔记二: Dynamic Pipeline">http://dfine.tech/posts/24b1a5e1/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow noopener noreferrer" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag"><i class="fa fa-leaf" aria-hidden="true"></i>
+Linux</a>
+          
+            <a href="/tags/GStreamer/" rel="tag"><i class="fa fa-leaf" aria-hidden="true"></i>
+GStreamer</a>
+          
+            <a href="/tags/TX1/" rel="tag"><i class="fa fa-leaf" aria-hidden="true"></i>
+TX1</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/8755e75b/" rel="next" title="GStreamer笔记一: GStreamer Concepts">
+                <i class="fa fa-chevron-left"></i> GStreamer笔记一: GStreamer Concepts
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/58b8a847/" rel="prev" title="GStreamer笔记三: Time Management">
+                GStreamer笔记三: Time Management <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+		<script src="/js/src/yiyan.js"></script>
+<div>   
+    <font size="4" face="Heiti" color="gray" class="hitokoto"></font>
+</div>
+<!--MOB SHARE BEGIN-->
+<div class="-mob-share-ui-button -mob-share-open">分享</div>
+<div class="-mob-share-ui" -mob-share-ui-theme="" -mob-share-ui-theme-slide-bottom="" style="display: none">
+    <ul class="-mob-share-list">
+        <li class="-mob-share-weixin"><p>微信</p></li>
+        <li class="-mob-share-qzone"><p>QQ空间</p></li>
+        <li class="-mob-share-weibo"><p>新浪微博</p></li>
+        <li class="-mob-share-facebook"><p>Facebook</p></li>
+        <li class="-mob-share-twitter"><p>Twitter</p></li>
+        <li class="-mob-share-pocket"><p>Pocket</p></li>
+        <li class="-mob-share-tumblr"><p>Tumblr</p></li>
+        <li class="-mob-share-google"><p>Google+</p></li>
+        <li class="-mob-share-linkedin"><p>Linkedin</p></li>
+        <li class="-mob-share-qq"><p>QQ好友</p></li>
+        <li class="-mob-share-tencentweibo"><p>腾讯微博</p></li>
+        <li class="-mob-share-renren"><p>人人网</p></li>
+        <li class="-mob-share-douban"><p>豆瓣</p></li>
+        <li class="-mob-share-youdao"><p>有道云笔记</p></li>
+        <li class="-mob-share-instapaper"><p>Instapaper</p></li>
+    </ul>
+    <div class="-mob-share-close">取消</div>
+</div>
+<div class="-mob-share-ui-bg"></div>
+<script id="-mob-share" src="https://f1.webshare.mob.com/code/mob-share.js?appkey=1fc60caf613fe"></script>
+<!--MOB SHARE END-->
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+  
+       
+            <div onclick="ShowValine()" id="valine-display-button">匿名评论</div>
+            <div class="comments" id="comments" style="display:none">
+       
+    </div>
+
+    
+	 <div id="gitalk-container"></div>
+	
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image" src="/images/favo.jpg" alt="dfine">
+          <p class="site-author-name" itemprop="name">dfine</p>
+           
+              <p class="site-description motion-element" itemprop="description">多可喜，亦多可悲</p>
+          
+        </div>
+
+		<!--my custom code begin-->
+		<script src="https://cdnjs.loli.net/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+		<script src="https://cdnjs.loli.net/ajax/libs/velocity/1.5.0/velocity.min.js"></script>
+		<script type="text/javascript">
+		  $("#sidebar").hover(function(){
+			$("#mydivshow").velocity('stop').velocity({opacity: 1});
+		  },function(){
+			$("#mydivshow").velocity('stop').velocity({opacity: 0});
+		  });
+		</script>
+		<div id="mydivshow" class="mydivshow">
+		<!--my custom code end-->
+
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/">
+                <span class="site-state-item-count">82</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/categories/index.html">
+                <span class="site-state-item-count">15</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">111</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://newdee.gitbook.io/leetcode/" target="_blank" title="Leetcode" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-code"></i>
+                  
+                    
+                      Leetcode
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/newdee" target="_blank" title="GayHub" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                    
+                      GayHub
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://t.me/roomrss" target="_blank" title="TelegramRss" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-telegram"></i>
+                  
+                    
+                      TelegramRss
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/stebest?refer_flag=1001030101_&is_all=1" target="_blank" title="Weibo" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                    
+                      Weibo
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="mailto:stebest1992@gmail.com" target="_blank" title="E-Mail" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-at"></i>
+                  
+                    
+                      E-Mail
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://gitter.im/Newdee/newdee" target="_blank" title="Gitter" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-comments"></i>
+                  
+                    
+                      Gitter
+                    
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        <script>
+
+try{
+ if(window.console&&window.console.log)
+  {
+    console.log("%c控制台这么好玩嘛","background-color:rgba(255,255,255,0.1);font-size:1.5em");
+     console.log("%c ","padding:200px 260px;background:url('https://i.loli.net/2020/04/27/GrdC34HINPowfXE.gif')");
+     console.info("%c互链请邮  --支持ACG及Coding","background-color:rgba(255,255,255,0.5);font-size:1.3em");
+}  }
+catch(e){
+};
+</script>
+
+<div id="player1" class="aplayer"></div>
+<script src="/js/src/APlayer.min.js"></script>
+<script type="text/javascript">
+var ap = new APlayer({
+    element: document.getElementById('player1'),                       // Optional, player element
+    narrow: false,                                                     // Optional, narrow style
+    autoplay: false,                                                    // Optional, autoplay song(s), not supported by mobile browsers
+    showlrc: 3,                                                        // Optional, show lrc, can be 0, 1, 2, see: ###With lrc
+    mutex: true,                                                       // Optional, pause other players when this player playing
+    theme: '#e6d0b2',                                                  // Optional, theme color, default: #b7daff
+    mode: 'random',                                                    // Optional, play mode, can be `random` `single` `circulation`(loop) `order`(no loop), default: `circulation`
+    preload: 'metadata',                                               // Optional, the way to load music, can be 'none' 'metadata' 'auto', default: 'auto'
+    listmaxheight: '513px',                                             // Optional, max height of play list
+	music: [
+    {
+        title: '空空如也',
+        author: '任然',
+        url: 'https://files.catbox.moe/g27m5f.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162023.jpeg',
+		lrc: 'https://dfine.tech/lrc/kongkongruye'
+    },
+    {
+        title: '美しきもの',
+        author: 'Sound Horizon',
+        url: 'https://files.catbox.moe/1oevtg.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162103.jpeg',
+		lrc: 'https://dfine.tech/lrc/SoundHorizon'
+    },
+
+    {
+        title: '天国うまれ',
+        author: '甲本ヒロト',
+        url: 'https://files.catbox.moe/epooev.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162141.jpeg',
+	lrc: 'https://dfine.tech/lrc/tianguo'
+    },
+    {
+        title: '心做し',
+        author: 'luz',
+        url: 'https://files.catbox.moe/7j58ss.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162141.jpeg',
+		lrc: 'https://dfine.tech/lrc/xin'
+    },
+    {
+        title: 'Lemon',
+        author: '米津玄师',
+        url: 'https://files.catbox.moe/6ppo2h.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162427.jpeg',
+		lrc: 'https://dfine.tech/lrc/lemon'
+    },
+    {
+        title: 'You',
+        author: '雪野五月',
+        url: 'https://files.catbox.moe/1ovgtt.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325161925.jpeg',
+		lrc: 'https://dfine.tech/lrc/you'
+    },
+    {
+        title: '钟无艳',
+        author: '谢安琪',
+        url: 'https://files.catbox.moe/55sxbh.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162505.jpeg',
+		lrc: 'https://dfine.tech/lrc/zhongwuyan'
+    },
+
+    {
+        title: '殿书',
+        author: '奇然',
+        url: 'https://files.catbox.moe/e9n6sz.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162601.jpeg',
+		lrc: 'https://dfine.tech/lrc/dianshu'
+    },
+    {
+        title: 'East of Eden',
+        author: 'Zella Day',
+        url: 'https://files.catbox.moe/qoanq2.mp3',
+        pic: 'https://p1.music.126.net/orDs-AZ0jJjB06uoP0pdMw==/6667438510952720.jpg',
+		lrc: 'https://dfine.tech/lrc/eastEden'
+    },
+    {
+        title: '茁',
+        author: '谭烧',
+        url: 'https://files.catbox.moe/5lepv3.mp3',
+        pic: 'https://p1.music.126.net/xphtETT9CVE-IjRzGx20YA==/7969260279094350.jpg',
+		lrc: 'https://dfine.tech/lrc/zhuo'
+    },
+    {
+        title: '僕が死のうと思ったのは',
+        author: '中岛美嘉',
+        url: 'https://files.catbox.moe/umshce.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162629.jpeg',
+		lrc: 'https://dfine.tech/lrc/yiliaobailiao'
+    },
+    {
+        title: 'PLANET',
+        author: 'ラムジ',
+        url: 'https://files.catbox.moe/6ioooc.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162655.jpeg',
+		lrc: 'https://dfine.tech/lrc/planet'
+    },
+]
+
+
+});
+ $('.aplayer-icon-menu')[0].click();   //initial height
+	$('.aplayer-icon.aplayer-icon-mode').css('display','inline-block');
+  var myflag=true;
+	$('.aplayer-list').css('height','180px');
+	$('.aplayer-icon-menu svg').click(function(){
+    var temp=$('#player1').css('height');
+		if(temp=='250px' && !myflag){
+      $('#mydivshow').velocity('stop').velocity({height: 250});
+			$('#player1').velocity('stop').velocity({height: 66});
+    }
+		else if(temp=='66px' && myflag){
+      $('#mydivshow').velocity('stop').velocity({height: 420});
+			$('#player1').velocity('stop').velocity({height: 250});
+    }
+    myflag=!myflag;
+	});
+
+
+
+</script>
+
+<script type="text/javascript" src="//ra.revolvermaps.com/0/0/8.js?i=0qun3l8xnmd&amp;m=7&amp;c=ff0000&amp;cr1=ffffff&amp;f=arial&amp;l=33" async="async"></script>
+
+
+		<!--my custom code begin-->
+		</div>
+		<!--my custom code end-->
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一些基本概念的重申"><span class="nav-number">1.</span> <span class="nav-text">一些基本概念的重申</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#pad"><span class="nav-number">1.1.</span> <span class="nav-text">pad</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#分离器"><span class="nav-number">1.2.</span> <span class="nav-text">分离器</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#动态建立示例"><span class="nav-number">2.</span> <span class="nav-text">动态建立示例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码分析"><span class="nav-number">3.</span> <span class="nav-text">代码分析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#信号"><span class="nav-number">3.1.</span> <span class="nav-text">信号</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#回调函数"><span class="nav-number">3.2.</span> <span class="nav-text">回调函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#关于GStreamer-States"><span class="nav-number">3.3.</span> <span class="nav-text">关于GStreamer States</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </div></main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">
+  
+  &copy;  1992 - 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-superpowers"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder"><a href="https://dfine.tech">dfine</a></span>
+	
+
+</div>
+
+<!--
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+-->
+
+        
+<div class="busuanzi-count">
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user">This site's UV:</i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye">This site's PV:</i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="https://ajax.loli.net/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/fastclick/1.0.6/fastclick.min.js"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/velocity/1.5.0/velocity.min.js"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/velocity/1.5.0/velocity.ui.min.js"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/fancybox/3.1.25/jquery.fancybox.min.js"></script>
+
+  
+  <script type="text/javascript" src="/lib/three/three.min.js"></script>
+
+  
+  <script type="text/javascript" src="/lib/three/canvas_lines.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+   <link rel="stylesheet" href="https://dfine.tech/css/gitalk.css"> 
+ 
+  
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+   <script type="text/javascript">
+		var gitalk = new Gitalk({
+		  clientID: '4a39596c869e2498ea2c',
+		  clientSecret: '09f723a7aae19b9cd7767036df092d299793bd7a',
+		  repo: 'BlogComments',
+		  owner: 'newdee',
+		  admin: ['newdee'], 
+		  id: window.location.pathname,
+		  perPage: parseInt('5'),
+		  distractionFreeMode: 'false'
+		})
+
+		gitalk.render('gitalk-container')           
+       </script>
+	
+
+
+
+
+
+  <script src="//fastly.jsdelivr.net/npm/valine@1.4.16/dist/Valine.min.js"></script>
+    
+      <script type="text/javascript">
+        var GUEST = ['nick','mail','link'];
+        var guest = 'nick,mail,link';
+        guest = guest.split(',').filter(item=>{
+          return GUEST.indexOf(item)>-1;
+        });
+        function ShowValine(){
+            button=document.getElementById("valine-display-button");
+            vstate=document.getElementsByClassName("comments v")[0];
+            gstate=document.getElementById("gitalk-container");
+            if(vstate.style.display == "none" ){
+            button.innerHTML="Git评论";
+            vstate.style.display = "block";
+            gstate.style.display = "none";
+            }
+            else{
+            button.innerHTML="匿名评论";
+            gstate.style.display = "block";
+            vstate.style.display = "none";}
+        }
+        new Valine({
+            el: '#comments' ,
+            verify: false,
+            notify: false,
+            appId: 'HfI6KhJtyoYJVElqovLTdyIe-MdYXbMMI',
+            appKey: 'SgCg3S2tCDaEkxunnlBATRCk',
+            serverURLs: 'https://hfi6khjt.api.lncldglobal.com',
+            placeholder: '言语是花，也是刀。',
+            avatar:'mm',
+            guest_info:guest,
+            pageSize:'5' || 10,
+        });
+      </script>
+      
+
+
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $('.leancloud_visitors');
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', '/classes/Counter/' + counter.objectId, JSON.stringify({ time: { '__op': 'Increment', 'amount': 1 } }))
+            
+              .done(function() {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.time + 1);
+              })
+            
+              .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+              })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1 }))
+                .done(function() {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function() {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+        .fail(function ({ responseJSON }) {
+          console.log('LeanCloud Counter Error: ' + responseJSON.code + ' ' + responseJSON.error);
+        });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + 'HfI6KhJtyoYJVElqovLTdyIe-MdYXbMMI')
+        .done(function({ api_server }) {
+          var Counter = function(method, url, data) {
+            return $.ajax({
+              method: method,
+              url: 'https://' + api_server + '/1.1' + url,
+              headers: {
+                'X-LC-Id': 'HfI6KhJtyoYJVElqovLTdyIe-MdYXbMMI',
+                'X-LC-Key': 'SgCg3S2tCDaEkxunnlBATRCk',
+                'Content-Type': 'application/json',
+              },
+              data: data
+            });
+          };
+          
+            const localhost = /http:\/\/(localhost|127.0.0.1|0.0.0.0)/;
+            if (localhost.test(document.URL)) return;
+            addCount(Counter);
+          
+        });
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+  <script src="/js/src/Aplayer-Controler.min.js"></script>
+<div id="AP-controler"></div>
+<script type="text/javascript">
+var myapc=new APlayer_Controler({
+		APC_dom:$('#AP-controler'),
+		aplayer:ap,
+		attach_right:true,
+		position:{top:'150px',bottom:''},
+		fixed:true,
+		btn_width:100,
+		btn_height:120,
+		img_src:['https://fastly.jsdelivr.net/gh/newdee/BlogImage/20191105112417.gif', 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20191105112526.gif'],
+
+		tips_content:{
+			  on_loading:{top:'LOADING',bottom:'LIFE IS SO HARD'},
+			  on_welcome:{top:'LOADED',bottom:'NOT TOO BAD'},
+			  on_timeout:{top:'PLAYER ARE IN MARS',bottom:'TIME GOES STUPID'},
+			  on_error:{top:'PLAYER BROKEN',bottom:'NOTHING IS IMPORTANT IN LIFE'},
+			  on_listend:{top:'BOTTOM SAYS NO SONG',bottom:'TO DANCE'},
+			  on_nohistory:{top:'NO HISTORY',bottom:'YOU WILL CREATE THE HISTORY'},
+			  on_historyend:{top:'NO MORE',bottom:'HISTORY IS NOT IMPORTANT'}
+			},
+		img_style:{repeat:'no-repeat',position:'center',size:'contain'},
+		ctrls_color:'rgba(86,223,177,0.7)',
+		ctrls_hover_color:'rgba(255,140,0,0.7)',
+		tips_on:true,
+		tips_width:140,
+		tips_height:25,
+		tips_color:'rgba(255,255,255,0.8)',
+	  timeout:30,
+	  showOnPhone:false,
+	  songrecord_log:false
+	});
+</script>
+
+
+  <script type="text/javascript" src="/js/src/mouse.js"></script>
+
+
+<!--崩溃欺骗
+<script type="text/javascript" src="/js/src/broken.js"></script>
+-->
+</body>
+</html>
+
+<script type="text/javascript" src="/js/src/randbg.js"></script>
+<script src="https://fastly.jsdelivr.net/gh/newdee/live2d-widget@latest/autoload.js"></script>

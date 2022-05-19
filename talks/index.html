@@ -1,0 +1,1579 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next mist" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+  <link rel="stylesheet" media="all" href="/lib/Han/dist/han.min.css?v=3.3">
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+  <link href="https://cdnjs.loli.net/ajax/libs/fancybox/3.1.25/jquery.fancybox.min.css" rel="stylesheet" type="text/css">
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.loli.net/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+  
+
+<link href="https://cdnjs.loli.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="newdee, blog">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="阁子" type="application/atom+xml">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2">
+
+
+
+
+
+
+<meta name="description" content="Until Now… 2021-10-19 当了一段时间猫奴，这种日子大概还得继续下去。   2021-3-25 重回旧阁子，以前的域名到期了然后发现重新申请的时候乱要价，大概是有点流量了，所以重新买了个IP。   2020-8-1 把博客移到vercel上加速了一下。   2020-4-30 也添加了一个电报RSS，">
+<meta property="og:type" content="website">
+<meta property="og:title" content="闲言">
+<meta property="og:url" content="http://dfine.tech/talks/index.html">
+<meta property="og:site_name" content="阁子">
+<meta property="og:description" content="Until Now… 2021-10-19 当了一段时间猫奴，这种日子大概还得继续下去。   2021-3-25 重回旧阁子，以前的域名到期了然后发现重新申请的时候乱要价，大概是有点流量了，所以重新买了个IP。   2020-8-1 把博客移到vercel上加速了一下。   2020-4-30 也添加了一个电报RSS，虽然用的人不多，基本也没啥人看，不过还是好玩也搭了一个，频道地址   2020-">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/newdee/BlogImage/cat.jpg">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/newdee/BlogImage/007smGskgy1gp6w8l51kxj30em0em3zu.jpg">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20200801195450.png">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20200430095932.jpg">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20200427091743.jpg">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20200109143242.jpg">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20200102095017.jpg">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20191105105920.jpg">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190917145428.jpg">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190912112537.jpg">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190906142542.jpg">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190905171522.jpg">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190625093342.jpg">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190329170644.jpg">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190328162855.jpg">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190327114228.jpg">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/newdee/BlogImage/201903272147.jpg">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325143938.jpeg">
+<meta property="og:image" content="http://dfine.tech/emoji/paopao/35.png">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325143608.jpeg">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325144136.jpeg">
+<meta property="og:image" content="http://dfine.tech/emoji/paopao/35.png">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325145611.jpeg">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325150210.jpeg">
+<meta property="og:image" content="https://gitpitch.com/gpimg/gitpitch-magic.jpg">
+<meta property="og:updated_time" content="2022-05-19T05:14:06.566Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="闲言">
+<meta name="twitter:description" content="Until Now… 2021-10-19 当了一段时间猫奴，这种日子大概还得继续下去。   2021-3-25 重回旧阁子，以前的域名到期了然后发现重新申请的时候乱要价，大概是有点流量了，所以重新买了个IP。   2020-8-1 把博客移到vercel上加速了一下。   2020-4-30 也添加了一个电报RSS，虽然用的人不多，基本也没啥人看，不过还是好玩也搭了一个，频道地址   2020-">
+<meta name="twitter:image" content="https://fastly.jsdelivr.net/gh/newdee/BlogImage/cat.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: false,
+    duoshuo: {
+      userId: '0',
+      author: '鄙人'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    emojis: {
+      className: 'github-emoji'
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://dfine.tech/talks/">
+
+
+
+
+
+  <title>闲言 | 阁子</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-83650950-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//tajs.qq.com/stats?sId=58292227";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">阁子</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">dfine's Blog</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-talks">
+          <a href="/talks/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-comment"></i> <br>
+            
+            闲言
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-map"></i> <br>
+            
+            友人目
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/About/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+    
+    
+    <div class="post-block page">
+      <header class="post-header">
+
+	<h1 class="post-title" itemprop="name headline">闲言</h1>
+
+
+
+</header>
+
+      
+      
+      
+      <div class="post-body han-init-context">
+        
+        
+          <h1 id="Until-Now…"><a href="#Until-Now…" class="headerlink" title="Until Now…"></a><strong><em>Until Now…</em></strong></h1><hr>
+<h1 id="2021-10-19"><a href="#2021-10-19" class="headerlink" title="2021-10-19"></a>2021-10-19</h1><blockquote>
+<p>当了一段时间猫奴，这种日子大概还得继续下去。<br><img src="https://fastly.jsdelivr.net/gh/newdee/BlogImage/cat.jpg" width="500" height="500"></p>
+</blockquote>
+<!-- https://fastly.jsdelivr.net/gh/newdee/BlogImage/286525419.jpg -->
+<h1 id="2021-3-25"><a href="#2021-3-25" class="headerlink" title="2021-3-25"></a>2021-3-25</h1><blockquote>
+<p>重回旧阁子，以前的域名到期了然后发现重新申请的时候乱要价，大概是有点流量了，所以重新买了个IP。<br><img src="https://fastly.jsdelivr.net/gh/newdee/BlogImage/007smGskgy1gp6w8l51kxj30em0em3zu.jpg" width="500" height="500"> </p>
+</blockquote>
+<h1 id="2020-8-1"><a href="#2020-8-1" class="headerlink" title="2020-8-1"></a>2020-8-1</h1><blockquote>
+<p>把博客移到vercel上加速了一下。<br><img src="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20200801195450.png" width="500" height="500"> </p>
+</blockquote>
+<h1 id="2020-4-30"><a href="#2020-4-30" class="headerlink" title="2020-4-30"></a>2020-4-30</h1><blockquote>
+<p>也添加了一个电报RSS，虽然用的人不多，基本也没啥人看，不过还是好玩也搭了一个，频道<a href="https://t.me/roomrss" rel="external nofollow noopener noreferrer" target="_blank">地址</a><br><img src="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20200430095932.jpg" width="500" height="500"> </p>
+</blockquote>
+<h1 id="2020-4-26"><a href="#2020-4-26" class="headerlink" title="2020-4-26"></a>2020-4-26</h1><blockquote>
+<p>十年背着东奔西走不离身，也记不清拆过，折腾过多少次了。里面每个螺丝的位置，多大尺寸也已经熟悉的不能。<br>大包小包加上一个电脑包，肩膀压的酸痛，火车站安检的时候总是觉得很烦，但一旦不在身边，又总会想着要用。<br>电子产品从出生之日就开始被时代抛弃，但还是站到了现在。时至耄耋，总该退出主流，清闲一点，偶尔吃点灰了。<br><img src="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20200427091743.jpg" width="500" height="500"> </p>
+</blockquote>
+<h1 id="2020-2-15"><a href="#2020-2-15" class="headerlink" title="2020-2-15"></a>2020-2-15</h1><blockquote>
+<p>病死床下无人哭，急雨如注北风号。未忍青丝碧落游，又向此间满白头。<br>– 2.15 无韵  </p>
+</blockquote>
+<h1 id="2020-2-14"><a href="#2020-2-14" class="headerlink" title="2020-2-14"></a>2020-2-14</h1><blockquote>
+<p>一声一声惊雷，一点一滴阶前。一瞬恍如白昼，一刻陷入永眠。<br>只是过去的多少个大风大雨的日子，现在都记不太清了。一场经历，一场见证，那其中的一场感悟，大概风雨过后也慢慢淡化。那其中珍惜美好的誓言，大概风雨过后也抛之脑后。<br>但可幸的是，风寂寂终消残夜，夜漫漫可期天明。  </p>
+</blockquote>
+<h1 id="2020-2-11"><a href="#2020-2-11" class="headerlink" title="2020-2-11"></a>2020-2-11</h1><blockquote>
+<p>不散谣惑众，不妄论政事，安守本分，循规蹈矩。唯有每天回忆一点九年义务教育所教，温故不必知新，只求不浪费那么多年的学费。<br>俺曾见，金陵玉树莺声晓，秦淮水榭花开早，谁知道容易冰消!眼看他起朱楼，眼看他宴宾客，眼看他楼塌了。<br>这青苔碧瓦堆，俺曾睡过风流觉，把五十年兴亡看饱。那乌衣巷，不姓王；莫愁湖，鬼夜哭；凤凰台，栖枭鸟!残山梦最真，旧境丢难掉。不信这舆图换稿，诌一套‘哀江南’，放悲声唱到老。<br>– <del>《百步亭 百家宴》</del><br>– 清 • 孔尚任 《桃花扇》  </p>
+</blockquote>
+<h1 id="2020-2-10"><a href="#2020-2-10" class="headerlink" title="2020-2-10"></a>2020-2-10</h1><blockquote>
+<p>秦人不暇自哀，而后人哀之。后人哀之而不鉴之,亦使后人而复哀后人也。<br>–唐•杜牧 《阿房宫赋》  </p>
+</blockquote>
+<h1 id="2020-2-2"><a href="#2020-2-2" class="headerlink" title="2020-2-2"></a>2020-2-2</h1><blockquote>
+<p>记得小时候课外碰到的第一本诗书，大概五年级，翻来碰到的第一首诗，叫官仓鼠。<br>官仓老鼠大如斗，<br>见人开仓亦不走。<br>健儿无粮百姓饥，<br>谁遣朝朝入君口？<br>大抵是鼠年到了，都出来过过本命。  </p>
+</blockquote>
+<h1 id="2020-1-31"><a href="#2020-1-31" class="headerlink" title="2020-1-31"></a>2020-1-31</h1><blockquote>
+<p>昨天做了个梦，梦见操心操的头发都白了，早上赶紧洗了个头发。还好，没掉色。<br>找完媒体，皆讴歌之词。<br>翻遍新闻，尽瓦釜之声。<br>(刚开始看到人民日报里有个问政功能，喜难尽意难平，结果发现提个问题个把星期还在待审核，评论有一点点不好就被删掉，反馈也收不到反馈，还是心累，索性卸载了。)<br>总说太多的人贩卖焦虑，制造恐慌，可焦虑恐慌并不会凭空产生，都是来源于社会。<br>或许红十字会改名叫红十字教，光景会好过得不少。  </p>
+</blockquote>
+<h1 id="2020-1-25"><a href="#2020-1-25" class="headerlink" title="2020-1-25"></a>2020-1-25</h1><blockquote>
+<p>春晚的感受，借用水浒的一段话：<br>烈日炎炎似火烧，<br>野田禾稻半枯焦。<br>农夫内心如汤煮，<br>公子王孙把扇摇。</p>
+</blockquote>
+<h1 id="2020-1-9"><a href="#2020-1-9" class="headerlink" title="2020-1-9"></a>2020-1-9</h1><blockquote>
+<p>看了一下后台，发现匿名评论里有几个喷子，狺狺吠罢，连个人信息都不敢留。目前仅为有建议的不愿意留名的保留匿名功能，如果有问题，匿名提了我也没法回复。<br>其实匿名评论也没法及时看到的～<br><img src="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20200109143242.jpg" width="500" height="500"></p>
+</blockquote>
+<h1 id="2020-1-1"><a href="#2020-1-1" class="headerlink" title="2020-1-1"></a>2020-1-1</h1><blockquote>
+<p>2020年了，页脚还显示2019，看了下，是push这个Blog的Container里的系统时间是2019，主要原因是里面用的UTC时区，和目前所用的CST时区相差了八个小时，所以时间没更新。使用<code>tzselect</code>也出现问题，提示找不到<code>zoneinfo</code>文件夹，安装<code>tzdata</code>可以解决。最后在<code>.profile</code>文件中export一个<code>TZ=&#39;Asia/Shanghai&#39;</code>即可。<br>大家新年快乐。<br><img src="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20200102095017.jpg" width="500" height="500"><br>ps: 发现hexo的<a href="https://hexo.io/zh-cn/docs/tag-plugins.html" rel="external nofollow noopener noreferrer" target="_blank">标签插件</a>还挺好用的，插入图片可以设置图片尺寸。</p>
+</blockquote>
+<h1 id="2019-9-17"><a href="#2019-9-17" class="headerlink" title="2019-9-17"></a>2019-9-17</h1><blockquote>
+<p>将背景图使用了<code>jsdelivr</code>的CDN加速，在此感谢<a href="https://github.com/xlzy520" rel="external nofollow noopener noreferrer" target="_blank">@xlzy520</a>。<br><img src="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20191105105920.jpg" width="500" height="500"></p>
+</blockquote>
+<h1 id="2019-9-17-1"><a href="#2019-9-17-1" class="headerlink" title="2019-9-17"></a>2019-9-17</h1><blockquote>
+<p>昨天云主机挂了，图床也不能用了，目前考虑是否需要将背景图片都迁移至Github上，另外由于Leancloud国内版的诸多限制，已经将数据转存至国际版，除了需要导入导出以及修改配置文件中的appid和key外，基于老版本的next改的还需要修改<code>lean-analytics.swig</code>文件，进行相应修改，原来js版本太老，会出现403。<br><img src="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190917145428.jpg" width="500" height="500"> </p>
+</blockquote>
+<h1 id="2019-9-12"><a href="#2019-9-12" class="headerlink" title="2019-9-12"></a>2019-9-12</h1><blockquote>
+<p>回去少打了几回游戏的时间，还把<a href="https://newdee.gitbook.io/leetcode" rel="external nofollow noopener noreferrer" target="_blank">Leetcode</a>上的Easy刷完了，其实很多Easy也并不Easy，有时间在继续Medium和Hard吧，找不到什么别的可以打发时间的了。<br><img src="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190912112537.jpg" width="500" height="500"> </p>
+</blockquote>
+<h1 id="2019-9-6"><a href="#2019-9-6" class="headerlink" title="2019-9-6"></a>2019-9-6</h1><blockquote>
+<p>在一些文章中发现了一些404图片，原因还是因为Gitee的防盗链，目前已经果断放弃了，移除了所有放在码云上的资源，果然只有Github靠得住～<br><img src="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190906142542.jpg" width="500" height="500"> </p>
+</blockquote>
+<h1 id="2019-9-5"><a href="#2019-9-5" class="headerlink" title="2019-9-5"></a>2019-9-5</h1><blockquote>
+<p>今天尝试了一下Github(暂时不称它为Gayhub了)的Actions功能，类似于Docker CI，写了一个工程，可以及时在github编译运行看到输出，还是挺有用的，不过没有尝试CUDA的代码，按理来说，应该没那么好还给提供GPU的。workflow配置文件编写类似于DockerFile，没有比较难的语法，提供的容器还算比较好用，比起Dockerhub快了不少，不知道是配置好点还是网好点，没仔细深究。<br><img src="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190905171522.jpg" width="500" height="500"> </p>
+</blockquote>
+<h1 id="2019-6-25"><a href="#2019-6-25" class="headerlink" title="2019-6-25"></a>2019-6-25</h1><blockquote>
+<p>这段时间Leancloud域名被封，目前匿名评论无法使用，懒得改临时域名，就先等一段时间吧。<br><img src="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190625093342.jpg" width="500" height="500"> </p>
+</blockquote>
+<h1 id="2019-3-29"><a href="#2019-3-29" class="headerlink" title="2019-3-29"></a>2019-3-29</h1><blockquote>
+<p>996ICU的事都讨论了几天了，网页的红色背景看的眼睛疼，不过Star的人越来越多，今天又有人问，炒起来让郭嘉知道了是不是就可以有转机。可是，一个鼓吹奋斗的年代，寄出去的希望难免会被拒收。<br><img src="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190329170644.jpg" width="500" height="500"> </p>
+</blockquote>
+<h1 id="2019-3-28"><a href="#2019-3-28" class="headerlink" title="2019-3-28"></a>2019-3-28</h1><blockquote>
+<p>早上醒来，小米的浏览器自动把个人博客网页标记为危险网站予以拦截？微信里也提示有不安全内容，想要申诉还要实名。不做坏事也不想把个人信息全交代了，不过还是被恶心到了。昨天还出了个图灵奖三巨头:<br><img src="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190328162855.jpg" width="500" height="500"> </p>
+</blockquote>
+<h1 id="2019-3-27"><a href="#2019-3-27" class="headerlink" title="2019-3-27"></a>2019-3-27</h1><blockquote>
+<p> 对比了下<a href="https://app.netlify.com/" rel="external nofollow noopener noreferrer" target="_blank">Netlify</a>和Github Pages，虽然ping的时间前者较长，但网页加载的速度感觉略有优化，不过现在只是直接从静态网页文件夹推送过去的，没有做任何操作。另外Netlify直接支持HTTPS更容易，检测到Commit之后会自动构建并部署，完全不需要手动操作。Netlify的博客地址<a href="https://newdee.netlify.com/" rel="external nofollow noopener noreferrer" target="_blank">在这</a>，但目前还没打算移过去，等哪天感觉有明显差距了再转吧。<br><img src="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190327114228.jpg" width="500" height="500"> </p>
+</blockquote>
+<h1 id="2019-3-18"><a href="#2019-3-18" class="headerlink" title="2019-3-18"></a>2019-3-18</h1><blockquote>
+<p>发现两个在线的局域网通信工具。一个是<a href="http://lanlan.im" rel="external nofollow noopener noreferrer" target="_blank">lanlan.im</a>，适合用于移动设备、计算机之间发送即时消息，阅后即焚；另一个是<a href="https://snapdrop.net" rel="external nofollow noopener noreferrer" target="_blank">snapdrop</a>，适合用于局域网、计算机之间发送文件。<br><img src="https://fastly.jsdelivr.net/gh/newdee/BlogImage/201903272147.jpg" width="500" height="500"> </p>
+</blockquote>
+<h1 id="2019-3-15"><a href="#2019-3-15" class="headerlink" title="2019-3-15"></a>2019-3-15</h1><blockquote>
+<p>前几天添加了个RevolveMap插件，统计访客地域，不过不知道会用多久，可能感觉太丑了就撤了吧。<br><img src="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325143938.jpeg" width="500" height="500"> </p>
+</blockquote>
+<h1 id="2019-3-11"><a href="#2019-3-11" class="headerlink" title="2019-3-11"></a>2019-3-11</h1><blockquote>
+<p>开年半个月重感冒，之后是半个月残留感冒（可能是没有完全好，经常鼻塞，偶尔头痛）。周六看了一天棋魂，结果头晕眼花了（当然也有可能是一天没吃没喝的原因），既然身体力不行，那就开始锻炼吧。<img class="github-emoji" style="display:inline;vertical-align:bottom;padding:0px;border:0px solid rgba(0, 0, 0, 0);border-bottom:4px solid rgba(221, 221, 221, 0)" title="bsmile" alt="bsmile" src="/emoji/paopao/35.png" height="20" width="20"><br><img src="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325143608.jpeg" width="500" height="500"> </p>
+</blockquote>
+<h1 id="2019-3-6"><a href="#2019-3-6" class="headerlink" title="2019-3-6"></a>2019-3-6</h1><blockquote>
+<p>晚上买完菜回来发现QQ被冻结了，莫名其妙，还要发短信解封，进去后说是系统检测发送垃圾邮件，越来越感觉莫名其妙了。突然想起前几天收到一封空邮件，发信人和收信人都是自己，昨天又收到几个冒充淘宝网的假邮件。可能是邮箱被盗了？完全想不起在哪托管过邮箱。另外删掉了网站里之前放的一些字体文件，结果博客源文件目录直接从50M左右直接变成了六七兆。另外，将一些不必要的文件也从网站移除，打开速度感觉还是有所提升。<br><img src="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325144136.jpeg" width="500" height="500"> </p>
+</blockquote>
+<h1 id="2019-3-2"><a href="#2019-3-2" class="headerlink" title="2019-3-2"></a>2019-3-2</h1><blockquote>
+<p>顺便给原来加的gitalk加了个<code>perPag</code>的参数，控制每页显示数目,毕竟有两个评论系统，单个就显示一半吧。<img class="github-emoji" style="display:inline;vertical-align:bottom;padding:0px;border:0px solid rgba(0, 0, 0, 0);border-bottom:4px solid rgba(221, 221, 221, 0)" title="bsmile" alt="bsmile" src="/emoji/paopao/35.png" height="20" width="20"><br>不过实际访问页面时，在未登录状态可以看到评论，登陆之后出现了<code>Error: Cannot read property &#39;repository&#39; of null</code>错误，发现是<code>perPage</code>传值是<code>string</code>类型，而实际是按整型处理。  </p>
+</blockquote>
+<h1 id="2019-3-1"><a href="#2019-3-1" class="headerlink" title="2019-3-1"></a>2019-3-1</h1><blockquote>
+<p><strong>添加Valine评论系统</strong><br>由于博客基于next5.1.2版本魔改,而next主题在5.1.3之后才开始支持valine评论插件.<br>博客主题的布局,插件以及大部分内容都非原来的next主题,基本上已经是一个新的主题了。无法通过升级next主题直接支持，因此自己加点插件功能支持一下这个评论系统。但主要评论系统依然已gitalk为主，毕竟github在可预见的时间内，基本很难倒闭。<br>1.修改主题目录下的<code>layout/_partials/comments.swig</code>文件，加入一个判断：<br><figure class="highlight django"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="xml"></span><span class="template-tag">&#123;% <span class="name"><span class="name">if</span></span> theme.valine.appid and theme.valine.appkey %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml">          <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"comments"</span> <span class="attr">id</span>=<span class="string">"comments"</span>&gt;</span></span></div><div class="line"><span class="xml">     </span><span class="template-tag">&#123;% <span class="name"><span class="name">endif</span></span> %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml">  <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></div></pre></td></tr></table></figure></p>
+<p>2.修改<code>layout/_third-party/comments/index.swig</code>文件，添加索引：<br><figure class="highlight django"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="xml"></span><span class="template-tag">&#123;% <span class="name"><span class="name">include</span></span> 'valine.swig' %&#125;</span><span class="xml"></span></div></pre></td></tr></table></figure></p>
+<p>3.添加<code>layout/_third-party/comments/valine.swig</code>文件，可参考<a href="https://valine.js.org" rel="external nofollow noopener noreferrer" target="_blank">Valine官网</a>.<br><figure class="highlight django"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="xml"></span><span class="template-tag">&#123;% <span class="name"><span class="name">if</span></span> theme.valine.enable and theme.valine.appid and theme.valine.appkey %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml">  <span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"//cdn1.lncld.net/static/js/3.0.4/av-min.js"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span></div><div class="line"><span class="xml">  <span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"//unpkg.com/valine/dist/Valine.min.js"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span></div><div class="line"><span class="xml">      <span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span><span class="undefined"></span></span></div><div class="line"><span class="xml">        var GUEST = ['nick','mail','link'];</span></div><div class="line"><span class="xml">        var guest = '</span><span class="template-variable">&#123;&#123; theme.valine.guest_info &#125;&#125;</span><span class="xml">';</span></div><div class="line"><span class="xml">        guest = guest.split(',').filter(item=&gt;&#123;</span></div><div class="line"><span class="xml">          return GUEST.indexOf(item)&gt;-1;</span></div><div class="line"><span class="xml">        &#125;);</span></div><div class="line"><span class="xml">        new Valine(&#123;</span></div><div class="line"><span class="xml">            el: '#comments' ,</span></div><div class="line"><span class="xml">            verify: </span><span class="template-variable">&#123;&#123; theme.valine.verify &#125;&#125;</span><span class="xml">,</span></div><div class="line"><span class="xml">            notify: </span><span class="template-variable">&#123;&#123; theme.valine.notify &#125;&#125;</span><span class="xml">,</span></div><div class="line"><span class="xml">            appId: '</span><span class="template-variable">&#123;&#123; theme.valine.appid &#125;&#125;</span><span class="xml">',</span></div><div class="line"><span class="xml">            appKey: '</span><span class="template-variable">&#123;&#123; theme.valine.appkey &#125;&#125;</span><span class="xml">',</span></div><div class="line"><span class="xml">            placeholder: '</span><span class="template-variable">&#123;&#123; theme.valine.placeholder &#125;&#125;</span><span class="xml">',</span></div><div class="line"><span class="xml">            avatar:'</span><span class="template-variable">&#123;&#123; theme.valine.avatar &#125;&#125;</span><span class="xml">',</span></div><div class="line"><span class="xml">            guest_info:guest,</span></div><div class="line"><span class="xml">            pageSize:'</span><span class="template-variable">&#123;&#123; theme.valine.pageSize &#125;&#125;</span><span class="xml">' || 10,</span></div><div class="line"><span class="xml">        &#125;);</span></div><div class="line"><span class="xml">      <span class="tag">&lt;/<span class="name">script</span>&gt;</span></span></div><div class="line"><span class="xml">      </span><span class="template-tag">&#123;% <span class="name"><span class="name">endif</span></span> %&#125;</span><span class="xml"></span></div></pre></td></tr></table></figure></p>
+<p>最后,添加配置至<code>_config</code>文件中:<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="attr">valine:</span></div><div class="line"><span class="attr">     enable:</span> <span class="literal">false</span></div><div class="line"><span class="attr">     appid:</span>  <span class="comment"># your leancloud application appid</span></div><div class="line"><span class="attr">     appkey:</span>  <span class="comment"># your leancloud application appkey</span></div><div class="line"><span class="attr">     notify:</span> <span class="literal">false</span> <span class="comment"># mail notifier , https://github.com/xCss/Valine/wiki</span></div><div class="line"><span class="attr">     verify:</span> <span class="literal">false</span> <span class="comment"># Verification code</span></div><div class="line"><span class="attr">     placeholder:</span> <span class="string">言语是花,也是刀。</span> <span class="comment"># comment input placeholder</span></div><div class="line"><span class="attr">     avatar:</span> <span class="string">mm</span> <span class="comment"># gravatar style</span></div><div class="line"><span class="attr">     guest_info:</span> <span class="string">nick,mail,link</span> <span class="comment"># custom comment header</span></div><div class="line"><span class="attr">     pageSize:</span> <span class="number">10</span> <span class="comment"># pagination size</span></div></pre></td></tr></table></figure></p>
+<p>嗯，随后又添加了一个懒加载按钮，毕竟github还是更稳定。主要是在<code>source/css/_common/components/third-party/</code>下新建一个<code>valine.styl</code>设置按钮样式，然后导入<code>third-party.styl</code>中即可。</p>
+</blockquote>
+<h1 id="2018-11-29"><a href="#2018-11-29" class="headerlink" title="2018-11-29"></a>2018-11-29</h1><blockquote>
+<p>今日份，继续打卡。</p>
+</blockquote>
+<h1 id="2018-11-26"><a href="#2018-11-26" class="headerlink" title="2018-11-26"></a>2018-11-26</h1><blockquote>
+<p>早上煮了八宝粥，晚上买菜，满载而归。<br>顺便尝试了下做鱼，在家庭远程指导下，味道还是很不错～</p>
+</blockquote>
+<h1 id="2018-11-25"><a href="#2018-11-25" class="headerlink" title="2018-11-25"></a>2018-11-25</h1><blockquote>
+<p>卸载了王者荣耀，虽然以前暑假在家的时候到了王者，但还是兴趣渐失，时至今日，看到游戏圈里都还是上分为主，完全没有了多年前初玩LOL时一起开黑的乐趣，只打匹配，不打排位，宿舍五黑时的乐趣。现在游戏赢了互相吹嘘，输则互相甩锅，游戏本身已经成为分裂人际关系的大杀器，毫无乐趣可言。彼时身旁坐着的队友不可能再回来，现在更宁愿将时间消磨在动漫和乐器上，也决定不再回头看了。  </p>
+</blockquote>
+<h1 id="2018-11-24"><a href="#2018-11-24" class="headerlink" title="2018-11-24"></a>2018-11-24</h1><blockquote>
+<p>虽然晚了点，还是祝贺白老板会议成功举办。<br><img src="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325145611.jpeg" width="500" height="500"> </p>
+</blockquote>
+<h1 id="2018-11-22"><a href="#2018-11-22" class="headerlink" title="2018-11-22"></a>2018-11-22</h1><blockquote>
+<p>小雪了，还有感恩节，不过依然没什么特别的感觉，依然要做饭。<br>今天顺便把Gitalk的样式颜色改了下，还是黑白习惯了。</p>
+</blockquote>
+<h1 id="2018-11-21"><a href="#2018-11-21" class="headerlink" title="2018-11-21"></a>2018-11-21</h1><blockquote>
+<p>将托管在Coding的博客迁移至Github，目前主站域名为<a href="https://newdee.cf" rel="external nofollow noopener noreferrer" target="_blank">https://newdee.cf</a>, 原Coding上的博客作备份用，备份域名为<a href="https://gitever.cf" rel="external nofollow noopener noreferrer" target="_blank">https://gitever.cf</a><br>同时，取消了当时妥协了加的“HOSTED ON Coding Pages”，感觉心情舒畅。<br>嗯，一个人也要买菜，一个人也要做菜～</p>
+<p>换了四件套，也换个心情。<br>另外，今天偶然发现了linux下的一个图片处理工具<a href="https://www.imagemagick.org" rel="external nofollow noopener noreferrer" target="_blank">imagemagick</a>用来转换图像压缩图像等等，简直不要太爽。另外还有一个在线压缩工具<a href="https://tinypng.com/" rel="external nofollow noopener noreferrer" target="_blank">tinypng</a>，不过有5M限制。</p>
+</blockquote>
+<h1 id="2018-11-20"><a href="#2018-11-20" class="headerlink" title="2018-11-20"></a>2018-11-20</h1><blockquote>
+<p>68.3,95.5,99.8，这三个数字在失散多年后又给我托梦了，恶魔～</p>
+</blockquote>
+<h1 id="2018-11-19"><a href="#2018-11-19" class="headerlink" title="2018-11-19"></a>2018-11-19</h1><blockquote>
+<p>今天博客访问突然变得好慢啊，检查了下才发现是coding的问题，貌似服务器在被人DDos。当初从Gayhub迁移到coding的主要原因是在国内访问快，现在貌似github也没那么慢了，coding还一直让升级腾讯云，感觉有点想回去了。现在coding相对于github唯一的优点大概是支持SSL证书吧，迁回去估计暂时用不了HTTPS。<br><img src="https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325150210.jpeg" width="500" height="500"> </p>
+</blockquote>
+<h1 id="2018-11-19-1"><a href="#2018-11-19-1" class="headerlink" title="2018-11-19"></a>2018-11-19</h1><blockquote>
+<p>偶然发现了一个适合于Github的SlideShow工具<a href="https://gitpitch.com" rel="external nofollow noopener noreferrer" target="_blank">GitPitch</a>，即使用Markdown渲染幻灯片的。以前用过RevealJS，不过略显麻烦，这个也是基于RevealJS的，不过看起来舒服多了。<br>—- 尽管如此，我还是用了基于RevealJS的<a href="https://github.com/adamzap/landslide" rel="external nofollow noopener noreferrer" target="_blank">LandSlide</a>。<br><img src="https://gitpitch.com/gpimg/gitpitch-magic.jpg" width="500" height="500"> </p>
+</blockquote>
+<h1 id="2018-11-17"><a href="#2018-11-17" class="headerlink" title="2018-11-17"></a>2018-11-17</h1><blockquote>
+<p>顽石失棱，犁车化剑。誓诺星陨，故人心变。飞云曲水，道殊梦异。恩仇难泯，不如偕忘。（半夜不睡，想起些事，突然感慨）</p>
+</blockquote>
+<hr>
+<h1 id="Start-Here-amp-amp-To-Be-Continued…"><a href="#Start-Here-amp-amp-To-Be-Continued…" class="headerlink" title="  Start Here &amp;&amp; To Be Continued…  "></a><strong><em> <strong> Start Here &amp;&amp; To Be Continued… </strong> </em></strong></h1>
+        
+      </div>
+      
+      
+      
+    </div>
+    
+    
+    
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+  
+       
+            <div onclick="ShowValine()" id="valine-display-button">匿名评论</div>
+            <div class="comments" id="comments" style="display:none">
+       
+    </div>
+
+    
+	 <div id="gitalk-container"></div>
+	
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image" src="/images/favo.jpg" alt="dfine">
+          <p class="site-author-name" itemprop="name">dfine</p>
+           
+              <p class="site-description motion-element" itemprop="description">多可喜，亦多可悲</p>
+          
+        </div>
+
+		<!--my custom code begin-->
+		<script src="https://cdnjs.loli.net/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+		<script src="https://cdnjs.loli.net/ajax/libs/velocity/1.5.0/velocity.min.js"></script>
+		<script type="text/javascript">
+		  $("#sidebar").hover(function(){
+			$("#mydivshow").velocity('stop').velocity({opacity: 1});
+		  },function(){
+			$("#mydivshow").velocity('stop').velocity({opacity: 0});
+		  });
+		</script>
+		<div id="mydivshow" class="mydivshow">
+		<!--my custom code end-->
+
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/">
+                <span class="site-state-item-count">82</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/categories/index.html">
+                <span class="site-state-item-count">15</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">111</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://newdee.gitbook.io/leetcode/" target="_blank" title="Leetcode" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-code"></i>
+                  
+                    
+                      Leetcode
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/newdee" target="_blank" title="GayHub" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                    
+                      GayHub
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://t.me/roomrss" target="_blank" title="TelegramRss" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-telegram"></i>
+                  
+                    
+                      TelegramRss
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/stebest?refer_flag=1001030101_&is_all=1" target="_blank" title="Weibo" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                    
+                      Weibo
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="mailto:stebest1992@gmail.com" target="_blank" title="E-Mail" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-at"></i>
+                  
+                    
+                      E-Mail
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://gitter.im/Newdee/newdee" target="_blank" title="Gitter" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-comments"></i>
+                  
+                    
+                      Gitter
+                    
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        <script>
+
+try{
+ if(window.console&&window.console.log)
+  {
+    console.log("%c控制台这么好玩嘛","background-color:rgba(255,255,255,0.1);font-size:1.5em");
+     console.log("%c ","padding:200px 260px;background:url('https://i.loli.net/2020/04/27/GrdC34HINPowfXE.gif')");
+     console.info("%c互链请邮  --支持ACG及Coding","background-color:rgba(255,255,255,0.5);font-size:1.3em");
+}  }
+catch(e){
+};
+</script>
+
+<div id="player1" class="aplayer"></div>
+<script src="/js/src/APlayer.min.js"></script>
+<script type="text/javascript">
+var ap = new APlayer({
+    element: document.getElementById('player1'),                       // Optional, player element
+    narrow: false,                                                     // Optional, narrow style
+    autoplay: false,                                                    // Optional, autoplay song(s), not supported by mobile browsers
+    showlrc: 3,                                                        // Optional, show lrc, can be 0, 1, 2, see: ###With lrc
+    mutex: true,                                                       // Optional, pause other players when this player playing
+    theme: '#e6d0b2',                                                  // Optional, theme color, default: #b7daff
+    mode: 'random',                                                    // Optional, play mode, can be `random` `single` `circulation`(loop) `order`(no loop), default: `circulation`
+    preload: 'metadata',                                               // Optional, the way to load music, can be 'none' 'metadata' 'auto', default: 'auto'
+    listmaxheight: '513px',                                             // Optional, max height of play list
+	music: [
+    {
+        title: '空空如也',
+        author: '任然',
+        url: 'https://files.catbox.moe/g27m5f.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162023.jpeg',
+		lrc: 'https://dfine.tech/lrc/kongkongruye'
+    },
+    {
+        title: '美しきもの',
+        author: 'Sound Horizon',
+        url: 'https://files.catbox.moe/1oevtg.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162103.jpeg',
+		lrc: 'https://dfine.tech/lrc/SoundHorizon'
+    },
+
+    {
+        title: '天国うまれ',
+        author: '甲本ヒロト',
+        url: 'https://files.catbox.moe/epooev.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162141.jpeg',
+	lrc: 'https://dfine.tech/lrc/tianguo'
+    },
+    {
+        title: '心做し',
+        author: 'luz',
+        url: 'https://files.catbox.moe/7j58ss.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162141.jpeg',
+		lrc: 'https://dfine.tech/lrc/xin'
+    },
+    {
+        title: 'Lemon',
+        author: '米津玄师',
+        url: 'https://files.catbox.moe/6ppo2h.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162427.jpeg',
+		lrc: 'https://dfine.tech/lrc/lemon'
+    },
+    {
+        title: 'You',
+        author: '雪野五月',
+        url: 'https://files.catbox.moe/1ovgtt.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325161925.jpeg',
+		lrc: 'https://dfine.tech/lrc/you'
+    },
+    {
+        title: '钟无艳',
+        author: '谢安琪',
+        url: 'https://files.catbox.moe/55sxbh.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162505.jpeg',
+		lrc: 'https://dfine.tech/lrc/zhongwuyan'
+    },
+
+    {
+        title: '殿书',
+        author: '奇然',
+        url: 'https://files.catbox.moe/e9n6sz.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162601.jpeg',
+		lrc: 'https://dfine.tech/lrc/dianshu'
+    },
+    {
+        title: 'East of Eden',
+        author: 'Zella Day',
+        url: 'https://files.catbox.moe/qoanq2.mp3',
+        pic: 'https://p1.music.126.net/orDs-AZ0jJjB06uoP0pdMw==/6667438510952720.jpg',
+		lrc: 'https://dfine.tech/lrc/eastEden'
+    },
+    {
+        title: '茁',
+        author: '谭烧',
+        url: 'https://files.catbox.moe/5lepv3.mp3',
+        pic: 'https://p1.music.126.net/xphtETT9CVE-IjRzGx20YA==/7969260279094350.jpg',
+		lrc: 'https://dfine.tech/lrc/zhuo'
+    },
+    {
+        title: '僕が死のうと思ったのは',
+        author: '中岛美嘉',
+        url: 'https://files.catbox.moe/umshce.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162629.jpeg',
+		lrc: 'https://dfine.tech/lrc/yiliaobailiao'
+    },
+    {
+        title: 'PLANET',
+        author: 'ラムジ',
+        url: 'https://files.catbox.moe/6ioooc.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162655.jpeg',
+		lrc: 'https://dfine.tech/lrc/planet'
+    },
+]
+
+
+});
+ $('.aplayer-icon-menu')[0].click();   //initial height
+	$('.aplayer-icon.aplayer-icon-mode').css('display','inline-block');
+  var myflag=true;
+	$('.aplayer-list').css('height','180px');
+	$('.aplayer-icon-menu svg').click(function(){
+    var temp=$('#player1').css('height');
+		if(temp=='250px' && !myflag){
+      $('#mydivshow').velocity('stop').velocity({height: 250});
+			$('#player1').velocity('stop').velocity({height: 66});
+    }
+		else if(temp=='66px' && myflag){
+      $('#mydivshow').velocity('stop').velocity({height: 420});
+			$('#player1').velocity('stop').velocity({height: 250});
+    }
+    myflag=!myflag;
+	});
+
+
+
+</script>
+
+<script type="text/javascript" src="//ra.revolvermaps.com/0/0/8.js?i=0qun3l8xnmd&amp;m=7&amp;c=ff0000&amp;cr1=ffffff&amp;f=arial&amp;l=33" async="async"></script>
+
+
+		<!--my custom code begin-->
+		</div>
+		<!--my custom code end-->
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Until-Now…"><span class="nav-number">1.</span> <span class="nav-text">Until Now…</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2021-10-19"><span class="nav-number">2.</span> <span class="nav-text">2021-10-19</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2021-3-25"><span class="nav-number">3.</span> <span class="nav-text">2021-3-25</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2020-8-1"><span class="nav-number">4.</span> <span class="nav-text">2020-8-1</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2020-4-30"><span class="nav-number">5.</span> <span class="nav-text">2020-4-30</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2020-4-26"><span class="nav-number">6.</span> <span class="nav-text">2020-4-26</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2020-2-15"><span class="nav-number">7.</span> <span class="nav-text">2020-2-15</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2020-2-14"><span class="nav-number">8.</span> <span class="nav-text">2020-2-14</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2020-2-11"><span class="nav-number">9.</span> <span class="nav-text">2020-2-11</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2020-2-10"><span class="nav-number">10.</span> <span class="nav-text">2020-2-10</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2020-2-2"><span class="nav-number">11.</span> <span class="nav-text">2020-2-2</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2020-1-31"><span class="nav-number">12.</span> <span class="nav-text">2020-1-31</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2020-1-25"><span class="nav-number">13.</span> <span class="nav-text">2020-1-25</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2020-1-9"><span class="nav-number">14.</span> <span class="nav-text">2020-1-9</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2020-1-1"><span class="nav-number">15.</span> <span class="nav-text">2020-1-1</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2019-9-17"><span class="nav-number">16.</span> <span class="nav-text">2019-9-17</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2019-9-17-1"><span class="nav-number">17.</span> <span class="nav-text">2019-9-17</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2019-9-12"><span class="nav-number">18.</span> <span class="nav-text">2019-9-12</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2019-9-6"><span class="nav-number">19.</span> <span class="nav-text">2019-9-6</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2019-9-5"><span class="nav-number">20.</span> <span class="nav-text">2019-9-5</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2019-6-25"><span class="nav-number">21.</span> <span class="nav-text">2019-6-25</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2019-3-29"><span class="nav-number">22.</span> <span class="nav-text">2019-3-29</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2019-3-28"><span class="nav-number">23.</span> <span class="nav-text">2019-3-28</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2019-3-27"><span class="nav-number">24.</span> <span class="nav-text">2019-3-27</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2019-3-18"><span class="nav-number">25.</span> <span class="nav-text">2019-3-18</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2019-3-15"><span class="nav-number">26.</span> <span class="nav-text">2019-3-15</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2019-3-11"><span class="nav-number">27.</span> <span class="nav-text">2019-3-11</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2019-3-6"><span class="nav-number">28.</span> <span class="nav-text">2019-3-6</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2019-3-2"><span class="nav-number">29.</span> <span class="nav-text">2019-3-2</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2019-3-1"><span class="nav-number">30.</span> <span class="nav-text">2019-3-1</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2018-11-29"><span class="nav-number">31.</span> <span class="nav-text">2018-11-29</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2018-11-26"><span class="nav-number">32.</span> <span class="nav-text">2018-11-26</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2018-11-25"><span class="nav-number">33.</span> <span class="nav-text">2018-11-25</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2018-11-24"><span class="nav-number">34.</span> <span class="nav-text">2018-11-24</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2018-11-22"><span class="nav-number">35.</span> <span class="nav-text">2018-11-22</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2018-11-21"><span class="nav-number">36.</span> <span class="nav-text">2018-11-21</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2018-11-20"><span class="nav-number">37.</span> <span class="nav-text">2018-11-20</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2018-11-19"><span class="nav-number">38.</span> <span class="nav-text">2018-11-19</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2018-11-19-1"><span class="nav-number">39.</span> <span class="nav-text">2018-11-19</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2018-11-17"><span class="nav-number">40.</span> <span class="nav-text">2018-11-17</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Start-Here-amp-amp-To-Be-Continued…"><span class="nav-number">41.</span> <span class="nav-text">  Start Here && To Be Continued…  </span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </div></main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">
+  
+  &copy;  1992 - 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-superpowers"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder"><a href="https://dfine.tech">dfine</a></span>
+	
+
+</div>
+
+<!--
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+-->
+
+        
+<div class="busuanzi-count">
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user">This site's UV:</i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye">This site's PV:</i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="https://ajax.loli.net/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/fastclick/1.0.6/fastclick.min.js"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/velocity/1.5.0/velocity.min.js"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/velocity/1.5.0/velocity.ui.min.js"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/fancybox/3.1.25/jquery.fancybox.min.js"></script>
+
+  
+  <script type="text/javascript" src="/lib/three/three.min.js"></script>
+
+  
+  <script type="text/javascript" src="/lib/three/canvas_lines.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+  
+    <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+  
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+   <link rel="stylesheet" href="https://dfine.tech/css/gitalk.css"> 
+ 
+  
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+   <script type="text/javascript">
+		var gitalk = new Gitalk({
+		  clientID: '4a39596c869e2498ea2c',
+		  clientSecret: '09f723a7aae19b9cd7767036df092d299793bd7a',
+		  repo: 'BlogComments',
+		  owner: 'newdee',
+		  admin: ['newdee'], 
+		  id: window.location.pathname,
+		  perPage: parseInt('5'),
+		  distractionFreeMode: 'false'
+		})
+
+		gitalk.render('gitalk-container')           
+       </script>
+	
+
+
+
+
+
+  <script src="//fastly.jsdelivr.net/npm/valine@1.4.16/dist/Valine.min.js"></script>
+    
+      <script type="text/javascript">
+        var GUEST = ['nick','mail','link'];
+        var guest = 'nick,mail,link';
+        guest = guest.split(',').filter(item=>{
+          return GUEST.indexOf(item)>-1;
+        });
+        function ShowValine(){
+            button=document.getElementById("valine-display-button");
+            vstate=document.getElementsByClassName("comments v")[0];
+            gstate=document.getElementById("gitalk-container");
+            if(vstate.style.display == "none" ){
+            button.innerHTML="Git评论";
+            vstate.style.display = "block";
+            gstate.style.display = "none";
+            }
+            else{
+            button.innerHTML="匿名评论";
+            gstate.style.display = "block";
+            vstate.style.display = "none";}
+        }
+        new Valine({
+            el: '#comments' ,
+            verify: false,
+            notify: false,
+            appId: 'HfI6KhJtyoYJVElqovLTdyIe-MdYXbMMI',
+            appKey: 'SgCg3S2tCDaEkxunnlBATRCk',
+            serverURLs: 'https://hfi6khjt.api.lncldglobal.com',
+            placeholder: '言语是花，也是刀。',
+            avatar:'mm',
+            guest_info:guest,
+            pageSize:'5' || 10,
+        });
+      </script>
+      
+
+
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+  
+  <script>
+    
+    function showTime(Counter) {
+      var entries = [];
+      var $visitors = $('.leancloud_visitors');
+
+      $visitors.each(function() {
+        entries.push( $(this).attr('id').trim() );
+      });
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url: { '$in': entries } }) })
+        .done(function({ results }) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.url;
+            var time = item.time;
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for (var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if (countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function ({ responseJSON }) {
+          console.log('LeanCloud Counter Error: ' + responseJSON.code + ' ' + responseJSON.error);
+        });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + 'HfI6KhJtyoYJVElqovLTdyIe-MdYXbMMI')
+        .done(function({ api_server }) {
+          var Counter = function(method, url, data) {
+            return $.ajax({
+              method: method,
+              url: 'https://' + api_server + '/1.1' + url,
+              headers: {
+                'X-LC-Id': 'HfI6KhJtyoYJVElqovLTdyIe-MdYXbMMI',
+                'X-LC-Key': 'SgCg3S2tCDaEkxunnlBATRCk',
+                'Content-Type': 'application/json',
+              },
+              data: data
+            });
+          };
+          
+            if ($('.post-title-link').length >= 1) {
+              showTime(Counter);
+            }
+          
+        });
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdnjs.loli.net/ajax/libs/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+  <script src="/js/src/Aplayer-Controler.min.js"></script>
+<div id="AP-controler"></div>
+<script type="text/javascript">
+var myapc=new APlayer_Controler({
+		APC_dom:$('#AP-controler'),
+		aplayer:ap,
+		attach_right:true,
+		position:{top:'150px',bottom:''},
+		fixed:true,
+		btn_width:100,
+		btn_height:120,
+		img_src:['https://fastly.jsdelivr.net/gh/newdee/BlogImage/20191105112417.gif', 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20191105112526.gif'],
+
+		tips_content:{
+			  on_loading:{top:'LOADING',bottom:'LIFE IS SO HARD'},
+			  on_welcome:{top:'LOADED',bottom:'NOT TOO BAD'},
+			  on_timeout:{top:'PLAYER ARE IN MARS',bottom:'TIME GOES STUPID'},
+			  on_error:{top:'PLAYER BROKEN',bottom:'NOTHING IS IMPORTANT IN LIFE'},
+			  on_listend:{top:'BOTTOM SAYS NO SONG',bottom:'TO DANCE'},
+			  on_nohistory:{top:'NO HISTORY',bottom:'YOU WILL CREATE THE HISTORY'},
+			  on_historyend:{top:'NO MORE',bottom:'HISTORY IS NOT IMPORTANT'}
+			},
+		img_style:{repeat:'no-repeat',position:'center',size:'contain'},
+		ctrls_color:'rgba(86,223,177,0.7)',
+		ctrls_hover_color:'rgba(255,140,0,0.7)',
+		tips_on:true,
+		tips_width:140,
+		tips_height:25,
+		tips_color:'rgba(255,255,255,0.8)',
+	  timeout:30,
+	  showOnPhone:false,
+	  songrecord_log:false
+	});
+</script>
+
+
+  <script type="text/javascript" src="/js/src/mouse.js"></script>
+
+
+<!--崩溃欺骗
+<script type="text/javascript" src="/js/src/broken.js"></script>
+-->
+</body>
+</html>
+
+<script type="text/javascript" src="/js/src/randbg.js"></script>
+<script src="https://fastly.jsdelivr.net/gh/newdee/live2d-widget@latest/autoload.js"></script>

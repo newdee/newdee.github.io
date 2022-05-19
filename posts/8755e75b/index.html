@@ -1,0 +1,1636 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next mist" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+  <link rel="stylesheet" media="all" href="/lib/Han/dist/han.min.css?v=3.3">
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+  <link href="https://cdnjs.loli.net/ajax/libs/fancybox/3.1.25/jquery.fancybox.min.css" rel="stylesheet" type="text/css">
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.loli.net/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+  
+
+<link href="https://cdnjs.loli.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="Linux,GStreamer,TX1,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="阁子" type="application/atom+xml">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2">
+
+
+
+
+
+
+<meta name="description" content="笔记主要参照GStreamer官方tutorial，之前的一篇文章里最后一个例子写的是一个通过uri自动建立Pipeline的代码。这里主要内容是关于实例化每个元素并连接起来来手动建立Pipeline。">
+<meta name="keywords" content="Linux,GStreamer,TX1">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GStreamer笔记一: GStreamer Concepts">
+<meta property="og:url" content="http://dfine.tech/posts/8755e75b/index.html">
+<meta property="og:site_name" content="阁子">
+<meta property="og:description" content="笔记主要参照GStreamer官方tutorial，之前的一篇文章里最后一个例子写的是一个通过uri自动建立Pipeline的代码。这里主要内容是关于实例化每个元素并连接起来来手动建立Pipeline。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://raw.githubusercontent.com/newdee/BlogImage/master/20190906111933.png">
+<meta property="og:updated_time" content="2022-05-19T04:23:59.331Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="GStreamer笔记一: GStreamer Concepts">
+<meta name="twitter:description" content="笔记主要参照GStreamer官方tutorial，之前的一篇文章里最后一个例子写的是一个通过uri自动建立Pipeline的代码。这里主要内容是关于实例化每个元素并连接起来来手动建立Pipeline。">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/newdee/BlogImage/master/20190906111933.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: false,
+    duoshuo: {
+      userId: '0',
+      author: '鄙人'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    emojis: {
+      className: 'github-emoji'
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://dfine.tech/posts/8755e75b/">
+
+
+
+
+
+  <title>GStreamer笔记一: GStreamer Concepts | 阁子</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-83650950-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//tajs.qq.com/stats?sId=58292227";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">阁子</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">dfine's Blog</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-talks">
+          <a href="/talks/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-comment"></i> <br>
+            
+            闲言
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-map"></i> <br>
+            
+            友人目
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/About/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://dfine.tech/posts/8755e75b/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="dfine">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/favo.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="阁子">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">GStreamer笔记一: GStreamer Concepts</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-01T10:30:34+08:00">
+                2017-12-01
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/TX1入坑/" itemprop="url" rel="index">
+                    <span itemprop="name">TX1入坑</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+          
+          
+             <span id="/posts/8755e75b/" class="leancloud_visitors" data-flag-title="GStreamer笔记一: GStreamer Concepts">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body han-init-context" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>笔记主要参照GStreamer官方tutorial，之前的一篇<a href="/posts/413bb42a/">文章</a>里最后一个例子写的是一个通过uri自动建立Pipeline的代码。这里主要内容是关于实例化每个元素并连接起来来手动建立Pipeline。<br><a id="more"></a></p>
+<h3 id="手动建立Pipeline"><a href="#手动建立Pipeline" class="headerlink" title="手动建立Pipeline"></a>手动建立Pipeline</h3><p>基本代码如下:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;gst/gst.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span> </span>&#123;</div><div class="line">  GstElement *pipeline, *source, *sink;</div><div class="line">  GstBus *bus;</div><div class="line">  GstMessage *msg;</div><div class="line">  GstStateChangeReturn ret;</div><div class="line"></div><div class="line">  <span class="comment">/* Initialize GStreamer */</span></div><div class="line">  gst_init (&amp;argc, &amp;argv);</div><div class="line"></div><div class="line">  <span class="comment">/* Create the elements */</span></div><div class="line">  source = gst_element_factory_make (<span class="string">"videotestsrc"</span>, <span class="string">"source"</span>);</div><div class="line">  sink = gst_element_factory_make (<span class="string">"autovideosink"</span>, <span class="string">"sink"</span>);</div><div class="line"></div><div class="line">  <span class="comment">/* Create the empty pipeline */</span></div><div class="line">  pipeline = gst_pipeline_new (<span class="string">"test-pipeline"</span>);</div><div class="line"></div><div class="line">  <span class="keyword">if</span> (!pipeline || !source || !sink) &#123;</div><div class="line">    g_printerr (<span class="string">"Not all elements could be created.\n"</span>);</div><div class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="comment">/* Build the pipeline */</span></div><div class="line">  gst_bin_add_many (GST_BIN (pipeline), source, sink, <span class="literal">NULL</span>);</div><div class="line">  <span class="keyword">if</span> (gst_element_link (source, sink) != TRUE) &#123;</div><div class="line">    g_printerr (<span class="string">"Elements could not be linked.\n"</span>);</div><div class="line">    gst_object_unref (pipeline);</div><div class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="comment">/* Modify the source's properties */</span></div><div class="line">  g_object_set (source, <span class="string">"pattern"</span>, <span class="number">0</span>, <span class="literal">NULL</span>);</div><div class="line"></div><div class="line">  <span class="comment">/* Start playing */</span></div><div class="line">  ret = gst_element_set_state (pipeline, GST_STATE_PLAYING);</div><div class="line">  <span class="keyword">if</span> (ret == GST_STATE_CHANGE_FAILURE) &#123;</div><div class="line">    g_printerr (<span class="string">"Unable to set the pipeline to the playing state.\n"</span>);</div><div class="line">    gst_object_unref (pipeline);</div><div class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="comment">/* Wait until error or EOS */</span></div><div class="line">  bus = gst_element_get_bus (pipeline);</div><div class="line">  msg = gst_bus_timed_pop_filtered (bus, GST_CLOCK_TIME_NONE, GST_MESSAGE_ERROR | GST_MESSAGE_EOS);</div><div class="line"></div><div class="line">  <span class="comment">/* Parse message */</span></div><div class="line">  <span class="keyword">if</span> (msg != <span class="literal">NULL</span>) &#123;</div><div class="line">    GError *err;</div><div class="line">    gchar *debug_info;</div><div class="line"></div><div class="line">    <span class="keyword">switch</span> (GST_MESSAGE_TYPE (msg)) &#123;</div><div class="line">      <span class="keyword">case</span> GST_MESSAGE_ERROR:</div><div class="line">        gst_message_parse_error (msg, &amp;err, &amp;debug_info);</div><div class="line">        g_printerr (<span class="string">"Error received from element %s: %s\n"</span>, GST_OBJECT_NAME (msg-&gt;src), err-&gt;message);</div><div class="line">        g_printerr (<span class="string">"Debugging information: %s\n"</span>, debug_info ? debug_info : <span class="string">"none"</span>);</div><div class="line">        g_clear_error (&amp;err);</div><div class="line">        g_free (debug_info);</div><div class="line">        <span class="keyword">break</span>;</div><div class="line">      <span class="keyword">case</span> GST_MESSAGE_EOS:</div><div class="line">        g_print (<span class="string">"End-Of-Stream reached.\n"</span>);</div><div class="line">        <span class="keyword">break</span>;</div><div class="line">      <span class="keyword">default</span>:</div><div class="line">        <span class="comment">/* We should not reach here because we only asked for ERRORs and EOS */</span></div><div class="line">        g_printerr (<span class="string">"Unexpected message received.\n"</span>);</div><div class="line">        <span class="keyword">break</span>;</div><div class="line">    &#125;</div><div class="line">    gst_message_unref (msg);</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="comment">/* Free resources */</span></div><div class="line">  gst_object_unref (bus);</div><div class="line">  gst_element_set_state (pipeline, GST_STATE_NULL);</div><div class="line">  gst_object_unref (pipeline);</div><div class="line">  <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>编译时候可以通过pkg-config命令查询所需要的头文件和库文件，关于pkg的方法前面已有叙述，地址<a href="/posts/aad6181/">在此</a>。</p>
+<h3 id="代码分析"><a href="#代码分析" class="headerlink" title="代码分析"></a>代码分析</h3><p>其基本流程图如下:  </p>
+<p><center><br><img src="https://raw.githubusercontent.com/newdee/BlogImage/master/20190906111933.png" alt=""><br></center></p>
+<h4 id="创建元素"><a href="#创建元素" class="headerlink" title="创建元素"></a>创建元素</h4><p>在初始化GStreamer后，首先需要创建元素，如上所示代码中的:  </p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">/* Create the elements */</div><div class="line">source = gst_element_factory_make (<span class="string">"videotestsrc"</span>, <span class="string">"source"</span>);</div><div class="line">sink = gst_element_factory_make (<span class="string">"autovideosink"</span>, <span class="string">"sink"</span>);</div></pre></td></tr></table></figure>
+<p>使用<code>gst_element_factory_make</code>函数创建，该函数第一个参数是需要创建的元素类型，第二个参数是给这个元素实例的名称，如果为空，GStreamer会自动生成一个特有的名称。<br>此处创建了两个元素:<code>videotestsrc</code>和<code>autovideosink</code>。其中，<br><code>videotestsrc</code>属于source元素，通常用来产生或提供数据，经常用来创建一个测试用的模型。该元素在debug模式下或者教程中用得较多，实际应用中鲜有所闻。<br><code>autovideosink</code>属于sink元素，用于接受或者消费数据，将其接收到的图像展示在窗口中等。程序可以有多个video sink，这通常取决于操作系统。<code>autovideosink</code>会自动选择并实例化最好的一个，所以不用担心实现细节，代码对于平台是比较独立的。</p>
+<h4 id="创建管道"><a href="#创建管道" class="headerlink" title="创建管道"></a>创建管道</h4><p>创建了Element后则需要创建Pipeline，如上所示代码中的:  </p>
+<figure class="highlight haxe"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/* Create the empty pipeline */</span></div><div class="line">pipeline = gst_pipeline_new <span class="type"></span>(<span class="string">"test-pipeline"</span>);</div></pre></td></tr></table></figure>
+<p>所有元素在使用前必须包含进一个Pipeline，因为需要关心其时钟和Message功能。通常使用<code>gst_pipeline_new</code>创建管道。  </p>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/* Build the pipeline */</span></div><div class="line">gst_bin_add_many (GST_BIN (pipeline), <span class="keyword">source</span>, sink, <span class="keyword">NULL</span>);</div><div class="line"><span class="keyword">if</span> (gst_element_link (<span class="keyword">source</span>, sink) != <span class="keyword">TRUE</span>) &#123;</div><div class="line">  g_printerr (<span class="string">"Elements could not be linked.\n"</span>);</div><div class="line">  gst_object_unref (pipeline);</div><div class="line">  <span class="keyword">return</span> -<span class="number">1</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>Pipeline也是一种bin，一种特殊的bin，是一种包含了其他元素的元素。因此所有对bin适用的方法对Pipeline也同样适用。这里通过<code>gst_bin_add_many</code>函数添加多个元素到Pipeline，该函数接受多个元素，并添加到Pipeline中，以NULL结束。单个元素添加可使用<code>gst_bin_add</code>函数。<br>然后就需要将这些元素连接起来，因为虽然添加进了管道，但只是说明了管道中元素的位置，并没有将各个元素连接起来，数据无法流动。这里通过<code>gst_element_link</code>将各个元素连接起来，该函数第一个参数是源元素，第二个参数是链接的目标元素，连接必须遵照数据流动方向建立。<br>只有在同一个bin中的元素才能连接在一起，所以在连接之前必须先将其添加进Pipeline中。  </p>
+<h4 id="属性操作"><a href="#属性操作" class="headerlink" title="属性操作"></a>属性操作</h4><p>如上代码中修改source的属性中的一段:<br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/* Modify the source's properties */</span></div><div class="line">g_object_set (<span class="keyword">source</span>, <span class="string">"pattern"</span>, <span class="number">0</span>, <span class="keyword">NULL</span>);</div></pre></td></tr></table></figure></p>
+<p>该行代码改变了<code>videotestsrc</code>元素的pattern属性，控制了测试视频元素的输出类型。<br>绝大多数GStreamer元素都可以自定义其属性:可以通过修改名称属性来改变元素行为(可写属性)，或者通过查询来获取元素内部状态(可读属性)。<br>通常使用<code>g_object_get</code>函数获取属性，通过<code>g_objece_set</code>函数设置属性。<br><code>g_object_set</code>函数接受一个以<code>NULL</code>结尾的属性名-属性值列表，所以可以一次性改变元素的属性。<br>Gstreamer元素都是一种特殊的GObject(GLib对象系统，提供属性设备的实例)，所以属性处理方法都有一个带<code>g_</code>的前缀。<br>所有元素的可用属性名和属性值可以通过gst-inspect工具获取。  </p>
+<h4 id="错误检测"><a href="#错误检测" class="headerlink" title="错误检测"></a>错误检测</h4><p>剩余代码则是进行错误检测以增加程序的鲁棒性。如:<br><figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/* Start playing */</span></div><div class="line">ret = gst_element_set_state (pipeline, GST_STATE_PLAYING)<span class="comment">;</span></div><div class="line">if (ret == GST_STATE_CHANGE_FAILURE) &#123;</div><div class="line">  g_printerr (<span class="string">"Unable to set the pipeline to the playing state.\n"</span>)<span class="comment">;</span></div><div class="line">  gst_object_unref (pipeline)<span class="comment">;</span></div><div class="line">  return -<span class="number">1</span><span class="comment">;</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>在播放时候通过<code>gst_element_set_state</code>函数返回值来检测错误。<br>再如:<br><figure class="highlight hsp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/* Wait until error or EOS */</span></div><div class="line">bus = gst_element_get_bus (pipeline)<span class="comment">;</span></div><div class="line">msg = gst_bus_timed_pop_filtered (bus, GST_CLOCK_TIME_NONE, GST_MESSAGE_ERROR | GST_MESSAGE_EOS)<span class="comment">;</span></div><div class="line"></div><div class="line"><span class="comment">/* Parse message */</span></div><div class="line"><span class="keyword">if</span> (msg != NULL) &#123;</div><div class="line">  GError *<span class="keyword">err</span><span class="comment">;</span></div><div class="line">  gchar *debug_info<span class="comment">;</span></div><div class="line"></div><div class="line">  <span class="keyword">switch</span> (GST_MESSAGE_TYPE (msg)) &#123;</div><div class="line">    <span class="keyword">case</span> GST_MESSAGE_ERROR:</div><div class="line">      gst_message_parse_error (msg, &amp;<span class="keyword">err</span>, &amp;debug_info)<span class="comment">;</span></div><div class="line">      g_printerr (<span class="string">"Error received from element %s: %s\n"</span>, GST_OBJECT_NAME (msg-&gt;src), <span class="keyword">err</span>-&gt;message)<span class="comment">;</span></div><div class="line">      g_printerr (<span class="string">"Debugging information: %s\n"</span>, debug_info ? debug_info : <span class="string">"none"</span>)<span class="comment">;</span></div><div class="line">      g_clear_error (&amp;<span class="keyword">err</span>)<span class="comment">;</span></div><div class="line">      g_free (debug_info)<span class="comment">;</span></div><div class="line">      <span class="keyword">break</span><span class="comment">;</span></div><div class="line">    <span class="keyword">case</span> GST_MESSAGE_EOS:</div><div class="line">      g_print (<span class="string">"End-Of-Stream reached.\n"</span>)<span class="comment">;</span></div><div class="line">      <span class="keyword">break</span><span class="comment">;</span></div><div class="line">    <span class="keyword">default</span>:</div><div class="line">      <span class="comment">/* We should not reach here because we only asked for ERRORs and EOS */</span></div><div class="line">      g_printerr (<span class="string">"Unexpected message received.\n"</span>)<span class="comment">;</span></div><div class="line">      <span class="keyword">break</span><span class="comment">;</span></div><div class="line">  &#125;</div><div class="line">  gst_message_unref (msg)<span class="comment">;</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>其中，<code>gst_bus_timed_pop_filtered</code>函数等待执行结束并返回一个GstMessage。此处该函数在遇到错误或者到EOS状态时会返回，所以需要检测是什么原因导致函数返回的，因此通过下面的if语句对msg进行判断。<br>GstMessage是一个非常通用的结构，可以提供几乎任何类型的信息。而且，GStreamer为每种消息提供了一系列的解析函数。<br>通过使用宏定义函数<code>GST_MESSAGE_TYPE</code>可以知道Message包含的错误，然后通过<code>gst_message_parse_error</code>函数返回一个GLib Error的error结构体和一个字符串用于调试。  </p>
+<h4 id="GStreamer总线"><a href="#GStreamer总线" class="headerlink" title="GStreamer总线"></a>GStreamer总线</h4><p>GStreamer总线(bus)是一个简单的系统，负责将由元素生成的GstMessages传递给应用程序的对象，以及应用程序线程。实际的媒体流是在另一个线程中完成的，而不是应用程序。<br>Message可以通过<code>gst_bus_timed_pop_filtered()</code>函数和其兄弟姐妹同步获取，也可以通过signal异步获取。应用程序应该始终关注总线，去获取错误以及其他回放相关的问题。  </p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        
+
+      </div>
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    dfine
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://dfine.tech/posts/8755e75b/" title="GStreamer笔记一: GStreamer Concepts">http://dfine.tech/posts/8755e75b/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow noopener noreferrer" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag"><i class="fa fa-leaf" aria-hidden="true"></i>
+Linux</a>
+          
+            <a href="/tags/GStreamer/" rel="tag"><i class="fa fa-leaf" aria-hidden="true"></i>
+GStreamer</a>
+          
+            <a href="/tags/TX1/" rel="tag"><i class="fa fa-leaf" aria-hidden="true"></i>
+TX1</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/aad6181/" rel="next" title="查询工具pkg-config">
+                <i class="fa fa-chevron-left"></i> 查询工具pkg-config
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/24b1a5e1/" rel="prev" title="GStreamer笔记二: Dynamic Pipeline">
+                GStreamer笔记二: Dynamic Pipeline <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+		<script src="/js/src/yiyan.js"></script>
+<div>   
+    <font size="4" face="Heiti" color="gray" class="hitokoto"></font>
+</div>
+<!--MOB SHARE BEGIN-->
+<div class="-mob-share-ui-button -mob-share-open">分享</div>
+<div class="-mob-share-ui" -mob-share-ui-theme="" -mob-share-ui-theme-slide-bottom="" style="display: none">
+    <ul class="-mob-share-list">
+        <li class="-mob-share-weixin"><p>微信</p></li>
+        <li class="-mob-share-qzone"><p>QQ空间</p></li>
+        <li class="-mob-share-weibo"><p>新浪微博</p></li>
+        <li class="-mob-share-facebook"><p>Facebook</p></li>
+        <li class="-mob-share-twitter"><p>Twitter</p></li>
+        <li class="-mob-share-pocket"><p>Pocket</p></li>
+        <li class="-mob-share-tumblr"><p>Tumblr</p></li>
+        <li class="-mob-share-google"><p>Google+</p></li>
+        <li class="-mob-share-linkedin"><p>Linkedin</p></li>
+        <li class="-mob-share-qq"><p>QQ好友</p></li>
+        <li class="-mob-share-tencentweibo"><p>腾讯微博</p></li>
+        <li class="-mob-share-renren"><p>人人网</p></li>
+        <li class="-mob-share-douban"><p>豆瓣</p></li>
+        <li class="-mob-share-youdao"><p>有道云笔记</p></li>
+        <li class="-mob-share-instapaper"><p>Instapaper</p></li>
+    </ul>
+    <div class="-mob-share-close">取消</div>
+</div>
+<div class="-mob-share-ui-bg"></div>
+<script id="-mob-share" src="https://f1.webshare.mob.com/code/mob-share.js?appkey=1fc60caf613fe"></script>
+<!--MOB SHARE END-->
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+  
+       
+            <div onclick="ShowValine()" id="valine-display-button">匿名评论</div>
+            <div class="comments" id="comments" style="display:none">
+       
+    </div>
+
+    
+	 <div id="gitalk-container"></div>
+	
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image" src="/images/favo.jpg" alt="dfine">
+          <p class="site-author-name" itemprop="name">dfine</p>
+           
+              <p class="site-description motion-element" itemprop="description">多可喜，亦多可悲</p>
+          
+        </div>
+
+		<!--my custom code begin-->
+		<script src="https://cdnjs.loli.net/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+		<script src="https://cdnjs.loli.net/ajax/libs/velocity/1.5.0/velocity.min.js"></script>
+		<script type="text/javascript">
+		  $("#sidebar").hover(function(){
+			$("#mydivshow").velocity('stop').velocity({opacity: 1});
+		  },function(){
+			$("#mydivshow").velocity('stop').velocity({opacity: 0});
+		  });
+		</script>
+		<div id="mydivshow" class="mydivshow">
+		<!--my custom code end-->
+
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/">
+                <span class="site-state-item-count">82</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/categories/index.html">
+                <span class="site-state-item-count">15</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">111</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://newdee.gitbook.io/leetcode/" target="_blank" title="Leetcode" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-code"></i>
+                  
+                    
+                      Leetcode
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/newdee" target="_blank" title="GayHub" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                    
+                      GayHub
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://t.me/roomrss" target="_blank" title="TelegramRss" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-telegram"></i>
+                  
+                    
+                      TelegramRss
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/stebest?refer_flag=1001030101_&is_all=1" target="_blank" title="Weibo" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                    
+                      Weibo
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="mailto:stebest1992@gmail.com" target="_blank" title="E-Mail" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-at"></i>
+                  
+                    
+                      E-Mail
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://gitter.im/Newdee/newdee" target="_blank" title="Gitter" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-comments"></i>
+                  
+                    
+                      Gitter
+                    
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        <script>
+
+try{
+ if(window.console&&window.console.log)
+  {
+    console.log("%c控制台这么好玩嘛","background-color:rgba(255,255,255,0.1);font-size:1.5em");
+     console.log("%c ","padding:200px 260px;background:url('https://i.loli.net/2020/04/27/GrdC34HINPowfXE.gif')");
+     console.info("%c互链请邮  --支持ACG及Coding","background-color:rgba(255,255,255,0.5);font-size:1.3em");
+}  }
+catch(e){
+};
+</script>
+
+<div id="player1" class="aplayer"></div>
+<script src="/js/src/APlayer.min.js"></script>
+<script type="text/javascript">
+var ap = new APlayer({
+    element: document.getElementById('player1'),                       // Optional, player element
+    narrow: false,                                                     // Optional, narrow style
+    autoplay: false,                                                    // Optional, autoplay song(s), not supported by mobile browsers
+    showlrc: 3,                                                        // Optional, show lrc, can be 0, 1, 2, see: ###With lrc
+    mutex: true,                                                       // Optional, pause other players when this player playing
+    theme: '#e6d0b2',                                                  // Optional, theme color, default: #b7daff
+    mode: 'random',                                                    // Optional, play mode, can be `random` `single` `circulation`(loop) `order`(no loop), default: `circulation`
+    preload: 'metadata',                                               // Optional, the way to load music, can be 'none' 'metadata' 'auto', default: 'auto'
+    listmaxheight: '513px',                                             // Optional, max height of play list
+	music: [
+    {
+        title: '空空如也',
+        author: '任然',
+        url: 'https://files.catbox.moe/g27m5f.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162023.jpeg',
+		lrc: 'https://dfine.tech/lrc/kongkongruye'
+    },
+    {
+        title: '美しきもの',
+        author: 'Sound Horizon',
+        url: 'https://files.catbox.moe/1oevtg.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162103.jpeg',
+		lrc: 'https://dfine.tech/lrc/SoundHorizon'
+    },
+
+    {
+        title: '天国うまれ',
+        author: '甲本ヒロト',
+        url: 'https://files.catbox.moe/epooev.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162141.jpeg',
+	lrc: 'https://dfine.tech/lrc/tianguo'
+    },
+    {
+        title: '心做し',
+        author: 'luz',
+        url: 'https://files.catbox.moe/7j58ss.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162141.jpeg',
+		lrc: 'https://dfine.tech/lrc/xin'
+    },
+    {
+        title: 'Lemon',
+        author: '米津玄师',
+        url: 'https://files.catbox.moe/6ppo2h.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162427.jpeg',
+		lrc: 'https://dfine.tech/lrc/lemon'
+    },
+    {
+        title: 'You',
+        author: '雪野五月',
+        url: 'https://files.catbox.moe/1ovgtt.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325161925.jpeg',
+		lrc: 'https://dfine.tech/lrc/you'
+    },
+    {
+        title: '钟无艳',
+        author: '谢安琪',
+        url: 'https://files.catbox.moe/55sxbh.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162505.jpeg',
+		lrc: 'https://dfine.tech/lrc/zhongwuyan'
+    },
+
+    {
+        title: '殿书',
+        author: '奇然',
+        url: 'https://files.catbox.moe/e9n6sz.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162601.jpeg',
+		lrc: 'https://dfine.tech/lrc/dianshu'
+    },
+    {
+        title: 'East of Eden',
+        author: 'Zella Day',
+        url: 'https://files.catbox.moe/qoanq2.mp3',
+        pic: 'https://p1.music.126.net/orDs-AZ0jJjB06uoP0pdMw==/6667438510952720.jpg',
+		lrc: 'https://dfine.tech/lrc/eastEden'
+    },
+    {
+        title: '茁',
+        author: '谭烧',
+        url: 'https://files.catbox.moe/5lepv3.mp3',
+        pic: 'https://p1.music.126.net/xphtETT9CVE-IjRzGx20YA==/7969260279094350.jpg',
+		lrc: 'https://dfine.tech/lrc/zhuo'
+    },
+    {
+        title: '僕が死のうと思ったのは',
+        author: '中岛美嘉',
+        url: 'https://files.catbox.moe/umshce.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162629.jpeg',
+		lrc: 'https://dfine.tech/lrc/yiliaobailiao'
+    },
+    {
+        title: 'PLANET',
+        author: 'ラムジ',
+        url: 'https://files.catbox.moe/6ioooc.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162655.jpeg',
+		lrc: 'https://dfine.tech/lrc/planet'
+    },
+]
+
+
+});
+ $('.aplayer-icon-menu')[0].click();   //initial height
+	$('.aplayer-icon.aplayer-icon-mode').css('display','inline-block');
+  var myflag=true;
+	$('.aplayer-list').css('height','180px');
+	$('.aplayer-icon-menu svg').click(function(){
+    var temp=$('#player1').css('height');
+		if(temp=='250px' && !myflag){
+      $('#mydivshow').velocity('stop').velocity({height: 250});
+			$('#player1').velocity('stop').velocity({height: 66});
+    }
+		else if(temp=='66px' && myflag){
+      $('#mydivshow').velocity('stop').velocity({height: 420});
+			$('#player1').velocity('stop').velocity({height: 250});
+    }
+    myflag=!myflag;
+	});
+
+
+
+</script>
+
+<script type="text/javascript" src="//ra.revolvermaps.com/0/0/8.js?i=0qun3l8xnmd&amp;m=7&amp;c=ff0000&amp;cr1=ffffff&amp;f=arial&amp;l=33" async="async"></script>
+
+
+		<!--my custom code begin-->
+		</div>
+		<!--my custom code end-->
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#手动建立Pipeline"><span class="nav-number">1.</span> <span class="nav-text">手动建立Pipeline</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码分析"><span class="nav-number">2.</span> <span class="nav-text">代码分析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#创建元素"><span class="nav-number">2.1.</span> <span class="nav-text">创建元素</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#创建管道"><span class="nav-number">2.2.</span> <span class="nav-text">创建管道</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#属性操作"><span class="nav-number">2.3.</span> <span class="nav-text">属性操作</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#错误检测"><span class="nav-number">2.4.</span> <span class="nav-text">错误检测</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#GStreamer总线"><span class="nav-number">2.5.</span> <span class="nav-text">GStreamer总线</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </div></main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">
+  
+  &copy;  1992 - 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-superpowers"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder"><a href="https://dfine.tech">dfine</a></span>
+	
+
+</div>
+
+<!--
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+-->
+
+        
+<div class="busuanzi-count">
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user">This site's UV:</i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye">This site's PV:</i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="https://ajax.loli.net/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/fastclick/1.0.6/fastclick.min.js"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/velocity/1.5.0/velocity.min.js"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/velocity/1.5.0/velocity.ui.min.js"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/fancybox/3.1.25/jquery.fancybox.min.js"></script>
+
+  
+  <script type="text/javascript" src="/lib/three/three.min.js"></script>
+
+  
+  <script type="text/javascript" src="/lib/three/canvas_lines.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+   <link rel="stylesheet" href="https://dfine.tech/css/gitalk.css"> 
+ 
+  
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+   <script type="text/javascript">
+		var gitalk = new Gitalk({
+		  clientID: '4a39596c869e2498ea2c',
+		  clientSecret: '09f723a7aae19b9cd7767036df092d299793bd7a',
+		  repo: 'BlogComments',
+		  owner: 'newdee',
+		  admin: ['newdee'], 
+		  id: window.location.pathname,
+		  perPage: parseInt('5'),
+		  distractionFreeMode: 'false'
+		})
+
+		gitalk.render('gitalk-container')           
+       </script>
+	
+
+
+
+
+
+  <script src="//fastly.jsdelivr.net/npm/valine@1.4.16/dist/Valine.min.js"></script>
+    
+      <script type="text/javascript">
+        var GUEST = ['nick','mail','link'];
+        var guest = 'nick,mail,link';
+        guest = guest.split(',').filter(item=>{
+          return GUEST.indexOf(item)>-1;
+        });
+        function ShowValine(){
+            button=document.getElementById("valine-display-button");
+            vstate=document.getElementsByClassName("comments v")[0];
+            gstate=document.getElementById("gitalk-container");
+            if(vstate.style.display == "none" ){
+            button.innerHTML="Git评论";
+            vstate.style.display = "block";
+            gstate.style.display = "none";
+            }
+            else{
+            button.innerHTML="匿名评论";
+            gstate.style.display = "block";
+            vstate.style.display = "none";}
+        }
+        new Valine({
+            el: '#comments' ,
+            verify: false,
+            notify: false,
+            appId: 'HfI6KhJtyoYJVElqovLTdyIe-MdYXbMMI',
+            appKey: 'SgCg3S2tCDaEkxunnlBATRCk',
+            serverURLs: 'https://hfi6khjt.api.lncldglobal.com',
+            placeholder: '言语是花，也是刀。',
+            avatar:'mm',
+            guest_info:guest,
+            pageSize:'5' || 10,
+        });
+      </script>
+      
+
+
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $('.leancloud_visitors');
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', '/classes/Counter/' + counter.objectId, JSON.stringify({ time: { '__op': 'Increment', 'amount': 1 } }))
+            
+              .done(function() {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.time + 1);
+              })
+            
+              .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+              })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1 }))
+                .done(function() {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function() {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+        .fail(function ({ responseJSON }) {
+          console.log('LeanCloud Counter Error: ' + responseJSON.code + ' ' + responseJSON.error);
+        });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + 'HfI6KhJtyoYJVElqovLTdyIe-MdYXbMMI')
+        .done(function({ api_server }) {
+          var Counter = function(method, url, data) {
+            return $.ajax({
+              method: method,
+              url: 'https://' + api_server + '/1.1' + url,
+              headers: {
+                'X-LC-Id': 'HfI6KhJtyoYJVElqovLTdyIe-MdYXbMMI',
+                'X-LC-Key': 'SgCg3S2tCDaEkxunnlBATRCk',
+                'Content-Type': 'application/json',
+              },
+              data: data
+            });
+          };
+          
+            const localhost = /http:\/\/(localhost|127.0.0.1|0.0.0.0)/;
+            if (localhost.test(document.URL)) return;
+            addCount(Counter);
+          
+        });
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+  <script src="/js/src/Aplayer-Controler.min.js"></script>
+<div id="AP-controler"></div>
+<script type="text/javascript">
+var myapc=new APlayer_Controler({
+		APC_dom:$('#AP-controler'),
+		aplayer:ap,
+		attach_right:true,
+		position:{top:'150px',bottom:''},
+		fixed:true,
+		btn_width:100,
+		btn_height:120,
+		img_src:['https://fastly.jsdelivr.net/gh/newdee/BlogImage/20191105112417.gif', 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20191105112526.gif'],
+
+		tips_content:{
+			  on_loading:{top:'LOADING',bottom:'LIFE IS SO HARD'},
+			  on_welcome:{top:'LOADED',bottom:'NOT TOO BAD'},
+			  on_timeout:{top:'PLAYER ARE IN MARS',bottom:'TIME GOES STUPID'},
+			  on_error:{top:'PLAYER BROKEN',bottom:'NOTHING IS IMPORTANT IN LIFE'},
+			  on_listend:{top:'BOTTOM SAYS NO SONG',bottom:'TO DANCE'},
+			  on_nohistory:{top:'NO HISTORY',bottom:'YOU WILL CREATE THE HISTORY'},
+			  on_historyend:{top:'NO MORE',bottom:'HISTORY IS NOT IMPORTANT'}
+			},
+		img_style:{repeat:'no-repeat',position:'center',size:'contain'},
+		ctrls_color:'rgba(86,223,177,0.7)',
+		ctrls_hover_color:'rgba(255,140,0,0.7)',
+		tips_on:true,
+		tips_width:140,
+		tips_height:25,
+		tips_color:'rgba(255,255,255,0.8)',
+	  timeout:30,
+	  showOnPhone:false,
+	  songrecord_log:false
+	});
+</script>
+
+
+  <script type="text/javascript" src="/js/src/mouse.js"></script>
+
+
+<!--崩溃欺骗
+<script type="text/javascript" src="/js/src/broken.js"></script>
+-->
+</body>
+</html>
+
+<script type="text/javascript" src="/js/src/randbg.js"></script>
+<script src="https://fastly.jsdelivr.net/gh/newdee/live2d-widget@latest/autoload.js"></script>

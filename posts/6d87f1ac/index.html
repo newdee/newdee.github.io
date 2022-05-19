@@ -1,0 +1,1673 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next mist" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+  <link rel="stylesheet" media="all" href="/lib/Han/dist/han.min.css?v=3.3">
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+  <link href="https://cdnjs.loli.net/ajax/libs/fancybox/3.1.25/jquery.fancybox.min.css" rel="stylesheet" type="text/css">
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.loli.net/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+  
+
+<link href="https://cdnjs.loli.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="Hexo,Nofollow,Emoji,Gulp,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="阁子" type="application/atom+xml">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2">
+
+
+
+
+
+
+<meta name="description" content="捣鼓个人博客也有一段时间了，其间加了不少的插件，改来改去，最后打开也变得很慢了。问题主要有两个方面，一个是网络问题，因为托管在Github上，国内访问一直很慢，后来还是迁移到Coding上了，妥协了，给他加了个Hosted by Coding Pages。另一方面则是加载的问题，由于多了许多插件，导致网页加载变慢，特别">
+<meta name="keywords" content="Hexo,Nofollow,Emoji,Gulp">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hexo博客的优化">
+<meta property="og:url" content="http://dfine.tech/posts/6d87f1ac/index.html">
+<meta property="og:site_name" content="阁子">
+<meta property="og:description" content="捣鼓个人博客也有一段时间了，其间加了不少的插件，改来改去，最后打开也变得很慢了。问题主要有两个方面，一个是网络问题，因为托管在Github上，国内访问一直很慢，后来还是迁移到Coding上了，妥协了，给他加了个Hosted by Coding Pages。另一方面则是加载的问题，由于多了许多插件，导致网页加载变慢，特别是在添加live2d之后。所以打算做些工作优化一下博客。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.githubassets.com/images/icons/emoji/unicode/1f604.png?v8">
+<meta property="og:image" content="https://github.githubassets.com/images/icons/emoji/unicode/1f604.png?v8">
+<meta property="og:updated_time" content="2022-05-19T04:23:59.331Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Hexo博客的优化">
+<meta name="twitter:description" content="捣鼓个人博客也有一段时间了，其间加了不少的插件，改来改去，最后打开也变得很慢了。问题主要有两个方面，一个是网络问题，因为托管在Github上，国内访问一直很慢，后来还是迁移到Coding上了，妥协了，给他加了个Hosted by Coding Pages。另一方面则是加载的问题，由于多了许多插件，导致网页加载变慢，特别是在添加live2d之后。所以打算做些工作优化一下博客。">
+<meta name="twitter:image" content="https://github.githubassets.com/images/icons/emoji/unicode/1f604.png?v8">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: false,
+    duoshuo: {
+      userId: '0',
+      author: '鄙人'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    emojis: {
+      className: 'github-emoji'
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://dfine.tech/posts/6d87f1ac/">
+
+
+
+
+
+  <title>Hexo博客的优化 | 阁子</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-83650950-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//tajs.qq.com/stats?sId=58292227";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">阁子</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">dfine's Blog</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-talks">
+          <a href="/talks/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-comment"></i> <br>
+            
+            闲言
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-map"></i> <br>
+            
+            友人目
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/About/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://dfine.tech/posts/6d87f1ac/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="dfine">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/favo.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="阁子">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Hexo博客的优化</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-09-30T01:34:01+08:00">
+                2017-09-30
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/博客/" itemprop="url" rel="index">
+                    <span itemprop="name">博客</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+          
+          
+             <span id="/posts/6d87f1ac/" class="leancloud_visitors" data-flag-title="Hexo博客的优化">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body han-init-context" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>捣鼓个人博客也有一段时间了，其间加了不少的插件，改来改去，最后打开也变得很慢了。问题主要有两个方面，一个是网络问题，因为托管在Github上，国内访问一直很慢，后来还是迁移到Coding上了，妥协了，给他加了个<code>Hosted by Coding Pages</code>。另一方面则是加载的问题，由于多了许多插件，导致网页加载变慢，特别是在添加<a href="https://github.com/EYHN/hexo-helper-live2d" rel="external nofollow noopener noreferrer" target="_blank">live2d</a>之后。所以打算做些工作优化一下博客。<br><a id="more"></a></p>
+<h4 id="外部链接优化"><a href="#外部链接优化" class="headerlink" title="外部链接优化"></a>外部链接优化</h4><p>主要是告诉搜索引擎爬虫无需抓取目标页，同时告诉搜索引擎无需将的当前页的Pagerank传递到目标页。Google推荐是用nofollow，nofollow是HTML元标签(meta)的content属性和链接标签(a)的rel属性的一个值，告诉机器(爬虫)无需追踪目标页，为了对抗blogspam(博客垃圾留言信息)。但是如果是通过sitemap直接提交该页面，爬虫还是会爬取，这里的nofollow只是当前页对目标页的一种态度，并不代表其他页对目标页的态度。</p>
+<h5 id="主要作用"><a href="#主要作用" class="headerlink" title="主要作用"></a>主要作用</h5><ul>
+<li>防止不可信的内容，最常见的是博客上的垃圾留言与评论中为了获取外链的垃圾链接，为了防止页面指向一些拉圾页面和站点。</li>
+<li>付费链接：为了防止付费链接影响Google的搜索结果排名，Google建议使用nofollow属性。</li>
+<li>引导爬虫抓取有效的页面：避免爬虫抓取一些无意义的页面，影响爬虫抓取的效率。<br>其主要方法是给所有外部链接加上<code>rel=&quot;external nofollow&quot;</code>属性，对外部链接<code>target=”_blank”</code>采用在新窗口种打开外部链接的方法。</li>
+</ul>
+<h5 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h5><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">npm <span class="keyword">install</span> hexo-autonofollow <span class="comment">--save</span></div></pre></td></tr></table></figure>
+<h5 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h5><p>编辑站点配置文件。<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="attr">nofollow:</span></div><div class="line"><span class="attr">    enable:</span> <span class="literal">true</span></div><div class="line"><span class="attr">    exclude:</span></div><div class="line"><span class="bullet">    -</span> <span class="string">you</span> <span class="string">domain</span></div></pre></td></tr></table></figure></p>
+<p>这里的<code>exclude</code>下主要填你的域名，为豁免域名。</p>
+<h4 id="在主页不显示某类文章"><a href="#在主页不显示某类文章" class="headerlink" title="在主页不显示某类文章"></a>在主页不显示某类文章</h4><p>修改主题目录下layout的index.swig文件:<br><figure class="highlight django"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line"><span class="xml"></span><span class="template-tag">&#123;% <span class="name"><span class="name">extends</span></span> '_layout.swig' %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml"></span><span class="template-tag">&#123;% <span class="name">import</span> '_macro/post.swig' <span class="keyword">as</span> post_template %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml"></span><span class="template-tag">&#123;% <span class="name">import</span> '_macro/sidebar.swig' <span class="keyword">as</span> sidebar_template %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml"></span></div><div class="line"><span class="xml"></span><span class="template-tag">&#123;% <span class="name"><span class="name">block</span></span> title %&#125;</span><span class="xml"></span><span class="template-variable">&#123;&#123; config.title &#125;&#125;</span><span class="xml"></span><span class="template-tag">&#123;% <span class="name"><span class="name">if</span></span> theme.index_with_subtitle and config.subtitle %&#125;</span><span class="xml"> - </span><span class="template-variable">&#123;&#123;config.subtitle &#125;&#125;</span><span class="xml"></span><span class="template-tag">&#123;% <span class="name"><span class="name">endif</span></span> %&#125;</span><span class="xml"></span><span class="template-tag">&#123;% <span class="name"><span class="name">endblock</span></span> %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml"></span></div><div class="line"><span class="xml"></span><span class="template-tag">&#123;% <span class="name"><span class="name">block</span></span> page_class %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml">  </span><span class="template-tag">&#123;% <span class="name"><span class="name">if</span></span> is_home() %&#125;</span><span class="xml"> page-home </span><span class="template-tag">&#123;% <span class="name"><span class="name">endif</span></span> %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml"></span><span class="template-tag">&#123;% <span class="name"><span class="name">endblock</span></span> %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml"></span></div><div class="line"><span class="xml"></span><span class="template-tag">&#123;% <span class="name"><span class="name">block</span></span> content %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml">  <span class="tag">&lt;<span class="name">section</span> <span class="attr">id</span>=<span class="string">"posts"</span> <span class="attr">class</span>=<span class="string">"posts-expand"</span>&gt;</span></span></div><div class="line"><span class="xml">    </span><span class="template-tag">&#123;% <span class="name"><span class="name">for</span></span> post <span class="keyword">in</span> page.posts %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml">	</span><span class="template-tag">&#123;% <span class="name"><span class="name">if</span></span> post.categories!= 'Recommend' %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml">      </span><span class="template-variable">&#123;&#123; post_template.render(post, true) &#125;&#125;</span><span class="xml"></span></div><div class="line"><span class="xml">	</span><span class="template-tag">&#123;% <span class="name"><span class="name">endif</span></span> %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml">    </span><span class="template-tag">&#123;% <span class="name"><span class="name">endfor</span></span> %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml">  <span class="tag">&lt;/<span class="name">section</span>&gt;</span></span></div><div class="line"><span class="xml"></span></div><div class="line"><span class="xml">  </span><span class="template-tag">&#123;% <span class="name"><span class="name">include</span></span> '_partials/pagination.swig' %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml"></span><span class="template-tag">&#123;% <span class="name"><span class="name">endblock</span></span> %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml"></span></div><div class="line"><span class="xml"></span><span class="template-tag">&#123;% <span class="name"><span class="name">block</span></span> sidebar %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml">  </span><span class="template-variable">&#123;&#123; sidebar_template.render(false) &#125;&#125;</span><span class="xml"></span></div><div class="line"><span class="xml"></span><span class="template-tag">&#123;% <span class="name"><span class="name">endblock</span></span> %&#125;</span><span class="xml"></span></div></pre></td></tr></table></figure></p>
+<p>在其中加入page的判断页面即可。</p>
+<h4 id="添加emoji支持"><a href="#添加emoji支持" class="headerlink" title="添加emoji支持"></a>添加emoji支持<img class="github-emoji" style="display:inline;vertical-align:bottom;padding:0px;border:0px solid rgba(0, 0, 0, 0);border-bottom:4px solid rgba(221, 221, 221, 0)" title="smile" alt="smile" src="https://github.githubassets.com/images/icons/emoji/unicode/1f604.png?v8" height="20" width="20"></h4><p>由于Hexo的默认Markdown语法不支持emoji表情，网上也有人替换了其Markdown渲染工具，但是又会引入新的Bug，所以就放弃了。后来看到有人照着Github的方式做了一个插件，在生成网页的时候将关键字替换成emoji的unicode字符，然后再利用JavaScript将字符替换成图片，这样即使图片加载失败还有字符fallback。其Repo<a href="https://github.com/crimx/hexo-filter-github-emojis" rel="external nofollow noopener noreferrer" target="_blank">在此</a>。  </p>
+<h5 id="安装-1"><a href="#安装-1" class="headerlink" title="安装"></a>安装</h5><figure class="highlight livecodeserver"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">npm install hexo-<span class="built_in">filter</span>-github-emojis <span class="comment">--save</span></div></pre></td></tr></table></figure>
+<h5 id="配置-1"><a href="#配置-1" class="headerlink" title="配置"></a>配置</h5><p>编辑站点配置文件<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="string">vim</span> <span class="string">_config.xml</span></div><div class="line"><span class="attr">githubEmojis:</span></div><div class="line"><span class="attr">  enable:</span> <span class="literal">true</span></div><div class="line"><span class="attr">  className:</span> <span class="string">github-emoji</span></div><div class="line"><span class="attr">  unicode:</span> <span class="literal">false</span></div><div class="line"><span class="attr">  styles:</span></div><div class="line"><span class="attr">  localEmojis:</span></div></pre></td></tr></table></figure></p>
+<p>其中，<code>localEmojis</code>可以添加自己的本地表情。  </p>
+<h5 id="Warning的处理"><a href="#Warning的处理" class="headerlink" title="Warning的处理"></a>Warning的处理</h5><p>在安装完之后再执行hexo生成站点文件时，会有一个警告，主要内容如下:<br><figure class="highlight ada"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">DeprecationWarning: Calling an asynchronous <span class="keyword">function</span> <span class="title">without</span> callback <span class="keyword">is</span> deprecated.</div></pre></td></tr></table></figure></p>
+<p>这个意思是调用无回调的异步函数的方法已经被废弃，可能是使用了<code>writeFile</code>函数。因此在其安装目录下寻找，后来在其index文件中找到了这个函数。修改方法如下:</p>
+<figure class="highlight vim"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">cd</span> node_modules/hexo-<span class="built_in">filter</span>-github-emojis</div><div class="line"><span class="keyword">vim</span> <span class="built_in">index</span>.js</div></pre></td></tr></table></figure>
+<p>找到带有<code>writeFile</code>函数的一行，应该是这行:<br><figure class="highlight cs"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">fs.writeFile(path.<span class="keyword">join</span>(__dirname, <span class="string">'emojis.json'</span>), JSON.stringify(githubEmojis, <span class="literal">null</span>, <span class="string">'\t'</span>))</div></pre></td></tr></table></figure></p>
+<p>将<code>writeFile</code>改为<code>writeFileSync</code>函数，即:<br><figure class="highlight cs"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">fs.writeFileSync(path.<span class="keyword">join</span>(__dirname, <span class="string">'emojis.json'</span>), JSON.stringify(githubEmojis, <span class="literal">null</span>, <span class="string">'\t'</span>))</div></pre></td></tr></table></figure></p>
+<p>之后再运行，警告消失。</p>
+<h5 id="后加"><a href="#后加" class="headerlink" title="后加"></a>后加</h5><p>现在听说作者已经修复了这个问题，所以不需要改了。</p>
+<h4 id="静态资源压缩"><a href="#静态资源压缩" class="headerlink" title="静态资源压缩"></a>静态资源压缩</h4><p>网页加载速度优化，主要通过压缩网页的静态资源如JS,Html,CSS,图片等文件来达到加速效果。网上现在主要有两种，一种是直接用Hexo的插件，<a href="https://github.com/rozbo/hexo-neat" rel="external nofollow noopener noreferrer" target="_blank">Hexo-Neat</a>，还有一种是使用通用的压缩工具<a href="http://www.gulpjs.com.cn/" rel="external nofollow noopener noreferrer" target="_blank">Gulp</a>。<br>这里主要使用Gulp。</p>
+<h5 id="安装-2"><a href="#安装-2" class="headerlink" title="安装"></a>安装</h5><p>首先是安装Gulp插件:<br><figure class="highlight q"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">npm install gulp --<span class="built_in">save</span>-<span class="built_in">dev</span></div></pre></td></tr></table></figure></p>
+<p>然后安装gulp相关插件:<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">$ npm <span class="keyword">install</span> gulp-clean-css <span class="comment">--save-dev</span></div><div class="line">$ npm <span class="keyword">install</span> gulp-uglify <span class="comment">--save-dev</span></div><div class="line">$ npm <span class="keyword">install</span> gulp-htmlmin <span class="comment">--save-dev</span></div><div class="line">$ npm <span class="keyword">install</span> gulp-htmlclean <span class="comment">--save-dev</span></div><div class="line">$ npm <span class="keyword">install</span> gulp-imagemin <span class="comment">--save-dev</span></div><div class="line">$ npm <span class="keyword">install</span> del <span class="comment">--save-dev</span></div><div class="line">$ npm <span class="keyword">install</span> run-<span class="keyword">sequence</span> <span class="comment">--save-dev</span></div></pre></td></tr></table></figure></p>
+<h5 id="配置-2"><a href="#配置-2" class="headerlink" title="配置"></a>配置</h5><p>添加一个gulpfile.js文件，在博客根目录下。<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> gulp = <span class="keyword">require</span>(<span class="string">'gulp'</span>);</div><div class="line"><span class="keyword">var</span> minifycss = <span class="keyword">require</span>(<span class="string">'gulp-clean-css'</span>);</div><div class="line"><span class="keyword">var</span> uglify = <span class="keyword">require</span>(<span class="string">'gulp-uglify'</span>);</div><div class="line"><span class="keyword">var</span> htmlmin = <span class="keyword">require</span>(<span class="string">'gulp-htmlmin'</span>);</div><div class="line"><span class="keyword">var</span> htmlclean = <span class="keyword">require</span>(<span class="string">'gulp-htmlclean'</span>);</div><div class="line"><span class="keyword">var</span> imagemin = <span class="keyword">require</span>(<span class="string">'gulp-imagemin'</span>);</div><div class="line"><span class="keyword">var</span> del = <span class="keyword">require</span>(<span class="string">'del'</span>);</div><div class="line"><span class="keyword">var</span> runSequence = <span class="keyword">require</span>(<span class="string">'run-sequence'</span>);</div><div class="line"><span class="keyword">var</span> Hexo = <span class="keyword">require</span>(<span class="string">'hexo'</span>);</div><div class="line"></div><div class="line"></div><div class="line">gulp.task(<span class="string">'clean'</span>, <span class="function"><span class="keyword">function</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> del([<span class="string">'public/**/*'</span>]);</div><div class="line">&#125;);</div><div class="line"></div><div class="line"><span class="comment">// generate html with 'hexo generate'</span></div><div class="line"><span class="keyword">var</span> hexo = <span class="keyword">new</span> Hexo(process.cwd(), &#123;&#125;);</div><div class="line">gulp.task(<span class="string">'generate'</span>, <span class="function"><span class="keyword">function</span><span class="params">(cb)</span> </span>&#123;</div><div class="line">    hexo.init().then(<span class="function"><span class="keyword">function</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> hexo.call(<span class="string">'generate'</span>, &#123;</div><div class="line">            watch: <span class="keyword">false</span></div><div class="line">        &#125;);</div><div class="line">    &#125;).then(<span class="function"><span class="keyword">function</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> hexo.<span class="keyword">exit</span>();</div><div class="line">    &#125;).then(<span class="function"><span class="keyword">function</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> cb()</div><div class="line">    &#125;).<span class="keyword">catch</span>(<span class="function"><span class="keyword">function</span><span class="params">(err)</span> </span>&#123;</div><div class="line">        console.log(err);</div><div class="line">        hexo.<span class="keyword">exit</span>(err);</div><div class="line">        <span class="keyword">return</span> cb(err);</div><div class="line">    &#125;)</div><div class="line">&#125;)</div><div class="line"></div><div class="line">gulp.task(<span class="string">'minify-css'</span>, <span class="function"><span class="keyword">function</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> gulp.src([<span class="string">'./public/**/*.css'</span>,<span class="string">'public/**/*.min.css'</span>])</div><div class="line">        .pipe(minifycss(&#123;</div><div class="line">            compatibility: <span class="string">'ie8'</span></div><div class="line">        &#125;))</div><div class="line">        .pipe(gulp.dest(<span class="string">'./public'</span>));</div><div class="line">&#125;);</div><div class="line"></div><div class="line">gulp.task(<span class="string">'minify-html'</span>, <span class="function"><span class="keyword">function</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> gulp.src(<span class="string">'./public/**/*.html'</span>)</div><div class="line">        .pipe(htmlclean())</div><div class="line">        .pipe(htmlmin(&#123;</div><div class="line">            removeComments: <span class="keyword">true</span>,</div><div class="line">            minifyJS: <span class="keyword">true</span>,</div><div class="line">            minifyCSS: <span class="keyword">true</span>,</div><div class="line">            minifyURLs: <span class="keyword">true</span>,</div><div class="line">        &#125;))</div><div class="line">        .pipe(gulp.dest(<span class="string">'./public'</span>))</div><div class="line">&#125;);</div><div class="line"></div><div class="line">gulp.task(<span class="string">'minify-js'</span>, <span class="function"><span class="keyword">function</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> gulp.src([<span class="string">'./public/**/*.js'</span>,<span class="string">'!public/**/*.min.js'</span>])</div><div class="line">        .pipe(uglify())</div><div class="line">        .pipe(gulp.dest(<span class="string">'./public'</span>));</div><div class="line">&#125;);</div><div class="line"></div><div class="line">gulp.task(<span class="string">'minify-img'</span>, <span class="function"><span class="keyword">function</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> gulp.src(<span class="string">'./public/images/**/*.*'</span>)</div><div class="line">        .pipe(imagemin())</div><div class="line">        .pipe(gulp.dest(<span class="string">'./public/images'</span>))</div><div class="line">&#125;)</div><div class="line"></div><div class="line">gulp.task(<span class="string">'minify-img-aggressive'</span>, <span class="function"><span class="keyword">function</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> gulp.src(<span class="string">'./public/images/**/*.*'</span>)</div><div class="line">        .pipe(imagemin(</div><div class="line">        [imagemin.gifsicle(&#123;<span class="string">'optimizationLevel'</span>: <span class="number">3</span>&#125;), </div><div class="line">        imagemin.jpegtran(&#123;<span class="string">'progressive'</span>: <span class="keyword">true</span>&#125;), </div><div class="line">        imagemin.optipng(&#123;<span class="string">'optimizationLevel'</span>: <span class="number">7</span>&#125;), </div><div class="line">        imagemin.svgo()],</div><div class="line">        &#123;<span class="string">'verbose'</span>: <span class="keyword">true</span>&#125;))</div><div class="line">        .pipe(gulp.dest(<span class="string">'./public/images'</span>))</div><div class="line">&#125;)</div><div class="line"></div><div class="line">gulp.task(<span class="string">'compress'</span>, <span class="function"><span class="keyword">function</span><span class="params">(cb)</span> </span>&#123;</div><div class="line">    runSequence([<span class="string">'minify-html'</span>, <span class="string">'minify-css'</span>, <span class="string">'minify-img'</span>], cb);</div><div class="line">&#125;);</div><div class="line"></div><div class="line">gulp.task(<span class="string">'build'</span>, <span class="function"><span class="keyword">function</span><span class="params">(cb)</span> </span>&#123;</div><div class="line">    runSequence(<span class="string">'clean'</span>, <span class="string">'generate'</span>, <span class="string">'compress'</span>, cb)</div><div class="line">&#125;);</div><div class="line"></div><div class="line">gulp.task(<span class="string">'default'</span>, [<span class="string">'build'</span>])</div></pre></td></tr></table></figure></p>
+<p>因为已经将hexo g生成站点文件的过程包含进去了，直接执行gulp即可。<br>但是不知道是不是Next版本更新的原因，导致js的压缩总是出问题，暂时先删掉了<code>runSequence</code>中的<code>minify-js</code>一项，之后再作讨论。</p>
+<h5 id="问题解决"><a href="#问题解决" class="headerlink" title="问题解决"></a>问题解决</h5><p>原因找到了，是因为Gulp的uglify-js不支持ES6的语法，因此编译会出错。<br>解决方案:先使用babel编译。</p>
+<ol>
+<li><p>安装</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">npm install --save-dev gulp-babel babel-preset-es2015 babel-core</div></pre></td></tr></table></figure>
+</li>
+<li><p>修改gulpfile.js文件<br>在变量定义中添加一行:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> babel = <span class="built_in">require</span>(<span class="string">"gulp-babel"</span>);</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>然后在<code>.pipe(uglify())</code>这一行前加一句:<br><figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="selector-class">.pipe</span>(<span class="selector-tag">babel</span>(&#123;<span class="attribute">presets</span>: [<span class="string">'es2015'</span>]&#125;))</div></pre></td></tr></table></figure></p>
+<p>问题解决。</p>
+<h4 id="替换谷歌字体库"><a href="#替换谷歌字体库" class="headerlink" title="替换谷歌字体库"></a>替换谷歌字体库</h4><p>众所周知，谷歌字体库访问通常情况都非常慢，于是决定使用国内的CND加速，但是之前360的字体库已经下架了，所以使用中科大的(虽然不下架应该也不会选择它 <img class="github-emoji" style="display:inline;vertical-align:bottom;padding:0px;border:0px solid rgba(0, 0, 0, 0);border-bottom:4px solid rgba(221, 221, 221, 0)" title="smile" alt="smile" src="https://github.githubassets.com/images/icons/emoji/unicode/1f604.png?v8" height="20" width="20"> )。<br>修改方式:<br>编辑主题的配置文件:<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">vim theme/next/_config.xml</div></pre></td></tr></table></figure></p>
+<p>找到<code>fonts</code>的设置，在<code>host:</code>后面填写<br><figure class="highlight 1c"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//fonts.lug.ustc.edu.cn</span></div></pre></td></tr></table></figure></p>
+<p>和<code>host:</code>中间注意保持空格。</p>
+<h5 id="后加-1"><a href="#后加-1" class="headerlink" title="后加"></a>后加</h5><p>中科大字体库已经挂了，谷歌字体库也经常抽风。于是采用国内CDN加速，参考于Showfom大神的一篇<a href="https://sb.sb/css-cdn/" rel="external nofollow noopener noreferrer" target="_blank">博客</a> 。</p>
+<h6 id="修改谷歌字体库"><a href="#修改谷歌字体库" class="headerlink" title="修改谷歌字体库"></a>修改谷歌字体库</h6><p>将<code>//fonts.googleapis.com</code>修改为国内cdn加速的库，和上面一样，找到<code>fonts</code>的设置，在<code>host:</code>后面填写</p>
+<figure class="highlight 1c"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//fonts.cat.net</span></div></pre></td></tr></table></figure>
+<h6 id="替换CDNJS-开源-JS-库"><a href="#替换CDNJS-开源-JS-库" class="headerlink" title="替换CDNJS 开源 JS 库"></a>替换CDNJS 开源 JS 库</h6><p>只需要替换 <code>cdnjs.cloudflare.com</code> 为 <code>cdnjs.cat.net</code> 即可。即：</p>
+<p>在<code>vendors</code>中的<code>jquery：</code> 后面添加自定义的地址:</p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">https:<span class="regexp">//</span>ajax.cat.net<span class="regexp">/ajax/</span>libs<span class="regexp">/jquery/</span><span class="number">3.2</span>.<span class="number">1</span><span class="regexp">/jquery.min.js</span></div></pre></td></tr></table></figure>
+<h6 id="修改Han字体的CDN"><a href="#修改Han字体的CDN" class="headerlink" title="修改Han字体的CDN"></a>修改Han字体的CDN</h6><p>由于Han字体使用的CDN是cloudflare的，国内速度比较慢，因此替换其CDN:</p>
+<p>在<code>han:</code>后加:</p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">https:<span class="regexp">//</span>cdnjs.cat.net<span class="regexp">/ajax/</span>libs<span class="regexp">/Han/</span><span class="number">3.3</span>.<span class="number">0</span><span class="regexp">/han.min.css</span></div></pre></td></tr></table></figure>
+<h6 id="修改其他的CDN"><a href="#修改其他的CDN" class="headerlink" title="修改其他的CDN"></a>修改其他的CDN</h6><p>最终修改后的配置文件内容如下:<br><figure class="highlight less"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div></pre></td><td class="code"><pre><div class="line"># <span class="selector-tag">Script</span> <span class="selector-tag">Vendors</span>.</div><div class="line"># <span class="selector-tag">Set</span> <span class="selector-tag">a</span> <span class="selector-tag">CDN</span> <span class="selector-tag">address</span> <span class="selector-tag">for</span> <span class="selector-tag">the</span> <span class="selector-tag">vendor</span> <span class="selector-tag">you</span> <span class="selector-tag">want</span> <span class="selector-tag">to</span> <span class="selector-tag">customize</span>.</div><div class="line"># <span class="selector-tag">For</span> <span class="selector-tag">example</span></div><div class="line">#    <span class="selector-tag">jquery</span>: <span class="selector-tag">https</span>:<span class="comment">//ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js</span></div><div class="line"># <span class="selector-tag">Be</span> <span class="selector-tag">aware</span> <span class="selector-tag">that</span> <span class="selector-tag">you</span> <span class="selector-tag">should</span> <span class="selector-tag">use</span> <span class="selector-tag">the</span> <span class="selector-tag">same</span> <span class="selector-tag">version</span> <span class="selector-tag">as</span> <span class="selector-tag">internal</span> <span class="selector-tag">ones</span> <span class="selector-tag">to</span> <span class="selector-tag">avoid</span> <span class="selector-tag">potential</span> <span class="selector-tag">problems</span>.</div><div class="line"># <span class="selector-tag">Please</span> <span class="selector-tag">use</span> <span class="selector-tag">the</span> <span class="selector-tag">https</span> <span class="selector-tag">protocol</span> <span class="selector-tag">of</span> <span class="selector-tag">CDN</span> <span class="selector-tag">files</span> <span class="keyword">when</span> you enable https on your site.</div><div class="line"><span class="attribute">vendors</span>:</div><div class="line">  # Internal path prefix. Please do <span class="keyword">not</span> edit it.</div><div class="line">  <span class="attribute">_internal</span>: lib</div><div class="line"></div><div class="line">  # Internal <span class="attribute">version</span>: <span class="number">2.1</span>.<span class="number">3</span></div><div class="line">  <span class="attribute">jquery</span>: <span class="attribute">https</span>:<span class="comment">//ajax.cat.net/ajax/libs/jquery/3.2.1/jquery.min.js</span></div><div class="line"></div><div class="line">  # Internal <span class="attribute">version</span>: <span class="number">2.1</span>.<span class="number">5</span></div><div class="line">  # <span class="attribute">See</span>: <span class="attribute">http</span>:<span class="comment">//fancyapps.com/fancybox/</span></div><div class="line">  <span class="attribute">fancybox</span>: <span class="attribute">https</span>:<span class="comment">//cdnjs.cat.net/ajax/libs/fancybox/3.1.25/jquery.fancybox.min.js</span></div><div class="line">  <span class="attribute">fancybox_css</span>: <span class="attribute">https</span>:<span class="comment">//cdnjs.cat.net/ajax/libs/fancybox/3.1.25/jquery.fancybox.min.css</span></div><div class="line"></div><div class="line">  # Internal <span class="attribute">version</span>: <span class="number">1.0</span>.<span class="number">6</span></div><div class="line">  # <span class="attribute">See</span>: <span class="attribute">https</span>:<span class="comment">//github.com/ftlabs/fastclick</span></div><div class="line">  <span class="attribute">fastclick</span>: <span class="attribute">https</span>:<span class="comment">//cdnjs.cat.net/ajax/libs/fastclick/1.0.6/fastclick.min.js</span></div><div class="line"></div><div class="line">  # Internal <span class="attribute">version</span>: <span class="number">1.9</span>.<span class="number">7</span></div><div class="line">  # <span class="attribute">See</span>: <span class="attribute">https</span>:<span class="comment">//github.com/tuupola/jquery_lazyload</span></div><div class="line">  <span class="attribute">lazyload</span>: <span class="attribute">https</span>:<span class="comment">//cdnjs.cat.net/ajax/libs/lazyload/2.0.3/lazyload-min.js</span></div><div class="line"></div><div class="line">  # Internal <span class="attribute">version</span>: <span class="number">1.2</span>.<span class="number">1</span></div><div class="line">  # <span class="attribute">See</span>: <span class="attribute">http</span>:<span class="comment">//VelocityJS.org</span></div><div class="line">  <span class="attribute">velocity</span>: <span class="attribute">https</span>:<span class="comment">//cdnjs.cat.net/ajax/libs/velocity/1.5.0/velocity.min.js</span></div><div class="line"></div><div class="line">  # Internal <span class="attribute">version</span>: <span class="number">1.2</span>.<span class="number">1</span></div><div class="line">  # <span class="attribute">See</span>: <span class="attribute">http</span>:<span class="comment">//VelocityJS.org</span></div><div class="line">  <span class="attribute">velocity_ui</span>: <span class="attribute">https</span>:<span class="comment">//cdnjs.cat.net/ajax/libs/velocity/1.5.0/velocity.ui.min.js</span></div><div class="line"></div><div class="line">  # Internal <span class="attribute">version</span>: <span class="number">0.7</span>.<span class="number">9</span></div><div class="line">  # <span class="attribute">See</span>: <span class="attribute">https</span>:<span class="comment">//faisalman.github.io/ua-parser-js/</span></div><div class="line">  <span class="attribute">ua_parser</span>: <span class="attribute">https</span>:<span class="comment">//cdnjs.cat.net/ajax/libs/UAParser.js/0.7.9/ua-parser.min.js</span></div><div class="line"></div><div class="line">  # Internal <span class="attribute">version</span>: <span class="number">4.6</span>.<span class="number">2</span></div><div class="line">  # <span class="attribute">See</span>: <span class="attribute">http</span>:<span class="comment">//fontawesome.io/</span></div><div class="line">  <span class="attribute">fontawesome</span>: <span class="attribute">https</span>:<span class="comment">//cdnjs.cat.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css</span></div><div class="line"></div><div class="line">  # Internal <span class="attribute">version</span>: <span class="number">1</span></div><div class="line">  # <span class="attribute">https</span>:<span class="comment">//www.algolia.com</span></div><div class="line">  <span class="attribute">algolia_instant_js</span>: </div><div class="line">  <span class="attribute">algolia_instant_css</span>:</div><div class="line"></div><div class="line">  # Internal <span class="attribute">version</span>: <span class="number">1.0</span>.<span class="number">2</span></div><div class="line">  # <span class="attribute">See</span>: <span class="attribute">https</span>:<span class="comment">//github.com/HubSpot/pace</span></div><div class="line">  # Or use direct links <span class="attribute">below</span>:</div><div class="line">  # <span class="attribute">pace</span>: <span class="comment">//cdn.bootcss.com/pace/1.0.2/pace.min.js</span></div><div class="line">  # <span class="attribute">pace_css</span>: <span class="comment">//cdn.bootcss.com/pace/1.0.2/themes/blue/pace-theme-flash.min.css</span></div><div class="line">  <span class="attribute">pace</span>:</div><div class="line">  <span class="attribute">pace_css</span>:</div><div class="line"></div><div class="line">  # Internal <span class="attribute">version</span>: <span class="number">1.0</span>.<span class="number">0</span></div><div class="line">  # <span class="attribute">https</span>:<span class="comment">//github.com/hustcc/canvas-nest.js</span></div><div class="line">  <span class="attribute">canvas_nest</span>: <span class="attribute">https</span>:<span class="comment">//cdnjs.cat.net/ajax/libs/canvas-nest.js/1.0.1/canvas-nest.min.js</span></div><div class="line"></div><div class="line">  # three</div><div class="line">  <span class="attribute">three</span>:</div><div class="line"></div><div class="line">  # three_waves</div><div class="line">  # <span class="attribute">https</span>:<span class="comment">//github.com/jjandxa/three_waves</span></div><div class="line">  <span class="attribute">three_waves</span>:</div><div class="line"></div><div class="line">  # three_waves</div><div class="line">  # <span class="attribute">https</span>:<span class="comment">//github.com/jjandxa/canvas_lines</span></div><div class="line">  <span class="attribute">canvas_lines</span>:</div><div class="line"></div><div class="line">  # three_waves</div><div class="line">  # <span class="attribute">https</span>:<span class="comment">//github.com/jjandxa/canvas_sphere</span></div><div class="line">  <span class="attribute">canvas_sphere</span>:</div><div class="line"></div><div class="line">  # Internal <span class="attribute">version</span>: <span class="number">1.0</span>.<span class="number">0</span></div><div class="line">  # <span class="attribute">https</span>:<span class="comment">//github.com/zproo/canvas-ribbon</span></div><div class="line">  <span class="attribute">canvas_ribbon</span>:</div><div class="line"></div><div class="line">  # Internal <span class="attribute">version</span>: <span class="number">3.3</span>.<span class="number">0</span></div><div class="line">  # <span class="attribute">https</span>:<span class="comment">//github.com/ethantw/Han</span></div><div class="line">  <span class="attribute">han</span>: <span class="attribute">https</span>:<span class="comment">//cdnjs.cat.net/ajax/libs/Han/3.3.0/han.min.css</span></div></pre></td></tr></table></figure></p>
+<p>然后找出网页中所有其他的使用cloudflare加速的内容，替换掉。 </p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        
+
+      </div>
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    dfine
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://dfine.tech/posts/6d87f1ac/" title="Hexo博客的优化">http://dfine.tech/posts/6d87f1ac/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow noopener noreferrer" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Hexo/" rel="tag"><i class="fa fa-leaf" aria-hidden="true"></i>
+Hexo</a>
+          
+            <a href="/tags/Nofollow/" rel="tag"><i class="fa fa-leaf" aria-hidden="true"></i>
+Nofollow</a>
+          
+            <a href="/tags/Emoji/" rel="tag"><i class="fa fa-leaf" aria-hidden="true"></i>
+Emoji</a>
+          
+            <a href="/tags/Gulp/" rel="tag"><i class="fa fa-leaf" aria-hidden="true"></i>
+Gulp</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/4da30c7/" rel="next" title="Next主题的Gitalk移植">
+                <i class="fa fa-chevron-left"></i> Next主题的Gitalk移植
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/b9c74ed9/" rel="prev" title="Mathjax的LaTeX公式语法">
+                Mathjax的LaTeX公式语法 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+		<script src="/js/src/yiyan.js"></script>
+<div>   
+    <font size="4" face="Heiti" color="gray" class="hitokoto"></font>
+</div>
+<!--MOB SHARE BEGIN-->
+<div class="-mob-share-ui-button -mob-share-open">分享</div>
+<div class="-mob-share-ui" -mob-share-ui-theme="" -mob-share-ui-theme-slide-bottom="" style="display: none">
+    <ul class="-mob-share-list">
+        <li class="-mob-share-weixin"><p>微信</p></li>
+        <li class="-mob-share-qzone"><p>QQ空间</p></li>
+        <li class="-mob-share-weibo"><p>新浪微博</p></li>
+        <li class="-mob-share-facebook"><p>Facebook</p></li>
+        <li class="-mob-share-twitter"><p>Twitter</p></li>
+        <li class="-mob-share-pocket"><p>Pocket</p></li>
+        <li class="-mob-share-tumblr"><p>Tumblr</p></li>
+        <li class="-mob-share-google"><p>Google+</p></li>
+        <li class="-mob-share-linkedin"><p>Linkedin</p></li>
+        <li class="-mob-share-qq"><p>QQ好友</p></li>
+        <li class="-mob-share-tencentweibo"><p>腾讯微博</p></li>
+        <li class="-mob-share-renren"><p>人人网</p></li>
+        <li class="-mob-share-douban"><p>豆瓣</p></li>
+        <li class="-mob-share-youdao"><p>有道云笔记</p></li>
+        <li class="-mob-share-instapaper"><p>Instapaper</p></li>
+    </ul>
+    <div class="-mob-share-close">取消</div>
+</div>
+<div class="-mob-share-ui-bg"></div>
+<script id="-mob-share" src="https://f1.webshare.mob.com/code/mob-share.js?appkey=1fc60caf613fe"></script>
+<!--MOB SHARE END-->
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+  
+       
+            <div onclick="ShowValine()" id="valine-display-button">匿名评论</div>
+            <div class="comments" id="comments" style="display:none">
+       
+    </div>
+
+    
+	 <div id="gitalk-container"></div>
+	
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image" src="/images/favo.jpg" alt="dfine">
+          <p class="site-author-name" itemprop="name">dfine</p>
+           
+              <p class="site-description motion-element" itemprop="description">多可喜，亦多可悲</p>
+          
+        </div>
+
+		<!--my custom code begin-->
+		<script src="https://cdnjs.loli.net/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+		<script src="https://cdnjs.loli.net/ajax/libs/velocity/1.5.0/velocity.min.js"></script>
+		<script type="text/javascript">
+		  $("#sidebar").hover(function(){
+			$("#mydivshow").velocity('stop').velocity({opacity: 1});
+		  },function(){
+			$("#mydivshow").velocity('stop').velocity({opacity: 0});
+		  });
+		</script>
+		<div id="mydivshow" class="mydivshow">
+		<!--my custom code end-->
+
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/">
+                <span class="site-state-item-count">82</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/categories/index.html">
+                <span class="site-state-item-count">15</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">111</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://newdee.gitbook.io/leetcode/" target="_blank" title="Leetcode" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-code"></i>
+                  
+                    
+                      Leetcode
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/newdee" target="_blank" title="GayHub" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                    
+                      GayHub
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://t.me/roomrss" target="_blank" title="TelegramRss" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-telegram"></i>
+                  
+                    
+                      TelegramRss
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/stebest?refer_flag=1001030101_&is_all=1" target="_blank" title="Weibo" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                    
+                      Weibo
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="mailto:stebest1992@gmail.com" target="_blank" title="E-Mail" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-at"></i>
+                  
+                    
+                      E-Mail
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://gitter.im/Newdee/newdee" target="_blank" title="Gitter" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-comments"></i>
+                  
+                    
+                      Gitter
+                    
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        <script>
+
+try{
+ if(window.console&&window.console.log)
+  {
+    console.log("%c控制台这么好玩嘛","background-color:rgba(255,255,255,0.1);font-size:1.5em");
+     console.log("%c ","padding:200px 260px;background:url('https://i.loli.net/2020/04/27/GrdC34HINPowfXE.gif')");
+     console.info("%c互链请邮  --支持ACG及Coding","background-color:rgba(255,255,255,0.5);font-size:1.3em");
+}  }
+catch(e){
+};
+</script>
+
+<div id="player1" class="aplayer"></div>
+<script src="/js/src/APlayer.min.js"></script>
+<script type="text/javascript">
+var ap = new APlayer({
+    element: document.getElementById('player1'),                       // Optional, player element
+    narrow: false,                                                     // Optional, narrow style
+    autoplay: false,                                                    // Optional, autoplay song(s), not supported by mobile browsers
+    showlrc: 3,                                                        // Optional, show lrc, can be 0, 1, 2, see: ###With lrc
+    mutex: true,                                                       // Optional, pause other players when this player playing
+    theme: '#e6d0b2',                                                  // Optional, theme color, default: #b7daff
+    mode: 'random',                                                    // Optional, play mode, can be `random` `single` `circulation`(loop) `order`(no loop), default: `circulation`
+    preload: 'metadata',                                               // Optional, the way to load music, can be 'none' 'metadata' 'auto', default: 'auto'
+    listmaxheight: '513px',                                             // Optional, max height of play list
+	music: [
+    {
+        title: '空空如也',
+        author: '任然',
+        url: 'https://files.catbox.moe/g27m5f.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162023.jpeg',
+		lrc: 'https://dfine.tech/lrc/kongkongruye'
+    },
+    {
+        title: '美しきもの',
+        author: 'Sound Horizon',
+        url: 'https://files.catbox.moe/1oevtg.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162103.jpeg',
+		lrc: 'https://dfine.tech/lrc/SoundHorizon'
+    },
+
+    {
+        title: '天国うまれ',
+        author: '甲本ヒロト',
+        url: 'https://files.catbox.moe/epooev.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162141.jpeg',
+	lrc: 'https://dfine.tech/lrc/tianguo'
+    },
+    {
+        title: '心做し',
+        author: 'luz',
+        url: 'https://files.catbox.moe/7j58ss.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162141.jpeg',
+		lrc: 'https://dfine.tech/lrc/xin'
+    },
+    {
+        title: 'Lemon',
+        author: '米津玄师',
+        url: 'https://files.catbox.moe/6ppo2h.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162427.jpeg',
+		lrc: 'https://dfine.tech/lrc/lemon'
+    },
+    {
+        title: 'You',
+        author: '雪野五月',
+        url: 'https://files.catbox.moe/1ovgtt.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325161925.jpeg',
+		lrc: 'https://dfine.tech/lrc/you'
+    },
+    {
+        title: '钟无艳',
+        author: '谢安琪',
+        url: 'https://files.catbox.moe/55sxbh.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162505.jpeg',
+		lrc: 'https://dfine.tech/lrc/zhongwuyan'
+    },
+
+    {
+        title: '殿书',
+        author: '奇然',
+        url: 'https://files.catbox.moe/e9n6sz.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162601.jpeg',
+		lrc: 'https://dfine.tech/lrc/dianshu'
+    },
+    {
+        title: 'East of Eden',
+        author: 'Zella Day',
+        url: 'https://files.catbox.moe/qoanq2.mp3',
+        pic: 'https://p1.music.126.net/orDs-AZ0jJjB06uoP0pdMw==/6667438510952720.jpg',
+		lrc: 'https://dfine.tech/lrc/eastEden'
+    },
+    {
+        title: '茁',
+        author: '谭烧',
+        url: 'https://files.catbox.moe/5lepv3.mp3',
+        pic: 'https://p1.music.126.net/xphtETT9CVE-IjRzGx20YA==/7969260279094350.jpg',
+		lrc: 'https://dfine.tech/lrc/zhuo'
+    },
+    {
+        title: '僕が死のうと思ったのは',
+        author: '中岛美嘉',
+        url: 'https://files.catbox.moe/umshce.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162629.jpeg',
+		lrc: 'https://dfine.tech/lrc/yiliaobailiao'
+    },
+    {
+        title: 'PLANET',
+        author: 'ラムジ',
+        url: 'https://files.catbox.moe/6ioooc.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162655.jpeg',
+		lrc: 'https://dfine.tech/lrc/planet'
+    },
+]
+
+
+});
+ $('.aplayer-icon-menu')[0].click();   //initial height
+	$('.aplayer-icon.aplayer-icon-mode').css('display','inline-block');
+  var myflag=true;
+	$('.aplayer-list').css('height','180px');
+	$('.aplayer-icon-menu svg').click(function(){
+    var temp=$('#player1').css('height');
+		if(temp=='250px' && !myflag){
+      $('#mydivshow').velocity('stop').velocity({height: 250});
+			$('#player1').velocity('stop').velocity({height: 66});
+    }
+		else if(temp=='66px' && myflag){
+      $('#mydivshow').velocity('stop').velocity({height: 420});
+			$('#player1').velocity('stop').velocity({height: 250});
+    }
+    myflag=!myflag;
+	});
+
+
+
+</script>
+
+<script type="text/javascript" src="//ra.revolvermaps.com/0/0/8.js?i=0qun3l8xnmd&amp;m=7&amp;c=ff0000&amp;cr1=ffffff&amp;f=arial&amp;l=33" async="async"></script>
+
+
+		<!--my custom code begin-->
+		</div>
+		<!--my custom code end-->
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#外部链接优化"><span class="nav-number">1.</span> <span class="nav-text">外部链接优化</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#主要作用"><span class="nav-number">1.1.</span> <span class="nav-text">主要作用</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#安装"><span class="nav-number">1.2.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#配置"><span class="nav-number">1.3.</span> <span class="nav-text">配置</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#在主页不显示某类文章"><span class="nav-number">2.</span> <span class="nav-text">在主页不显示某类文章</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#添加emoji支持"><span class="nav-number">3.</span> <span class="nav-text">添加emoji支持</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#安装-1"><span class="nav-number">3.1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#配置-1"><span class="nav-number">3.2.</span> <span class="nav-text">配置</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Warning的处理"><span class="nav-number">3.3.</span> <span class="nav-text">Warning的处理</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#后加"><span class="nav-number">3.4.</span> <span class="nav-text">后加</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#静态资源压缩"><span class="nav-number">4.</span> <span class="nav-text">静态资源压缩</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#安装-2"><span class="nav-number">4.1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#配置-2"><span class="nav-number">4.2.</span> <span class="nav-text">配置</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#问题解决"><span class="nav-number">4.3.</span> <span class="nav-text">问题解决</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#替换谷歌字体库"><span class="nav-number">5.</span> <span class="nav-text">替换谷歌字体库</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#后加-1"><span class="nav-number">5.1.</span> <span class="nav-text">后加</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#修改谷歌字体库"><span class="nav-number">5.1.1.</span> <span class="nav-text">修改谷歌字体库</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#替换CDNJS-开源-JS-库"><span class="nav-number">5.1.2.</span> <span class="nav-text">替换CDNJS 开源 JS 库</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#修改Han字体的CDN"><span class="nav-number">5.1.3.</span> <span class="nav-text">修改Han字体的CDN</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#修改其他的CDN"><span class="nav-number">5.1.4.</span> <span class="nav-text">修改其他的CDN</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </div></main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">
+  
+  &copy;  1992 - 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-superpowers"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder"><a href="https://dfine.tech">dfine</a></span>
+	
+
+</div>
+
+<!--
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+-->
+
+        
+<div class="busuanzi-count">
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user">This site's UV:</i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye">This site's PV:</i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="https://ajax.loli.net/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/fastclick/1.0.6/fastclick.min.js"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/velocity/1.5.0/velocity.min.js"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/velocity/1.5.0/velocity.ui.min.js"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/fancybox/3.1.25/jquery.fancybox.min.js"></script>
+
+  
+  <script type="text/javascript" src="/lib/three/three.min.js"></script>
+
+  
+  <script type="text/javascript" src="/lib/three/canvas_lines.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+   <link rel="stylesheet" href="https://dfine.tech/css/gitalk.css"> 
+ 
+  
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+   <script type="text/javascript">
+		var gitalk = new Gitalk({
+		  clientID: '4a39596c869e2498ea2c',
+		  clientSecret: '09f723a7aae19b9cd7767036df092d299793bd7a',
+		  repo: 'BlogComments',
+		  owner: 'newdee',
+		  admin: ['newdee'], 
+		  id: window.location.pathname,
+		  perPage: parseInt('5'),
+		  distractionFreeMode: 'false'
+		})
+
+		gitalk.render('gitalk-container')           
+       </script>
+	
+
+
+
+
+
+  <script src="//fastly.jsdelivr.net/npm/valine@1.4.16/dist/Valine.min.js"></script>
+    
+      <script type="text/javascript">
+        var GUEST = ['nick','mail','link'];
+        var guest = 'nick,mail,link';
+        guest = guest.split(',').filter(item=>{
+          return GUEST.indexOf(item)>-1;
+        });
+        function ShowValine(){
+            button=document.getElementById("valine-display-button");
+            vstate=document.getElementsByClassName("comments v")[0];
+            gstate=document.getElementById("gitalk-container");
+            if(vstate.style.display == "none" ){
+            button.innerHTML="Git评论";
+            vstate.style.display = "block";
+            gstate.style.display = "none";
+            }
+            else{
+            button.innerHTML="匿名评论";
+            gstate.style.display = "block";
+            vstate.style.display = "none";}
+        }
+        new Valine({
+            el: '#comments' ,
+            verify: false,
+            notify: false,
+            appId: 'HfI6KhJtyoYJVElqovLTdyIe-MdYXbMMI',
+            appKey: 'SgCg3S2tCDaEkxunnlBATRCk',
+            serverURLs: 'https://hfi6khjt.api.lncldglobal.com',
+            placeholder: '言语是花，也是刀。',
+            avatar:'mm',
+            guest_info:guest,
+            pageSize:'5' || 10,
+        });
+      </script>
+      
+
+
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $('.leancloud_visitors');
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', '/classes/Counter/' + counter.objectId, JSON.stringify({ time: { '__op': 'Increment', 'amount': 1 } }))
+            
+              .done(function() {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.time + 1);
+              })
+            
+              .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+              })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1 }))
+                .done(function() {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function() {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+        .fail(function ({ responseJSON }) {
+          console.log('LeanCloud Counter Error: ' + responseJSON.code + ' ' + responseJSON.error);
+        });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + 'HfI6KhJtyoYJVElqovLTdyIe-MdYXbMMI')
+        .done(function({ api_server }) {
+          var Counter = function(method, url, data) {
+            return $.ajax({
+              method: method,
+              url: 'https://' + api_server + '/1.1' + url,
+              headers: {
+                'X-LC-Id': 'HfI6KhJtyoYJVElqovLTdyIe-MdYXbMMI',
+                'X-LC-Key': 'SgCg3S2tCDaEkxunnlBATRCk',
+                'Content-Type': 'application/json',
+              },
+              data: data
+            });
+          };
+          
+            const localhost = /http:\/\/(localhost|127.0.0.1|0.0.0.0)/;
+            if (localhost.test(document.URL)) return;
+            addCount(Counter);
+          
+        });
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+  <script src="/js/src/Aplayer-Controler.min.js"></script>
+<div id="AP-controler"></div>
+<script type="text/javascript">
+var myapc=new APlayer_Controler({
+		APC_dom:$('#AP-controler'),
+		aplayer:ap,
+		attach_right:true,
+		position:{top:'150px',bottom:''},
+		fixed:true,
+		btn_width:100,
+		btn_height:120,
+		img_src:['https://fastly.jsdelivr.net/gh/newdee/BlogImage/20191105112417.gif', 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20191105112526.gif'],
+
+		tips_content:{
+			  on_loading:{top:'LOADING',bottom:'LIFE IS SO HARD'},
+			  on_welcome:{top:'LOADED',bottom:'NOT TOO BAD'},
+			  on_timeout:{top:'PLAYER ARE IN MARS',bottom:'TIME GOES STUPID'},
+			  on_error:{top:'PLAYER BROKEN',bottom:'NOTHING IS IMPORTANT IN LIFE'},
+			  on_listend:{top:'BOTTOM SAYS NO SONG',bottom:'TO DANCE'},
+			  on_nohistory:{top:'NO HISTORY',bottom:'YOU WILL CREATE THE HISTORY'},
+			  on_historyend:{top:'NO MORE',bottom:'HISTORY IS NOT IMPORTANT'}
+			},
+		img_style:{repeat:'no-repeat',position:'center',size:'contain'},
+		ctrls_color:'rgba(86,223,177,0.7)',
+		ctrls_hover_color:'rgba(255,140,0,0.7)',
+		tips_on:true,
+		tips_width:140,
+		tips_height:25,
+		tips_color:'rgba(255,255,255,0.8)',
+	  timeout:30,
+	  showOnPhone:false,
+	  songrecord_log:false
+	});
+</script>
+
+
+  <script type="text/javascript" src="/js/src/mouse.js"></script>
+
+
+<!--崩溃欺骗
+<script type="text/javascript" src="/js/src/broken.js"></script>
+-->
+</body>
+</html>
+
+<script type="text/javascript" src="/js/src/randbg.js"></script>
+<script src="https://fastly.jsdelivr.net/gh/newdee/live2d-widget@latest/autoload.js"></script>

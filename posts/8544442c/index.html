@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next mist" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+  <link rel="stylesheet" media="all" href="/lib/Han/dist/han.min.css?v=3.3">
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+  <link href="https://cdnjs.loli.net/ajax/libs/fancybox/3.1.25/jquery.fancybox.min.css" rel="stylesheet" type="text/css">
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.loli.net/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+  
+
+<link href="https://cdnjs.loli.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="ubuntu,IPv6,隧道,HE,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="阁子" type="application/atom+xml">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2">
+
+
+
+
+
+
+<meta name="description" content="在IPv4环境下使用IPv6。当前测试所用系统:ubuntu。因为暂时离开学校，而IPv6目前尚未普及，只有部分高校有所搭建，但希望访问以前的PT站，因此这里记录一下之前的“4 to 6” 的搭建过程。目前所用方法暂时有两种有效，加上SS代理，那就是三种了。">
+<meta name="keywords" content="ubuntu,IPv6,隧道,HE">
+<meta property="og:type" content="article">
+<meta property="og:title" content="IPv4下使用IPv6">
+<meta property="og:url" content="http://dfine.tech/posts/8544442c/index.html">
+<meta property="og:site_name" content="阁子">
+<meta property="og:description" content="在IPv4环境下使用IPv6。当前测试所用系统:ubuntu。因为暂时离开学校，而IPv6目前尚未普及，只有部分高校有所搭建，但希望访问以前的PT站，因此这里记录一下之前的“4 to 6” 的搭建过程。目前所用方法暂时有两种有效，加上SS代理，那就是三种了。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2022-05-19T04:23:59.331Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="IPv4下使用IPv6">
+<meta name="twitter:description" content="在IPv4环境下使用IPv6。当前测试所用系统:ubuntu。因为暂时离开学校，而IPv6目前尚未普及，只有部分高校有所搭建，但希望访问以前的PT站，因此这里记录一下之前的“4 to 6” 的搭建过程。目前所用方法暂时有两种有效，加上SS代理，那就是三种了。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: false,
+    duoshuo: {
+      userId: '0',
+      author: '鄙人'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    emojis: {
+      className: 'github-emoji'
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://dfine.tech/posts/8544442c/">
+
+
+
+
+
+  <title>IPv4下使用IPv6 | 阁子</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-83650950-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//tajs.qq.com/stats?sId=58292227";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">阁子</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">dfine's Blog</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-talks">
+          <a href="/talks/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-comment"></i> <br>
+            
+            闲言
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-map"></i> <br>
+            
+            友人目
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/About/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://dfine.tech/posts/8544442c/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="dfine">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/favo.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="阁子">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">IPv4下使用IPv6</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-09-21T14:17:25+08:00">
+                2017-09-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/Linux/" itemprop="url" rel="index">
+                    <span itemprop="name">Linux</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+          
+          
+             <span id="/posts/8544442c/" class="leancloud_visitors" data-flag-title="IPv4下使用IPv6">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body han-init-context" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>在IPv4环境下使用IPv6。当前测试所用系统:ubuntu。<br>因为暂时离开学校，而IPv6目前尚未普及，只有部分高校有所搭建，但希望访问以前的PT站，因此这里记录一下之前的“4 to 6” 的搭建过程。<br>目前所用方法暂时有两种有效，加上SS代理，那就是三种了。<br><a id="more"></a></p>
+<h4 id="使用miredo网络工具"><a href="#使用miredo网络工具" class="headerlink" title="使用miredo网络工具"></a>使用miredo网络工具</h4><p>miredo主要用于BSD和Linux的IPV6 Teredo隧道链接，可以转换不支持IPV6的网络连接IPV6，内核中需要有IPV6和TUN隧道支持。用法参数见其<a href="https://zh.wikipedia.org/wiki/Miredo" rel="external nofollow noopener noreferrer" target="_blank">WIKI</a><br>直接用命令行比较方便，这个也免去了很多复杂的配置，具体过程如下:</p>
+<h5 id="安装miredo"><a href="#安装miredo" class="headerlink" title="安装miredo"></a>安装miredo</h5><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">sudo apt <span class="keyword">update</span></div><div class="line">sudo apt <span class="keyword">install</span> miredo</div></pre></td></tr></table></figure>
+<p>这个很简单，安装完成之后启动就可以创建一个”4 to 6”的虚拟转换网卡。<br><figure class="highlight ebnf"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="attribute">sudo miredo</span></div></pre></td></tr></table></figure></p>
+<p>使用<code>ifconfig</code>可以查看到多了一个网卡：<br><figure class="highlight less"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="selector-tag">teredo</span>    <span class="selector-tag">Link</span> <span class="selector-tag">encap</span><span class="selector-pseudo">:UNSPEC</span>  <span class="selector-tag">HWaddr</span> <span class="selector-tag">00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00</span>  </div><div class="line">          <span class="selector-tag">inet6</span> <span class="selector-tag">addr</span>: <span class="selector-tag">2001</span><span class="selector-pseudo">:0</span><span class="selector-pseudo">:53aa</span><span class="selector-pseudo">:64c</span><span class="selector-pseudo">:20e0</span><span class="selector-pseudo">:6050</span><span class="selector-pseudo">:861c</span><span class="selector-pseudo">:ebe4</span>/<span class="selector-tag">32</span> <span class="selector-tag">Scope</span><span class="selector-pseudo">:Global</span></div><div class="line">          <span class="selector-tag">inet6</span> <span class="selector-tag">addr</span>: <span class="selector-tag">fe80</span><span class="selector-pseudo">::7d24</span><span class="selector-pseudo">:d8ab</span><span class="selector-pseudo">:cc69</span><span class="selector-pseudo">:a96b</span>/<span class="selector-tag">64</span> <span class="selector-tag">Scope</span><span class="selector-pseudo">:Link</span></div><div class="line">          <span class="selector-tag">inet6</span> <span class="selector-tag">addr</span>: <span class="selector-tag">fe80</span><span class="selector-pseudo">::ffff</span><span class="selector-pseudo">:ffff</span><span class="selector-pseudo">:ffff</span>/<span class="selector-tag">64</span> <span class="selector-tag">Scope</span><span class="selector-pseudo">:Link</span></div><div class="line">          <span class="selector-tag">UP</span> <span class="selector-tag">POINTOPOINT</span> <span class="selector-tag">RUNNING</span> <span class="selector-tag">NOARP</span> <span class="selector-tag">MULTICAST</span>  <span class="selector-tag">MTU</span><span class="selector-pseudo">:1280</span>  <span class="selector-tag">Metric</span><span class="selector-pseudo">:1</span></div><div class="line">          <span class="selector-tag">RX</span> <span class="selector-tag">packets</span><span class="selector-pseudo">:0</span> <span class="selector-tag">errors</span><span class="selector-pseudo">:0</span> <span class="selector-tag">dropped</span><span class="selector-pseudo">:0</span> <span class="selector-tag">overruns</span><span class="selector-pseudo">:0</span> <span class="selector-tag">frame</span><span class="selector-pseudo">:0</span></div><div class="line">          <span class="selector-tag">TX</span> <span class="selector-tag">packets</span><span class="selector-pseudo">:1</span> <span class="selector-tag">errors</span><span class="selector-pseudo">:0</span> <span class="selector-tag">dropped</span><span class="selector-pseudo">:0</span> <span class="selector-tag">overruns</span><span class="selector-pseudo">:0</span> <span class="selector-tag">carrier</span><span class="selector-pseudo">:0</span></div><div class="line">          <span class="selector-tag">collisions</span><span class="selector-pseudo">:0</span> <span class="selector-tag">txqueuelen</span><span class="selector-pseudo">:500</span> </div><div class="line">          <span class="selector-tag">RX</span> <span class="selector-tag">bytes</span><span class="selector-pseudo">:0</span> (<span class="number">0.0</span> B)  <span class="selector-tag">TX</span> <span class="selector-tag">bytes</span><span class="selector-pseudo">:48</span> (<span class="number">48.0</span> B)</div></pre></td></tr></table></figure></p>
+<p>然后ping一下Google的IPv6地址，应该是可以ping通了。<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ping6 ipv6<span class="selector-class">.google</span><span class="selector-class">.com</span></div></pre></td></tr></table></figure></p>
+<p>不过到这里还没完,ipv6还可以用来访问一些外面的网站。</p>
+<h5 id="修改Hosts文件"><a href="#修改Hosts文件" class="headerlink" title="修改Hosts文件"></a>修改Hosts文件</h5><p>如果本来就有ipv6地址，前面的就都不用做了。<br>Hosts文件参考最新地址，见其<a href="https://github.com/lennylxx/ipv6-hosts" rel="external nofollow noopener noreferrer" target="_blank">Repo</a>。<br>也可以直接拷贝Hosts文件内容，地址<a href="https://raw.githubusercontent.com/lennylxx/ipv6-hosts/master/hosts" rel="external nofollow noopener noreferrer" target="_blank">在这</a>。<br>因为内容比较多，复制起来比较麻烦，可以直接保存为txt，比如<code>hosts.txt</code>。<br>然后，<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">cat hosts.txt <span class="meta">&gt;&gt; </span>/etc/hosts</div></pre></td></tr></table></figure></p>
+<p>然后就可以直接访问Google，YouTube等网站了。不过由于是<code>4to6</code>的网络，没有自己的ipv6地址，所以速度不会太快。</p>
+<h4 id="HE-net方案"><a href="#HE-net方案" class="headerlink" title="HE.net方案"></a>HE.net方案</h4><p>另一种ipv6代理是He.net方案，可以直接访问其<a href="http://he.net/" rel="external nofollow noopener noreferrer" target="_blank">官网</a>。  </p>
+<h5 id="注册"><a href="#注册" class="headerlink" title="注册"></a>注册</h5><p>首先是注册Tunnel broker，地址<a href="https://www.tunnelbroker.net/" rel="external nofollow noopener noreferrer" target="_blank">在这</a>，里面的邮箱和密码填好就可以，其余的随便填一下。<br>然后进入你的Tunnel页面。</p>
+<h5 id="创建Tunnel"><a href="#创建Tunnel" class="headerlink" title="创建Tunnel"></a>创建Tunnel</h5><p>点击User Function中的Create Regular Tunne，然后选择一个地区的Tunnel服务器，一般选延迟最小的，可以通过ping判断。虽然是在亚洲，但东京和HK的延迟还是很高的，所以不要通过地点判断。<br>然后就是输入你的IPv4地址，注意是外网IP。<br>点击创建，创建成功后进入Example Configuration， 选择你的操作系统，它会给出一段代码，用于配置你的电脑的网卡的。<br>我这里是Ubuntu，所以选择Debian/Ubuntu，然后给出的代码如下:<br><figure class="highlight routeros"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">auto he-ipv6</div><div class="line">iface he-ipv6 inet6 v4tunnel</div><div class="line">       <span class="built_in"> address </span>******</div><div class="line">        netmask 64</div><div class="line">        endpoint ******</div><div class="line">        local ******</div><div class="line">        ttl 255</div><div class="line">        gateway ******</div></pre></td></tr></table></figure></p>
+<p>这个就是网卡的配置，相当于新建一个自动启动的网卡，然后分配了ip。<br>直接复制粘贴到interface文件中即可:<br><figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">sudo vim <span class="regexp">/etc/</span>network/<span class="class"><span class="keyword">interface</span></span></div></pre></td></tr></table></figure></p>
+<p>注意，如果电脑没有公网IP，则需要把local的IP地址改为你的私有地址，如<code>192.168.2.100</code></p>
+<h5 id="启用网卡"><a href="#启用网卡" class="headerlink" title="启用网卡"></a>启用网卡</h5><p>添加完之后，需要启用刚刚配置的<code>4 to 6</code>网卡，<br><figure class="highlight nginx"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="attribute">sudo</span> ifup he-ipv6</div></pre></td></tr></table></figure></p>
+<p>然后就可以访问V6的PT站和外面的一些网站了。<br>当然，速度虽然取决与你的服务器地区，但总体速度也不会很快。  </p>
+<h4 id="梯子代理IPv6"><a href="#梯子代理IPv6" class="headerlink" title="梯子代理IPv6"></a>梯子代理IPv6</h4><p>这个之前搭建梯子的时候应该说过了，配置比较简单，如果用SS的 话，直接在SS服务器的configure文件中将server地址改为<code>::</code>即可：<br><figure class="highlight avrasm"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="symbol">server:</span> <span class="string">"::"</span></div></pre></td></tr></table></figure></p>
+<p><code>::</code>会同时转发V6和V4流量。当然，前提是在选择服务器的时候启用了IPv6地址。<br>如果服务器延迟低，IPv6下载也会很快的。不过如果用VPS只是为了搭建一个SS，其余的什么都不管，一旦受到Dos-attack，可能流量就一晚上走完了。DDos易攻难守，而且这对于提供虚拟机的服务商也是一种损失。所以最好还需要一点网络和服务器维护的手段。  </p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        
+
+      </div>
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    dfine
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://dfine.tech/posts/8544442c/" title="IPv4下使用IPv6">http://dfine.tech/posts/8544442c/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow noopener noreferrer" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/ubuntu/" rel="tag"><i class="fa fa-leaf" aria-hidden="true"></i>
+ubuntu</a>
+          
+            <a href="/tags/IPv6/" rel="tag"><i class="fa fa-leaf" aria-hidden="true"></i>
+IPv6</a>
+          
+            <a href="/tags/隧道/" rel="tag"><i class="fa fa-leaf" aria-hidden="true"></i>
+隧道</a>
+          
+            <a href="/tags/HE/" rel="tag"><i class="fa fa-leaf" aria-hidden="true"></i>
+HE</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/3c4e255/" rel="next" title="FFmpeg常用命令">
+                <i class="fa fa-chevron-left"></i> FFmpeg常用命令
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/1dd5cd65/" rel="prev" title="Bash和Tmux的Powerline">
+                Bash和Tmux的Powerline <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+		<script src="/js/src/yiyan.js"></script>
+<div>   
+    <font size="4" face="Heiti" color="gray" class="hitokoto"></font>
+</div>
+<!--MOB SHARE BEGIN-->
+<div class="-mob-share-ui-button -mob-share-open">分享</div>
+<div class="-mob-share-ui" -mob-share-ui-theme="" -mob-share-ui-theme-slide-bottom="" style="display: none">
+    <ul class="-mob-share-list">
+        <li class="-mob-share-weixin"><p>微信</p></li>
+        <li class="-mob-share-qzone"><p>QQ空间</p></li>
+        <li class="-mob-share-weibo"><p>新浪微博</p></li>
+        <li class="-mob-share-facebook"><p>Facebook</p></li>
+        <li class="-mob-share-twitter"><p>Twitter</p></li>
+        <li class="-mob-share-pocket"><p>Pocket</p></li>
+        <li class="-mob-share-tumblr"><p>Tumblr</p></li>
+        <li class="-mob-share-google"><p>Google+</p></li>
+        <li class="-mob-share-linkedin"><p>Linkedin</p></li>
+        <li class="-mob-share-qq"><p>QQ好友</p></li>
+        <li class="-mob-share-tencentweibo"><p>腾讯微博</p></li>
+        <li class="-mob-share-renren"><p>人人网</p></li>
+        <li class="-mob-share-douban"><p>豆瓣</p></li>
+        <li class="-mob-share-youdao"><p>有道云笔记</p></li>
+        <li class="-mob-share-instapaper"><p>Instapaper</p></li>
+    </ul>
+    <div class="-mob-share-close">取消</div>
+</div>
+<div class="-mob-share-ui-bg"></div>
+<script id="-mob-share" src="https://f1.webshare.mob.com/code/mob-share.js?appkey=1fc60caf613fe"></script>
+<!--MOB SHARE END-->
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+  
+       
+            <div onclick="ShowValine()" id="valine-display-button">匿名评论</div>
+            <div class="comments" id="comments" style="display:none">
+       
+    </div>
+
+    
+	 <div id="gitalk-container"></div>
+	
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image" src="/images/favo.jpg" alt="dfine">
+          <p class="site-author-name" itemprop="name">dfine</p>
+           
+              <p class="site-description motion-element" itemprop="description">多可喜，亦多可悲</p>
+          
+        </div>
+
+		<!--my custom code begin-->
+		<script src="https://cdnjs.loli.net/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+		<script src="https://cdnjs.loli.net/ajax/libs/velocity/1.5.0/velocity.min.js"></script>
+		<script type="text/javascript">
+		  $("#sidebar").hover(function(){
+			$("#mydivshow").velocity('stop').velocity({opacity: 1});
+		  },function(){
+			$("#mydivshow").velocity('stop').velocity({opacity: 0});
+		  });
+		</script>
+		<div id="mydivshow" class="mydivshow">
+		<!--my custom code end-->
+
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/">
+                <span class="site-state-item-count">82</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/categories/index.html">
+                <span class="site-state-item-count">15</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">111</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://newdee.gitbook.io/leetcode/" target="_blank" title="Leetcode" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-code"></i>
+                  
+                    
+                      Leetcode
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/newdee" target="_blank" title="GayHub" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                    
+                      GayHub
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://t.me/roomrss" target="_blank" title="TelegramRss" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-telegram"></i>
+                  
+                    
+                      TelegramRss
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/stebest?refer_flag=1001030101_&is_all=1" target="_blank" title="Weibo" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                    
+                      Weibo
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="mailto:stebest1992@gmail.com" target="_blank" title="E-Mail" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-at"></i>
+                  
+                    
+                      E-Mail
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://gitter.im/Newdee/newdee" target="_blank" title="Gitter" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-comments"></i>
+                  
+                    
+                      Gitter
+                    
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        <script>
+
+try{
+ if(window.console&&window.console.log)
+  {
+    console.log("%c控制台这么好玩嘛","background-color:rgba(255,255,255,0.1);font-size:1.5em");
+     console.log("%c ","padding:200px 260px;background:url('https://i.loli.net/2020/04/27/GrdC34HINPowfXE.gif')");
+     console.info("%c互链请邮  --支持ACG及Coding","background-color:rgba(255,255,255,0.5);font-size:1.3em");
+}  }
+catch(e){
+};
+</script>
+
+<div id="player1" class="aplayer"></div>
+<script src="/js/src/APlayer.min.js"></script>
+<script type="text/javascript">
+var ap = new APlayer({
+    element: document.getElementById('player1'),                       // Optional, player element
+    narrow: false,                                                     // Optional, narrow style
+    autoplay: false,                                                    // Optional, autoplay song(s), not supported by mobile browsers
+    showlrc: 3,                                                        // Optional, show lrc, can be 0, 1, 2, see: ###With lrc
+    mutex: true,                                                       // Optional, pause other players when this player playing
+    theme: '#e6d0b2',                                                  // Optional, theme color, default: #b7daff
+    mode: 'random',                                                    // Optional, play mode, can be `random` `single` `circulation`(loop) `order`(no loop), default: `circulation`
+    preload: 'metadata',                                               // Optional, the way to load music, can be 'none' 'metadata' 'auto', default: 'auto'
+    listmaxheight: '513px',                                             // Optional, max height of play list
+	music: [
+    {
+        title: '空空如也',
+        author: '任然',
+        url: 'https://files.catbox.moe/g27m5f.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162023.jpeg',
+		lrc: 'https://dfine.tech/lrc/kongkongruye'
+    },
+    {
+        title: '美しきもの',
+        author: 'Sound Horizon',
+        url: 'https://files.catbox.moe/1oevtg.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162103.jpeg',
+		lrc: 'https://dfine.tech/lrc/SoundHorizon'
+    },
+
+    {
+        title: '天国うまれ',
+        author: '甲本ヒロト',
+        url: 'https://files.catbox.moe/epooev.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162141.jpeg',
+	lrc: 'https://dfine.tech/lrc/tianguo'
+    },
+    {
+        title: '心做し',
+        author: 'luz',
+        url: 'https://files.catbox.moe/7j58ss.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162141.jpeg',
+		lrc: 'https://dfine.tech/lrc/xin'
+    },
+    {
+        title: 'Lemon',
+        author: '米津玄师',
+        url: 'https://files.catbox.moe/6ppo2h.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162427.jpeg',
+		lrc: 'https://dfine.tech/lrc/lemon'
+    },
+    {
+        title: 'You',
+        author: '雪野五月',
+        url: 'https://files.catbox.moe/1ovgtt.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325161925.jpeg',
+		lrc: 'https://dfine.tech/lrc/you'
+    },
+    {
+        title: '钟无艳',
+        author: '谢安琪',
+        url: 'https://files.catbox.moe/55sxbh.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162505.jpeg',
+		lrc: 'https://dfine.tech/lrc/zhongwuyan'
+    },
+
+    {
+        title: '殿书',
+        author: '奇然',
+        url: 'https://files.catbox.moe/e9n6sz.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162601.jpeg',
+		lrc: 'https://dfine.tech/lrc/dianshu'
+    },
+    {
+        title: 'East of Eden',
+        author: 'Zella Day',
+        url: 'https://files.catbox.moe/qoanq2.mp3',
+        pic: 'https://p1.music.126.net/orDs-AZ0jJjB06uoP0pdMw==/6667438510952720.jpg',
+		lrc: 'https://dfine.tech/lrc/eastEden'
+    },
+    {
+        title: '茁',
+        author: '谭烧',
+        url: 'https://files.catbox.moe/5lepv3.mp3',
+        pic: 'https://p1.music.126.net/xphtETT9CVE-IjRzGx20YA==/7969260279094350.jpg',
+		lrc: 'https://dfine.tech/lrc/zhuo'
+    },
+    {
+        title: '僕が死のうと思ったのは',
+        author: '中岛美嘉',
+        url: 'https://files.catbox.moe/umshce.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162629.jpeg',
+		lrc: 'https://dfine.tech/lrc/yiliaobailiao'
+    },
+    {
+        title: 'PLANET',
+        author: 'ラムジ',
+        url: 'https://files.catbox.moe/6ioooc.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162655.jpeg',
+		lrc: 'https://dfine.tech/lrc/planet'
+    },
+]
+
+
+});
+ $('.aplayer-icon-menu')[0].click();   //initial height
+	$('.aplayer-icon.aplayer-icon-mode').css('display','inline-block');
+  var myflag=true;
+	$('.aplayer-list').css('height','180px');
+	$('.aplayer-icon-menu svg').click(function(){
+    var temp=$('#player1').css('height');
+		if(temp=='250px' && !myflag){
+      $('#mydivshow').velocity('stop').velocity({height: 250});
+			$('#player1').velocity('stop').velocity({height: 66});
+    }
+		else if(temp=='66px' && myflag){
+      $('#mydivshow').velocity('stop').velocity({height: 420});
+			$('#player1').velocity('stop').velocity({height: 250});
+    }
+    myflag=!myflag;
+	});
+
+
+
+</script>
+
+<script type="text/javascript" src="//ra.revolvermaps.com/0/0/8.js?i=0qun3l8xnmd&amp;m=7&amp;c=ff0000&amp;cr1=ffffff&amp;f=arial&amp;l=33" async="async"></script>
+
+
+		<!--my custom code begin-->
+		</div>
+		<!--my custom code end-->
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#使用miredo网络工具"><span class="nav-number">1.</span> <span class="nav-text">使用miredo网络工具</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#安装miredo"><span class="nav-number">1.1.</span> <span class="nav-text">安装miredo</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#修改Hosts文件"><span class="nav-number">1.2.</span> <span class="nav-text">修改Hosts文件</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#HE-net方案"><span class="nav-number">2.</span> <span class="nav-text">HE.net方案</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#注册"><span class="nav-number">2.1.</span> <span class="nav-text">注册</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#创建Tunnel"><span class="nav-number">2.2.</span> <span class="nav-text">创建Tunnel</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#启用网卡"><span class="nav-number">2.3.</span> <span class="nav-text">启用网卡</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#梯子代理IPv6"><span class="nav-number">3.</span> <span class="nav-text">梯子代理IPv6</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </div></main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">
+  
+  &copy;  1992 - 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-superpowers"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder"><a href="https://dfine.tech">dfine</a></span>
+	
+
+</div>
+
+<!--
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+-->
+
+        
+<div class="busuanzi-count">
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user">This site's UV:</i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye">This site's PV:</i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="https://ajax.loli.net/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/fastclick/1.0.6/fastclick.min.js"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/velocity/1.5.0/velocity.min.js"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/velocity/1.5.0/velocity.ui.min.js"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/fancybox/3.1.25/jquery.fancybox.min.js"></script>
+
+  
+  <script type="text/javascript" src="/lib/three/three.min.js"></script>
+
+  
+  <script type="text/javascript" src="/lib/three/canvas_lines.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+   <link rel="stylesheet" href="https://dfine.tech/css/gitalk.css"> 
+ 
+  
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+   <script type="text/javascript">
+		var gitalk = new Gitalk({
+		  clientID: '4a39596c869e2498ea2c',
+		  clientSecret: '09f723a7aae19b9cd7767036df092d299793bd7a',
+		  repo: 'BlogComments',
+		  owner: 'newdee',
+		  admin: ['newdee'], 
+		  id: window.location.pathname,
+		  perPage: parseInt('5'),
+		  distractionFreeMode: 'false'
+		})
+
+		gitalk.render('gitalk-container')           
+       </script>
+	
+
+
+
+
+
+  <script src="//fastly.jsdelivr.net/npm/valine@1.4.16/dist/Valine.min.js"></script>
+    
+      <script type="text/javascript">
+        var GUEST = ['nick','mail','link'];
+        var guest = 'nick,mail,link';
+        guest = guest.split(',').filter(item=>{
+          return GUEST.indexOf(item)>-1;
+        });
+        function ShowValine(){
+            button=document.getElementById("valine-display-button");
+            vstate=document.getElementsByClassName("comments v")[0];
+            gstate=document.getElementById("gitalk-container");
+            if(vstate.style.display == "none" ){
+            button.innerHTML="Git评论";
+            vstate.style.display = "block";
+            gstate.style.display = "none";
+            }
+            else{
+            button.innerHTML="匿名评论";
+            gstate.style.display = "block";
+            vstate.style.display = "none";}
+        }
+        new Valine({
+            el: '#comments' ,
+            verify: false,
+            notify: false,
+            appId: 'HfI6KhJtyoYJVElqovLTdyIe-MdYXbMMI',
+            appKey: 'SgCg3S2tCDaEkxunnlBATRCk',
+            serverURLs: 'https://hfi6khjt.api.lncldglobal.com',
+            placeholder: '言语是花，也是刀。',
+            avatar:'mm',
+            guest_info:guest,
+            pageSize:'5' || 10,
+        });
+      </script>
+      
+
+
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $('.leancloud_visitors');
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', '/classes/Counter/' + counter.objectId, JSON.stringify({ time: { '__op': 'Increment', 'amount': 1 } }))
+            
+              .done(function() {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.time + 1);
+              })
+            
+              .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+              })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1 }))
+                .done(function() {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function() {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+        .fail(function ({ responseJSON }) {
+          console.log('LeanCloud Counter Error: ' + responseJSON.code + ' ' + responseJSON.error);
+        });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + 'HfI6KhJtyoYJVElqovLTdyIe-MdYXbMMI')
+        .done(function({ api_server }) {
+          var Counter = function(method, url, data) {
+            return $.ajax({
+              method: method,
+              url: 'https://' + api_server + '/1.1' + url,
+              headers: {
+                'X-LC-Id': 'HfI6KhJtyoYJVElqovLTdyIe-MdYXbMMI',
+                'X-LC-Key': 'SgCg3S2tCDaEkxunnlBATRCk',
+                'Content-Type': 'application/json',
+              },
+              data: data
+            });
+          };
+          
+            const localhost = /http:\/\/(localhost|127.0.0.1|0.0.0.0)/;
+            if (localhost.test(document.URL)) return;
+            addCount(Counter);
+          
+        });
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+  <script src="/js/src/Aplayer-Controler.min.js"></script>
+<div id="AP-controler"></div>
+<script type="text/javascript">
+var myapc=new APlayer_Controler({
+		APC_dom:$('#AP-controler'),
+		aplayer:ap,
+		attach_right:true,
+		position:{top:'150px',bottom:''},
+		fixed:true,
+		btn_width:100,
+		btn_height:120,
+		img_src:['https://fastly.jsdelivr.net/gh/newdee/BlogImage/20191105112417.gif', 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20191105112526.gif'],
+
+		tips_content:{
+			  on_loading:{top:'LOADING',bottom:'LIFE IS SO HARD'},
+			  on_welcome:{top:'LOADED',bottom:'NOT TOO BAD'},
+			  on_timeout:{top:'PLAYER ARE IN MARS',bottom:'TIME GOES STUPID'},
+			  on_error:{top:'PLAYER BROKEN',bottom:'NOTHING IS IMPORTANT IN LIFE'},
+			  on_listend:{top:'BOTTOM SAYS NO SONG',bottom:'TO DANCE'},
+			  on_nohistory:{top:'NO HISTORY',bottom:'YOU WILL CREATE THE HISTORY'},
+			  on_historyend:{top:'NO MORE',bottom:'HISTORY IS NOT IMPORTANT'}
+			},
+		img_style:{repeat:'no-repeat',position:'center',size:'contain'},
+		ctrls_color:'rgba(86,223,177,0.7)',
+		ctrls_hover_color:'rgba(255,140,0,0.7)',
+		tips_on:true,
+		tips_width:140,
+		tips_height:25,
+		tips_color:'rgba(255,255,255,0.8)',
+	  timeout:30,
+	  showOnPhone:false,
+	  songrecord_log:false
+	});
+</script>
+
+
+  <script type="text/javascript" src="/js/src/mouse.js"></script>
+
+
+<!--崩溃欺骗
+<script type="text/javascript" src="/js/src/broken.js"></script>
+-->
+</body>
+</html>
+
+<script type="text/javascript" src="/js/src/randbg.js"></script>
+<script src="https://fastly.jsdelivr.net/gh/newdee/live2d-widget@latest/autoload.js"></script>

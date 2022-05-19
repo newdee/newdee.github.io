@@ -1,0 +1,1726 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next mist" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+  <link rel="stylesheet" media="all" href="/lib/Han/dist/han.min.css?v=3.3">
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+  <link href="https://cdnjs.loli.net/ajax/libs/fancybox/3.1.25/jquery.fancybox.min.css" rel="stylesheet" type="text/css">
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.loli.net/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+  
+
+<link href="https://cdnjs.loli.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="GStreamer,TX1,视频处理,嵌入式开发,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="阁子" type="application/atom+xml">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2">
+
+
+
+
+
+
+<meta name="description" content="GStreamer is a library for constructing graphs of media-handling components. The applications it supports range from simple Ogg/Vorbis playback, audio/video str">
+<meta name="keywords" content="GStreamer,TX1,视频处理,嵌入式开发">
+<meta property="og:type" content="article">
+<meta property="og:title" content="多媒体框架GStreamer">
+<meta property="og:url" content="http://dfine.tech/posts/413bb42a/index.html">
+<meta property="og:site_name" content="阁子">
+<meta property="og:description" content="GStreamer is a library for constructing graphs of media-handling components. The applications it supports range from simple Ogg/Vorbis playback, audio/video streaming to complex audio (mixing) and vi">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2022-05-19T04:23:59.331Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="多媒体框架GStreamer">
+<meta name="twitter:description" content="GStreamer is a library for constructing graphs of media-handling components. The applications it supports range from simple Ogg/Vorbis playback, audio/video streaming to complex audio (mixing) and vi">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: false,
+    duoshuo: {
+      userId: '0',
+      author: '鄙人'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    emojis: {
+      className: 'github-emoji'
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://dfine.tech/posts/413bb42a/">
+
+
+
+
+
+  <title>多媒体框架GStreamer | 阁子</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-83650950-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//tajs.qq.com/stats?sId=58292227";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">阁子</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">dfine's Blog</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-talks">
+          <a href="/talks/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-comment"></i> <br>
+            
+            闲言
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-map"></i> <br>
+            
+            友人目
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/About/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://dfine.tech/posts/413bb42a/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="dfine">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/favo.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="阁子">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">多媒体框架GStreamer</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-11-23T09:54:51+08:00">
+                2017-11-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/TX1入坑/" itemprop="url" rel="index">
+                    <span itemprop="name">TX1入坑</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+          
+          
+             <span id="/posts/413bb42a/" class="leancloud_visitors" data-flag-title="多媒体框架GStreamer">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body han-init-context" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p>GStreamer is a library for constructing graphs of media-handling components. The applications it supports range from simple Ogg/Vorbis playback, audio/video streaming to complex audio (mixing) and video (non-linear editing) processing.</p>
+</blockquote>
+<p>GStreamer是一个轻便的多媒体框架，在TX1上默认并未提供V4L2驱动，需要手动安装，而且这个驱动是基于GStreamer的。此外，在TX1上支持的H.264和H.265硬解码也是通过GStreamer的。<br><a id="more"></a></p>
+<h3 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h3><h4 id="Pipeline"><a href="#Pipeline" class="headerlink" title="Pipeline"></a>Pipeline</h4><p>GStreamer是通过管道和插件实现各种功能或构建各种流媒体应用的。<br>管道的概念在shell中已经很常见了，不过GStreamer中的管道符号不是<code>|</code>而是<code>!</code>。GStreamer中将很多元素串联起来，类似管道的命令，将前者输出作为后者输入。<br>如:<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">gst-launch-<span class="number">1.0</span> filesrc location=<span class="selector-tag">a</span><span class="selector-class">.mp3</span> ! decodebin ! audioconvert ! alsasink</div></pre></td></tr></table></figure></p>
+<p>其中,每个元素说明如下:  </p>
+<ul>
+<li><code>filesrc</code>: 从本地磁盘加载了一个文件，使用该元素时你设置了<code>location</code> 属性指向该文件。</li>
+<li><code>decodebin</code>: 使用该元素从<code>filesrc</code>解码。会自动检测文件的类型并在后台构造一些<code>GStreamer</code>元素来解码。  </li>
+<li><code>audioconvert</code>: 音频转换元素。 </li>
+<li><code>alsasink</code>: 将音频使用ALSA传递给声卡。</li>
+</ul>
+<h4 id="Element"><a href="#Element" class="headerlink" title="Element"></a>Element</h4><p>元素是GStreamer内置可使用在管道上的命令，GStreamer通过各种元素完成任务。可以使用<code>gst-inspect-1.0</code>命令来查看可使用的元素。当创建Pipeline时，需要为各个Element设置各种属性。<br>GStreamer将GstElement细分成如下几类：</p>
+<ul>
+<li>Source Element: 数据源元素。只有输出端，它仅能用来产生供管道消费的数据，而不能对数据做任何处理。一个典型的数据源元素的例子是音频捕获单元，它负责从声卡读取原始的音频数据，然后作为数据源提供给其它模块使用。</li>
+<li>Filter Element: 过滤器元素。既有输入端又有输出端，它从输入端获得相应的数据，并在经过特殊处理之后传递给输出端。一个典型的过滤器元素的例子是音频编码单元，它首先从外界获得音频数据，然后根据特定的压缩算法对其进行编码，最后再将编码后的结果提供给其它模块使用。</li>
+<li>Sink Element: 接收器元素。只有输入端，它仅具有消费数据的能力，是整条媒体管道的终端。一个典型的接收器元素的例子是音频回放单元，它负责将接收到的数据写到声卡上，通常这也是音频处理过程中的最后一个环节。</li>
+</ul>
+<h4 id="Pad"><a href="#Pad" class="headerlink" title="Pad"></a>Pad</h4><p>一般元素都有输入输出接口，即pad。可将各个元素视作黑盒，则一般元素都有一个输入pad和输出pad，即过滤器元素。输入pad称为sink，输出pad称为src。管道命令模型基本如下:<br><figure class="highlight accesslog"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="string">[src]</span> ! <span class="string">[sink src]</span> ! <span class="string">[sink src]</span> ! <span class="string">[sink]</span></div></pre></td></tr></table></figure></p>
+<p>最左边的元素只有一个src pad用来提供信息（如filesrc）。接下来的几个元素接收信息并做一些处理，因此他们有sink和src pad（例如decodebin和audiocovert），最后一个元素只接收信息（例如alsasink）。使用gst-inspect-1.0命令查看一个元素的详细信息时，就可以看到该元素的pad信息。</p>
+<blockquote>
+<p>注意可能与平时大家认为的概念有些不同的是，src pad是用来发送数据的端点，即数据的 输出端；而sink pad是用来接收数据的端点，即数据的输入端。</p>
+</blockquote>
+<p>一般来说，src pad只能连接到sink pad。但ghost pad两端就要连接相同类型的pad。 </p>
+<h4 id="Cap"><a href="#Cap" class="headerlink" title="Cap"></a>Cap</h4><p>每个元素的cap表示该元素可以接收什么样的信息，类似于V4L2中的cap。</p>
+<h4 id="Bin"><a href="#Bin" class="headerlink" title="Bin"></a>Bin</h4><p>GStreamer中的bin类似于c中的结构体，是可以存放多个元素的容器。例如管道是<code>a ! b ! c ! d</code>，可以把他们放进mybin，这样当使用mybin时其实是引用了<code>a ! b ! c ! d</code>。  </p>
+<h4 id="Ghost-pad"><a href="#Ghost-pad" class="headerlink" title="Ghost pad"></a>Ghost pad</h4><p>从名字上来看，ghost pad即特殊的pad。</p>
+<blockquote>
+<p>当你创建了一个bin并在里面放置了很多元素时，该bin变成了你自定义的元素，该元素按顺序调用里面的元素。要做到这样，bin很自然地需要它自己的pad，它自己的pad会挂接到bin里面元素的pad上，这就是 ghost pad了。当你创建一个bin时，你创建了ghost pad并告诉他们要去挂接里面哪一个元素。  </p>
+</blockquote>
+<h4 id="Message"><a href="#Message" class="headerlink" title="Message"></a>Message</h4><p>Message是Pipeline用向外来主动报告自己的运行状态。Message会被发送到一个消息队列，即Pipeline的Bus。应用程序则是从Bus中获取message，并进行处理。  </p>
+<h4 id="Event"><a href="#Event" class="headerlink" title="Event"></a>Event</h4><p>Event是Pipeline用来通信的机制，分为上行、下行和双向Event。在定义了某个事件的响应后，也可以由应用程序直接向该插件(bin)发送事件。通过Event可以控制整个Pipeline的运行状态。</p>
+<ul>
+<li>上行事件: 由sink插件向source插件方向传输。包括:  </li>
+</ul>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">GST_EVENT_QOS</div><div class="line">GST_EVENT_SEEK</div></pre></td></tr></table></figure>
+<ul>
+<li>下行事件: 由source插件向sink插件方向传输。包括:</li>
+</ul>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">GST_EVENT_EOS</div><div class="line">GST_EVENT_NEWSEGMENT</div></pre></td></tr></table></figure>
+<ul>
+<li>双行事件:包括:</li>
+</ul>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">GST_EVENT_FLUSH_START</div><div class="line">GST_EVENT_FLUSH_STOP</div></pre></td></tr></table></figure>
+<h4 id="Signal"><a href="#Signal" class="headerlink" title="Signal"></a>Signal</h4><p>Signal是应用控制某一插件的运行状态，可以看做Glib对象的一个属性，属于同步操作，和Linux中的系统信号有差别。通过Signal可以让某个插件做一些对插件本身变量的操作，比如增加或删除一些维护信息等。</p>
+<h3 id="GStreamer程序处理"><a href="#GStreamer程序处理" class="headerlink" title="GStreamer程序处理"></a>GStreamer程序处理</h3><p>可以使用c或Python，Python中需要<code>import gi</code>，c中使用<code>include &lt;gst/gst.h&gt;</code>等头文件。<br>TX1中的GStreamer头文件可以在<code>/usr/include/GStreamer-1.0</code>目录下找到。</p>
+<h4 id="元素处理"><a href="#元素处理" class="headerlink" title="元素处理"></a>元素处理</h4><p>Elements是具有一定功能的基本单元，主要组成如下:</p>
+<figure class="highlight livescript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">udpsrc: 接受UDP数据(source产生数据)</div><div class="line">rtph264depay: H264的RTP拆包<span class="function"><span class="params">(filter)</span>。<span class="params">(rtp+h264包)</span>-&gt;</span>(h264包)</div><div class="line">mpegtsmux: 打ts包<span class="function"><span class="params">(filter)</span>。<span class="params">(h264包)</span>-&gt;</span>(ts包)</div><div class="line">filesink: 将数据存入文件(sink消耗数据)</div></pre></td></tr></table></figure>
+<p>在应用程序中创建GstElement对象的方法是借助于工厂对象GstElementFactory。由于GStreamer框架提供了多种类型的GstElement对象，因此对应地提供了多种类型的GstElementFactory对象，它们是通过特定的工厂名称来进行区分的。<br>如:</p>
+<figure class="highlight abnf"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">GstElementFactory *factory<span class="comment">;</span></div><div class="line"><span class="attribute">factory</span> = gst_element_factory_find (<span class="string">"mad"</span>)<span class="comment">;</span></div></pre></td></tr></table></figure>
+<p>该代码通过<code>gst_element_factory_find()</code>函数创建了一个名为<code>mad</code>的工厂对象。之后就可以通过<code>gst_element_factory_create()</code>函数来创建特定的GstElement对象了。<br><figure class="highlight lisp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">GstElement *element<span class="comment">;</span></div><div class="line">element = gst_element_factory_create (<span class="name">factory</span>, <span class="string">"decoder"</span>)<span class="comment">;</span></div></pre></td></tr></table></figure></p>
+<p>函数<code>gst_element_factory_create()</code>在调用时有两个参数，分别是需要用到的工厂对象，以及即将创建的元素名。元素名可以用查询的办法获得，也可以通过传入空指针（NULL）来生成工厂对象的默认元素。  </p>
+<blockquote>
+<p>GStreamer使用了与GObject相同的机制来对属性（property）进行管理，包括查询（query）、设置（set）和读取（get）等。所有的GstElement对象都需要从其父对象GstObject那里继承名称（name）这一最基本的属性，这是因为像<code>gst_element_factory_make()</code>和<code>gst_element_factory_create()</code>这样的函数在创建工厂对象和元素对象时都会用到名称属性，通过调用<code>gst_object_set_name()</code>和<code>gst_object_get_name()</code>函数可以设置和读取GstElement对象的名称属性。</p>
+</blockquote>
+<h4 id="Pad处理"><a href="#Pad处理" class="headerlink" title="Pad处理"></a>Pad处理</h4><p>成功创建GstElement对象之后，可以通过<code>gst_element_get_pad()</code>获得该元素的指定pad。例如，下面的代码将返回element元素中名为src的pad：<br><figure class="highlight lisp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">GstPad *srcpad<span class="comment">;</span></div><div class="line">srcpad = gst_element_get_pad (<span class="name">element</span>, <span class="string">"src"</span>)<span class="comment">;</span></div></pre></td></tr></table></figure></p>
+<p>需要的话也可以通过<code>gst_element_get_pad_list()</code>函数来查询指定元素中的所有pad。例如，下面的代码将输出elemen元素中所有pad的名称：<br><figure class="highlight nginx"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="attribute">GList</span> *pads;</div><div class="line"><span class="attribute">pads</span> = gst_element_get_pad_list (element);</div><div class="line"><span class="attribute">while</span> (pads) &#123;</div><div class="line">  <span class="attribute">GstPad</span> *pad = GST_PAD (pads-&gt;data);</div><div class="line">  <span class="attribute">g_print</span> (<span class="string">"pad name is: %s\n"</span>, gst_pad_get_name (pad));</div><div class="line">  <span class="attribute">pads</span> = g_list_next (pads);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>与元素一样，pad的名称也能够动态设置或者读取，这是通过调用<code>gst_pad_get_name()</code>和<code>gst_pad_set_name()</code>函数来完成的。所有元素的pad都可以细分成输入pad和输出pad两种，其中输入pad只能接收数据但不能产生数据，而输出pad则正好相反。函数<code>gst_pad_get_direction()</code>可以获得指定pad的类型。GStreamer框架中的所有pad都必然依附于某个元素之上，调用<code>gst_pad_get_parent()</code>可以获得指定pad所属的元素，该函数的返回值是一个指向GstElement的指针。 Pad从某种程度上可以看成是元素的代言人，因为它要负责向外界描述该元素所具有的能力。GStreamer框架提供了统一的机制来让pad描述元素所具有的能力（capability），这是借助结构体<code>_GstCaps</code>来实现的：<br><figure class="highlight thrift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">struct</span> _<span class="title">GstCaps</span> </span>&#123;</div><div class="line">  gchar *name; <span class="comment">/* the name of this caps */</span></div><div class="line">  guint16 id; <span class="comment">/* type id (major type) */</span></div><div class="line">  guint refcount; <span class="comment">/* caps are refcounted */</span></div><div class="line">  GstProps *properties; <span class="comment">/* properties for this capability */</span></div><div class="line">  GstCaps *next; <span class="comment">/* caps can be chained together */</span> &#125;;</div></pre></td></tr></table></figure></p>
+<p>GStreamer框架中的每个pad都可能对应于多个能力描述，它们能够通过函数<code>gst_pad_get_caps()</code>来获得。例如，下面的代码将输出pad中所有能力描述的名称及其MIME类型：<br><figure class="highlight nginx"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="attribute">GstCaps</span> *caps;</div><div class="line"><span class="attribute">caps</span> = gst_pad_get_caps (pad);</div><div class="line"><span class="attribute">g_print</span> (<span class="string">"pad name is: %s\n"</span>, gst_pad_get_name (pad));</div><div class="line"><span class="attribute">while</span> (caps) &#123;</div><div class="line">  <span class="attribute">g_print</span> (<span class="string">" Capability name is %s, MIME type is %s\n"</span>,</div><div class="line">  gst_caps_get_name (cap),</div><div class="line">  gst_caps_get_mime (cap));</div><div class="line">  <span class="attribute">caps</span> = caps-&gt;next;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h4 id="Bin处理"><a href="#Bin处理" class="headerlink" title="Bin处理"></a>Bin处理</h4><p>在GStreamer应用程序中使用的bin主要有两种类型：</p>
+<ul>
+<li>GstPipeline 管道是最常用到的容器，对于一个GStreamer应用程序来讲，其顶层bin必须是一条管道。</li>
+<li>GstThread 线程的作用在于能够提供同步处理能力，如果GStreamer应用程序需要进行严格的音视频同步，一般都需要用到这种类型的bin。</li>
+</ul>
+<p>GStreamer框架提供了两种方法来创建bin：一种是借助工厂方法，另一种则是使用特定的函数。下面的代码示范了如何使用工厂方法创建线程对象，以及如何使用特定函数来创建管道对象：<br><figure class="highlight lasso"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">GstElement *<span class="keyword">thread</span>, *pipeline;</div><div class="line"><span class="comment">// 创建线程对象，同时为其指定唯一的名称。</span></div><div class="line"><span class="keyword">thread</span> = gst_element_factory_make (<span class="string">"thread"</span>, <span class="built_in">NULL</span>);</div><div class="line"><span class="comment">// 根据给出的名称，创建一个特定的管道对象。</span></div><div class="line">pipeline = gst_pipeline_new (<span class="string">"pipeline_name"</span>);</div></pre></td></tr></table></figure></p>
+<p>Bin成功创建之后，就可以调用<code>gst_bin_add()</code>函数将已经存在的元素添加到其中来了：<br><figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">GstElement *element<span class="comment">;</span></div><div class="line">GstElement *<span class="keyword">bin;</span></div><div class="line"><span class="keyword">bin </span>= gst_bin_new (<span class="string">"bin_name"</span>)<span class="comment">;</span></div><div class="line">element = gst_element_factory_make (<span class="string">"mpg123"</span>, <span class="string">"decoder"</span>)<span class="comment">;</span></div><div class="line">gst_bin_add (GST_BIN (<span class="keyword">bin), </span>element)<span class="comment">;</span></div></pre></td></tr></table></figure></p>
+<p>从bin中找到特定的元素可以借助<code>gst_bin_get_by_name()</code>函数实现：  </p>
+<figure class="highlight lisp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">GstElement *element<span class="comment">;</span></div><div class="line">element = gst_bin_get_by_name (<span class="name">GST_BIN</span> (<span class="name">bin</span>), <span class="string">"decoder"</span>)<span class="comment">;</span></div></pre></td></tr></table></figure>
+<p>由于GStreamer框架中的一个bin能够添加到另一个bin中，因此有可能会出现嵌套bin的情况，<code>gst_bin_get_by_name()</code>函数在查找元素时会对嵌套的bin作递归查找。元素有添加到bin中后，在需要的时候还可以从中移出，通过调用<code>gst_bin_remove()</code>函数来完成：</p>
+<figure class="highlight lisp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">GstElement *element<span class="comment">;</span></div><div class="line">gst_bin_remove (<span class="name">GST_BIN</span> (<span class="name">bin</span>), element)<span class="comment">;</span></div></pre></td></tr></table></figure>
+<h4 id="Ghost-pad-1"><a href="#Ghost-pad-1" class="headerlink" title="Ghost pad"></a>Ghost pad</h4><p>具有ghost pad的bin在行为上与元素是完全相同的，所有元素具有的属性它都具有，所有针对元素能够进行的操作也同样能够针对bin进行，因此在GStreamer应用程序中能够像使用元素一样使用这类bin。通常通过以下方式为bin添加一个ghost pad:</p>
+<figure class="highlight lisp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">GstElement *bin<span class="comment">;</span></div><div class="line">GstElement *element<span class="comment">;</span></div><div class="line">element = gst_element_factory_create (<span class="string">"mad"</span>, <span class="string">"decoder"</span>)<span class="comment">;</span></div><div class="line">bin = gst_bin_new (<span class="string">"bin_name"</span>)<span class="comment">;</span></div><div class="line">gst_bin_add (<span class="name">GST_BIN</span> (<span class="name">bin</span>), element)<span class="comment">;</span></div><div class="line">gst_element_add_ghost_pad (<span class="name">bin</span>, gst_element_get_pad (<span class="name">element</span>, <span class="string">"sink"</span>), <span class="string">"sink"</span>)<span class="comment">;</span></div></pre></td></tr></table></figure>
+<h4 id="元素连接"><a href="#元素连接" class="headerlink" title="元素连接"></a>元素连接</h4><p>GStreamer框架中的元素是通过各自的pad连接起来的，如下所示:<br><figure class="highlight makefile"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">GstPad *srcpad, *sinkpad;</div><div class="line">srcpad = gst_element_get_pad (element1, <span class="string">"src"</span>);</div><div class="line">sinpad = gst_element_get_pad (element2, <span class="string">"sink"</span>);</div><div class="line">// 连接</div><div class="line">gst_pad_link (srcpad, sinkpad);</div><div class="line">// 断开</div><div class="line">gst_pad_unlink (srcpad, sinkpad);</div></pre></td></tr></table></figure></p>
+<p>如果需要建立起连接的元素都只有一个输入pad和一个输出pad，那么更简单的做法是调用<code>gst_element_link()</code>函数直接在它们之间建立起连接，或者调用<code>gst_element_unlink()</code>函数断开它们之间的连接：<br><figure class="highlight less"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 连接</span></div><div class="line"><span class="selector-tag">gst_element_link</span> (element1, element2);</div><div class="line"><span class="comment">// 断开</span></div><div class="line"><span class="selector-tag">gst_element_unlink</span> (element1, element2);</div></pre></td></tr></table></figure></p>
+<h4 id="元素状态"><a href="#元素状态" class="headerlink" title="元素状态"></a>元素状态</h4><p>每个元素一般会有四种状态:</p>
+<table>
+<thead>
+<tr>
+<th>标识</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NULL</td>
+<td>这是所有元素的默认状态，表明它刚刚创建，还没有开始做任何事情。</td>
+</tr>
+<tr>
+<td>READY</td>
+<td>表明元素已经做好准备，随时可以开始处理流程。</td>
+</tr>
+<tr>
+<td>PAUSED</td>
+<td>表明元素因某种原因暂时停止处理数据。</td>
+</tr>
+<tr>
+<td>PLAYING</td>
+<td>表明元素正在进行数据处理。</td>
+</tr>
+</tbody>
+</table>
+<p>所有的元素都从NULL状态开始，依次经历NULL、READY、PAUSED、PLAYING等状态间的转换。元素当前所处的状态可以通过调用<code>gst_element_set_state()</code>函数进行切换：<br><figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">GstElement *<span class="keyword">bin;</span></div><div class="line">/* 创建元素，并将其连接成bin */</div><div class="line">gst_element_set_state (<span class="keyword">bin, </span>GST_STATE_PLAYING)<span class="comment">;</span></div></pre></td></tr></table></figure></p>
+<blockquote>
+<p>默认情况下，管道及其包含的所有元素在创建之后将处于NULL状态，此时它们不会进行任何操作。当管道使用完毕之后，不要忘记重新将管道的状态切换回NULL状态，让其中包含的所有元素能够有机会释放它们正在占用的资源。<br>管道真正的处理流程是从第一次将其切换到READY状态时开始的，此时管道及其包含的所有元素将做好相应的初始化工作，来为即将执行的数据处理过程做好准备。对于一个典型的元素来讲，处于READY状态时需要执行的操作包括打开媒体文件和音频设备等，或者试图与位于远端的媒体服务器建立起连接。<br>处于READY状态的管道一旦切换到PLAYING状态，需要处理的多媒体数据就开始在整个管道中流动，并依次被管道中包含的各个元素进行处理，从而最终实现管道预先定义好的某种多媒体功能。GStreamer框架也允许将管道直接从NULL状态切换到PLAYING状态，而不必经过中间的READY状态。<br>正处于播放状态的管道能够随时切换到PAUSED状态，暂时停止管道中所有数据的流动，并能够在需要的时候再次切换回PLAYING状态。如果需要插入或者更改管道中的某个元素，必须先将其切换到PAUSED或者NULL状态，元素在处于PAUSED状态时并不会释放其占用的资源。</p>
+</blockquote>
+<h4 id="Probe"><a href="#Probe" class="headerlink" title="Probe"></a>Probe</h4><p>应用程序可以通过探针(Probe)来探测某个插件的pad中流过的数据，如:<br><figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/*******Callback handler when probe date received***********/</span></div><div class="line">static gboolean </div><div class="line">callback_have_data(GstPad *padsrc, GstBuffer *<span class="keyword">buffer, </span>gpointer data)&#123;</div><div class="line">    gint    iBufSize = <span class="number">0</span><span class="comment">;</span></div><div class="line">    gchar*     pBuffer = NULL<span class="comment">;</span></div><div class="line">        </div><div class="line">    iBufSize = GST_BUFFER_SIZE(<span class="keyword">buffer);</span></div><div class="line"><span class="keyword"> </span>   pBuffer = (gchar*)GST_BUFFER_DATA(<span class="keyword">buffer);</span></div><div class="line"><span class="keyword"> </span>   </div><div class="line">    static gint numBuf = <span class="number">0</span><span class="comment">;</span></div><div class="line">    g_print(<span class="string">"\rBUF %d  Size=%d   "</span>, numBuf++, iBufSize)<span class="comment">;</span></div><div class="line"></div><div class="line">    return TRUE<span class="comment">;</span></div><div class="line">&#125;</div><div class="line"></div><div class="line">GstPad *m_pad_concert_src = gst_element_get_static_pad(m_gst_convert, <span class="string">"src"</span>)<span class="comment">;   </span></div><div class="line">gst_pad_add_buffer_probe(m_pad_concert_src, G_CALLBACK(callback_have_data), NULL)<span class="comment">;</span></div><div class="line">gst_object_unref(m_pad_concert_src)<span class="comment">;</span></div></pre></td></tr></table></figure></p>
+<p>该代码在<code>m_pad_concert</code>插件的src pad加一个探针，每当有buf到达时，就调用<code>callback_have_data()</code>,这里这个函数只是打印一下buf的大小，统计一下buf流过的个数。</p>
+<h4 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h4><p>一个简单的程序:<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;gst/gst.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span> </span>&#123;</div><div class="line">  GstElement *pipeline;</div><div class="line">  GstBus *bus;</div><div class="line">  GstMessage *msg;</div><div class="line"></div><div class="line">  <span class="comment">/* Initialize GStreamer */</span></div><div class="line">  gst_init (&amp;argc, &amp;argv);</div><div class="line"></div><div class="line">  <span class="comment">/* Build the pipeline */</span></div><div class="line">  pipeline = gst_parse_launch (<span class="string">"playbin uri=https://www.freedesktop.org/software/gstreamer-sdk/data/media/sintel_trailer-480p.webm"</span>, <span class="literal">NULL</span>);</div><div class="line"></div><div class="line">  <span class="comment">/* Start playing */</span></div><div class="line">  gst_element_set_state (pipeline, GST_STATE_PLAYING);</div><div class="line"></div><div class="line">  <span class="comment">/* Wait until error or EOS */</span></div><div class="line">  bus = gst_element_get_bus (pipeline);</div><div class="line">  msg = gst_bus_timed_pop_filtered (bus, GST_CLOCK_TIME_NONE, GST_MESSAGE_ERROR | GST_MESSAGE_EOS);</div><div class="line"></div><div class="line">  <span class="comment">/* Free resources */</span></div><div class="line">  <span class="keyword">if</span> (msg != <span class="literal">NULL</span>)</div><div class="line">    gst_message_unref (msg);</div><div class="line">  gst_object_unref (bus);</div><div class="line">  gst_element_set_state (pipeline, GST_STATE_NULL);</div><div class="line">  gst_object_unref (pipeline);</div><div class="line">  <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>然后使用gcc进行编译，编译时需加上参数<code>pkg-config --cflags --libs gstreamer-0.10</code>。<br>其中，<code>gst_init (&amp;argc, &amp;argv)</code>用于初始化所有内部结构，检查插件是否可用，以及执行用于GStreamer的命令参数。<code>pipeline = gst_parse_launch (&quot;playbin2 uri=http://docs.GStreamer.com/media/sintel_trailer-480p.webm&quot;, NULL)</code>中，<code>gst_parse_launch</code>函数接受一个管道的文本表示并把它变成一个实际的管道。<code>playbin2</code>是充当source和sink一个特殊的元素（element），并且能够实现整个管道。<code>gst_element_set_state (pipeline, GST_STATE_PLAYING)</code>函数设置Pipeline状态为播放状态。<code>gst_element_get_bus (pipeline);</code>函数获取管道的总线，<code>gst_bus_timed_pop_filtered</code>函数将阻塞，直到收到错误或EOS(End-Of-Stream)。  </p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        
+
+      </div>
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    dfine
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://dfine.tech/posts/413bb42a/" title="多媒体框架GStreamer">http://dfine.tech/posts/413bb42a/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow noopener noreferrer" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/GStreamer/" rel="tag"><i class="fa fa-leaf" aria-hidden="true"></i>
+GStreamer</a>
+          
+            <a href="/tags/TX1/" rel="tag"><i class="fa fa-leaf" aria-hidden="true"></i>
+TX1</a>
+          
+            <a href="/tags/视频处理/" rel="tag"><i class="fa fa-leaf" aria-hidden="true"></i>
+视频处理</a>
+          
+            <a href="/tags/嵌入式开发/" rel="tag"><i class="fa fa-leaf" aria-hidden="true"></i>
+嵌入式开发</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/360656f/" rel="next" title="Linux的文件IO和多进程">
+                <i class="fa fa-chevron-left"></i> Linux的文件IO和多进程
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/aad6181/" rel="prev" title="查询工具pkg-config">
+                查询工具pkg-config <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+		<script src="/js/src/yiyan.js"></script>
+<div>   
+    <font size="4" face="Heiti" color="gray" class="hitokoto"></font>
+</div>
+<!--MOB SHARE BEGIN-->
+<div class="-mob-share-ui-button -mob-share-open">分享</div>
+<div class="-mob-share-ui" -mob-share-ui-theme="" -mob-share-ui-theme-slide-bottom="" style="display: none">
+    <ul class="-mob-share-list">
+        <li class="-mob-share-weixin"><p>微信</p></li>
+        <li class="-mob-share-qzone"><p>QQ空间</p></li>
+        <li class="-mob-share-weibo"><p>新浪微博</p></li>
+        <li class="-mob-share-facebook"><p>Facebook</p></li>
+        <li class="-mob-share-twitter"><p>Twitter</p></li>
+        <li class="-mob-share-pocket"><p>Pocket</p></li>
+        <li class="-mob-share-tumblr"><p>Tumblr</p></li>
+        <li class="-mob-share-google"><p>Google+</p></li>
+        <li class="-mob-share-linkedin"><p>Linkedin</p></li>
+        <li class="-mob-share-qq"><p>QQ好友</p></li>
+        <li class="-mob-share-tencentweibo"><p>腾讯微博</p></li>
+        <li class="-mob-share-renren"><p>人人网</p></li>
+        <li class="-mob-share-douban"><p>豆瓣</p></li>
+        <li class="-mob-share-youdao"><p>有道云笔记</p></li>
+        <li class="-mob-share-instapaper"><p>Instapaper</p></li>
+    </ul>
+    <div class="-mob-share-close">取消</div>
+</div>
+<div class="-mob-share-ui-bg"></div>
+<script id="-mob-share" src="https://f1.webshare.mob.com/code/mob-share.js?appkey=1fc60caf613fe"></script>
+<!--MOB SHARE END-->
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+  
+       
+            <div onclick="ShowValine()" id="valine-display-button">匿名评论</div>
+            <div class="comments" id="comments" style="display:none">
+       
+    </div>
+
+    
+	 <div id="gitalk-container"></div>
+	
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image" src="/images/favo.jpg" alt="dfine">
+          <p class="site-author-name" itemprop="name">dfine</p>
+           
+              <p class="site-description motion-element" itemprop="description">多可喜，亦多可悲</p>
+          
+        </div>
+
+		<!--my custom code begin-->
+		<script src="https://cdnjs.loli.net/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+		<script src="https://cdnjs.loli.net/ajax/libs/velocity/1.5.0/velocity.min.js"></script>
+		<script type="text/javascript">
+		  $("#sidebar").hover(function(){
+			$("#mydivshow").velocity('stop').velocity({opacity: 1});
+		  },function(){
+			$("#mydivshow").velocity('stop').velocity({opacity: 0});
+		  });
+		</script>
+		<div id="mydivshow" class="mydivshow">
+		<!--my custom code end-->
+
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/">
+                <span class="site-state-item-count">82</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/categories/index.html">
+                <span class="site-state-item-count">15</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">111</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://newdee.gitbook.io/leetcode/" target="_blank" title="Leetcode" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-code"></i>
+                  
+                    
+                      Leetcode
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/newdee" target="_blank" title="GayHub" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                    
+                      GayHub
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://t.me/roomrss" target="_blank" title="TelegramRss" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-telegram"></i>
+                  
+                    
+                      TelegramRss
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/stebest?refer_flag=1001030101_&is_all=1" target="_blank" title="Weibo" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                    
+                      Weibo
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="mailto:stebest1992@gmail.com" target="_blank" title="E-Mail" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-at"></i>
+                  
+                    
+                      E-Mail
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://gitter.im/Newdee/newdee" target="_blank" title="Gitter" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-comments"></i>
+                  
+                    
+                      Gitter
+                    
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        <script>
+
+try{
+ if(window.console&&window.console.log)
+  {
+    console.log("%c控制台这么好玩嘛","background-color:rgba(255,255,255,0.1);font-size:1.5em");
+     console.log("%c ","padding:200px 260px;background:url('https://i.loli.net/2020/04/27/GrdC34HINPowfXE.gif')");
+     console.info("%c互链请邮  --支持ACG及Coding","background-color:rgba(255,255,255,0.5);font-size:1.3em");
+}  }
+catch(e){
+};
+</script>
+
+<div id="player1" class="aplayer"></div>
+<script src="/js/src/APlayer.min.js"></script>
+<script type="text/javascript">
+var ap = new APlayer({
+    element: document.getElementById('player1'),                       // Optional, player element
+    narrow: false,                                                     // Optional, narrow style
+    autoplay: false,                                                    // Optional, autoplay song(s), not supported by mobile browsers
+    showlrc: 3,                                                        // Optional, show lrc, can be 0, 1, 2, see: ###With lrc
+    mutex: true,                                                       // Optional, pause other players when this player playing
+    theme: '#e6d0b2',                                                  // Optional, theme color, default: #b7daff
+    mode: 'random',                                                    // Optional, play mode, can be `random` `single` `circulation`(loop) `order`(no loop), default: `circulation`
+    preload: 'metadata',                                               // Optional, the way to load music, can be 'none' 'metadata' 'auto', default: 'auto'
+    listmaxheight: '513px',                                             // Optional, max height of play list
+	music: [
+    {
+        title: '空空如也',
+        author: '任然',
+        url: 'https://files.catbox.moe/g27m5f.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162023.jpeg',
+		lrc: 'https://dfine.tech/lrc/kongkongruye'
+    },
+    {
+        title: '美しきもの',
+        author: 'Sound Horizon',
+        url: 'https://files.catbox.moe/1oevtg.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162103.jpeg',
+		lrc: 'https://dfine.tech/lrc/SoundHorizon'
+    },
+
+    {
+        title: '天国うまれ',
+        author: '甲本ヒロト',
+        url: 'https://files.catbox.moe/epooev.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162141.jpeg',
+	lrc: 'https://dfine.tech/lrc/tianguo'
+    },
+    {
+        title: '心做し',
+        author: 'luz',
+        url: 'https://files.catbox.moe/7j58ss.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162141.jpeg',
+		lrc: 'https://dfine.tech/lrc/xin'
+    },
+    {
+        title: 'Lemon',
+        author: '米津玄师',
+        url: 'https://files.catbox.moe/6ppo2h.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162427.jpeg',
+		lrc: 'https://dfine.tech/lrc/lemon'
+    },
+    {
+        title: 'You',
+        author: '雪野五月',
+        url: 'https://files.catbox.moe/1ovgtt.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325161925.jpeg',
+		lrc: 'https://dfine.tech/lrc/you'
+    },
+    {
+        title: '钟无艳',
+        author: '谢安琪',
+        url: 'https://files.catbox.moe/55sxbh.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162505.jpeg',
+		lrc: 'https://dfine.tech/lrc/zhongwuyan'
+    },
+
+    {
+        title: '殿书',
+        author: '奇然',
+        url: 'https://files.catbox.moe/e9n6sz.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162601.jpeg',
+		lrc: 'https://dfine.tech/lrc/dianshu'
+    },
+    {
+        title: 'East of Eden',
+        author: 'Zella Day',
+        url: 'https://files.catbox.moe/qoanq2.mp3',
+        pic: 'https://p1.music.126.net/orDs-AZ0jJjB06uoP0pdMw==/6667438510952720.jpg',
+		lrc: 'https://dfine.tech/lrc/eastEden'
+    },
+    {
+        title: '茁',
+        author: '谭烧',
+        url: 'https://files.catbox.moe/5lepv3.mp3',
+        pic: 'https://p1.music.126.net/xphtETT9CVE-IjRzGx20YA==/7969260279094350.jpg',
+		lrc: 'https://dfine.tech/lrc/zhuo'
+    },
+    {
+        title: '僕が死のうと思ったのは',
+        author: '中岛美嘉',
+        url: 'https://files.catbox.moe/umshce.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162629.jpeg',
+		lrc: 'https://dfine.tech/lrc/yiliaobailiao'
+    },
+    {
+        title: 'PLANET',
+        author: 'ラムジ',
+        url: 'https://files.catbox.moe/6ioooc.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162655.jpeg',
+		lrc: 'https://dfine.tech/lrc/planet'
+    },
+]
+
+
+});
+ $('.aplayer-icon-menu')[0].click();   //initial height
+	$('.aplayer-icon.aplayer-icon-mode').css('display','inline-block');
+  var myflag=true;
+	$('.aplayer-list').css('height','180px');
+	$('.aplayer-icon-menu svg').click(function(){
+    var temp=$('#player1').css('height');
+		if(temp=='250px' && !myflag){
+      $('#mydivshow').velocity('stop').velocity({height: 250});
+			$('#player1').velocity('stop').velocity({height: 66});
+    }
+		else if(temp=='66px' && myflag){
+      $('#mydivshow').velocity('stop').velocity({height: 420});
+			$('#player1').velocity('stop').velocity({height: 250});
+    }
+    myflag=!myflag;
+	});
+
+
+
+</script>
+
+<script type="text/javascript" src="//ra.revolvermaps.com/0/0/8.js?i=0qun3l8xnmd&amp;m=7&amp;c=ff0000&amp;cr1=ffffff&amp;f=arial&amp;l=33" async="async"></script>
+
+
+		<!--my custom code begin-->
+		</div>
+		<!--my custom code end-->
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#基本概念"><span class="nav-number">1.</span> <span class="nav-text">基本概念</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Pipeline"><span class="nav-number">1.1.</span> <span class="nav-text">Pipeline</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Element"><span class="nav-number">1.2.</span> <span class="nav-text">Element</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Pad"><span class="nav-number">1.3.</span> <span class="nav-text">Pad</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Cap"><span class="nav-number">1.4.</span> <span class="nav-text">Cap</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Bin"><span class="nav-number">1.5.</span> <span class="nav-text">Bin</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Ghost-pad"><span class="nav-number">1.6.</span> <span class="nav-text">Ghost pad</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Message"><span class="nav-number">1.7.</span> <span class="nav-text">Message</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Event"><span class="nav-number">1.8.</span> <span class="nav-text">Event</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Signal"><span class="nav-number">1.9.</span> <span class="nav-text">Signal</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GStreamer程序处理"><span class="nav-number">2.</span> <span class="nav-text">GStreamer程序处理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#元素处理"><span class="nav-number">2.1.</span> <span class="nav-text">元素处理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Pad处理"><span class="nav-number">2.2.</span> <span class="nav-text">Pad处理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Bin处理"><span class="nav-number">2.3.</span> <span class="nav-text">Bin处理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Ghost-pad-1"><span class="nav-number">2.4.</span> <span class="nav-text">Ghost pad</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#元素连接"><span class="nav-number">2.5.</span> <span class="nav-text">元素连接</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#元素状态"><span class="nav-number">2.6.</span> <span class="nav-text">元素状态</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Probe"><span class="nav-number">2.7.</span> <span class="nav-text">Probe</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#例子"><span class="nav-number">2.8.</span> <span class="nav-text">例子</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </div></main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">
+  
+  &copy;  1992 - 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-superpowers"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder"><a href="https://dfine.tech">dfine</a></span>
+	
+
+</div>
+
+<!--
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+-->
+
+        
+<div class="busuanzi-count">
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user">This site's UV:</i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye">This site's PV:</i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="https://ajax.loli.net/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/fastclick/1.0.6/fastclick.min.js"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/velocity/1.5.0/velocity.min.js"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/velocity/1.5.0/velocity.ui.min.js"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/fancybox/3.1.25/jquery.fancybox.min.js"></script>
+
+  
+  <script type="text/javascript" src="/lib/three/three.min.js"></script>
+
+  
+  <script type="text/javascript" src="/lib/three/canvas_lines.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+   <link rel="stylesheet" href="https://dfine.tech/css/gitalk.css"> 
+ 
+  
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+   <script type="text/javascript">
+		var gitalk = new Gitalk({
+		  clientID: '4a39596c869e2498ea2c',
+		  clientSecret: '09f723a7aae19b9cd7767036df092d299793bd7a',
+		  repo: 'BlogComments',
+		  owner: 'newdee',
+		  admin: ['newdee'], 
+		  id: window.location.pathname,
+		  perPage: parseInt('5'),
+		  distractionFreeMode: 'false'
+		})
+
+		gitalk.render('gitalk-container')           
+       </script>
+	
+
+
+
+
+
+  <script src="//fastly.jsdelivr.net/npm/valine@1.4.16/dist/Valine.min.js"></script>
+    
+      <script type="text/javascript">
+        var GUEST = ['nick','mail','link'];
+        var guest = 'nick,mail,link';
+        guest = guest.split(',').filter(item=>{
+          return GUEST.indexOf(item)>-1;
+        });
+        function ShowValine(){
+            button=document.getElementById("valine-display-button");
+            vstate=document.getElementsByClassName("comments v")[0];
+            gstate=document.getElementById("gitalk-container");
+            if(vstate.style.display == "none" ){
+            button.innerHTML="Git评论";
+            vstate.style.display = "block";
+            gstate.style.display = "none";
+            }
+            else{
+            button.innerHTML="匿名评论";
+            gstate.style.display = "block";
+            vstate.style.display = "none";}
+        }
+        new Valine({
+            el: '#comments' ,
+            verify: false,
+            notify: false,
+            appId: 'HfI6KhJtyoYJVElqovLTdyIe-MdYXbMMI',
+            appKey: 'SgCg3S2tCDaEkxunnlBATRCk',
+            serverURLs: 'https://hfi6khjt.api.lncldglobal.com',
+            placeholder: '言语是花，也是刀。',
+            avatar:'mm',
+            guest_info:guest,
+            pageSize:'5' || 10,
+        });
+      </script>
+      
+
+
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $('.leancloud_visitors');
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', '/classes/Counter/' + counter.objectId, JSON.stringify({ time: { '__op': 'Increment', 'amount': 1 } }))
+            
+              .done(function() {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.time + 1);
+              })
+            
+              .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+              })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1 }))
+                .done(function() {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function() {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+        .fail(function ({ responseJSON }) {
+          console.log('LeanCloud Counter Error: ' + responseJSON.code + ' ' + responseJSON.error);
+        });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + 'HfI6KhJtyoYJVElqovLTdyIe-MdYXbMMI')
+        .done(function({ api_server }) {
+          var Counter = function(method, url, data) {
+            return $.ajax({
+              method: method,
+              url: 'https://' + api_server + '/1.1' + url,
+              headers: {
+                'X-LC-Id': 'HfI6KhJtyoYJVElqovLTdyIe-MdYXbMMI',
+                'X-LC-Key': 'SgCg3S2tCDaEkxunnlBATRCk',
+                'Content-Type': 'application/json',
+              },
+              data: data
+            });
+          };
+          
+            const localhost = /http:\/\/(localhost|127.0.0.1|0.0.0.0)/;
+            if (localhost.test(document.URL)) return;
+            addCount(Counter);
+          
+        });
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+  <script src="/js/src/Aplayer-Controler.min.js"></script>
+<div id="AP-controler"></div>
+<script type="text/javascript">
+var myapc=new APlayer_Controler({
+		APC_dom:$('#AP-controler'),
+		aplayer:ap,
+		attach_right:true,
+		position:{top:'150px',bottom:''},
+		fixed:true,
+		btn_width:100,
+		btn_height:120,
+		img_src:['https://fastly.jsdelivr.net/gh/newdee/BlogImage/20191105112417.gif', 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20191105112526.gif'],
+
+		tips_content:{
+			  on_loading:{top:'LOADING',bottom:'LIFE IS SO HARD'},
+			  on_welcome:{top:'LOADED',bottom:'NOT TOO BAD'},
+			  on_timeout:{top:'PLAYER ARE IN MARS',bottom:'TIME GOES STUPID'},
+			  on_error:{top:'PLAYER BROKEN',bottom:'NOTHING IS IMPORTANT IN LIFE'},
+			  on_listend:{top:'BOTTOM SAYS NO SONG',bottom:'TO DANCE'},
+			  on_nohistory:{top:'NO HISTORY',bottom:'YOU WILL CREATE THE HISTORY'},
+			  on_historyend:{top:'NO MORE',bottom:'HISTORY IS NOT IMPORTANT'}
+			},
+		img_style:{repeat:'no-repeat',position:'center',size:'contain'},
+		ctrls_color:'rgba(86,223,177,0.7)',
+		ctrls_hover_color:'rgba(255,140,0,0.7)',
+		tips_on:true,
+		tips_width:140,
+		tips_height:25,
+		tips_color:'rgba(255,255,255,0.8)',
+	  timeout:30,
+	  showOnPhone:false,
+	  songrecord_log:false
+	});
+</script>
+
+
+  <script type="text/javascript" src="/js/src/mouse.js"></script>
+
+
+<!--崩溃欺骗
+<script type="text/javascript" src="/js/src/broken.js"></script>
+-->
+</body>
+</html>
+
+<script type="text/javascript" src="/js/src/randbg.js"></script>
+<script src="https://fastly.jsdelivr.net/gh/newdee/live2d-widget@latest/autoload.js"></script>

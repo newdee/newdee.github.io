@@ -1,0 +1,1656 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next mist" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+  <link rel="stylesheet" media="all" href="/lib/Han/dist/han.min.css?v=3.3">
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+  <link href="https://cdnjs.loli.net/ajax/libs/fancybox/3.1.25/jquery.fancybox.min.css" rel="stylesheet" type="text/css">
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.loli.net/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+  
+
+<link href="https://cdnjs.loli.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="Linux,楼赛,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="阁子" type="application/atom+xml">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2">
+
+
+
+
+
+
+<meta name="description" content="这几天登录了下实验楼，看到有个楼赛，然后就参加了，这里记录一下。虽然一直用Linux，但是基本没专门去上过之类的课，最早还是智能信息课的实验机房里搭Hadoop用到的，然后还挺喜欢的，以至于后来卸了Win把笔记本装了Ubuntu，用的开源软件，也没有盗版的困扰了。">
+<meta name="keywords" content="Linux,楼赛">
+<meta property="og:type" content="article">
+<meta property="og:title" content="楼赛">
+<meta property="og:url" content="http://dfine.tech/posts/c72229d1/index.html">
+<meta property="og:site_name" content="阁子">
+<meta property="og:description" content="这几天登录了下实验楼，看到有个楼赛，然后就参加了，这里记录一下。虽然一直用Linux，但是基本没专门去上过之类的课，最早还是智能信息课的实验机房里搭Hadoop用到的，然后还挺喜欢的，以至于后来卸了Win把笔记本装了Ubuntu，用的开源软件，也没有盗版的困扰了。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://raw.githubusercontent.com/newdee/BlogImage/master/20190906102054.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/newdee/BlogImage/master/20190906102137.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/newdee/BlogImage/master/20190906102228.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/newdee/BlogImage/master/20190906102309.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/newdee/BlogImage/master/20190906103914.png">
+<meta property="og:updated_time" content="2022-05-19T04:23:59.331Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="楼赛">
+<meta name="twitter:description" content="这几天登录了下实验楼，看到有个楼赛，然后就参加了，这里记录一下。虽然一直用Linux，但是基本没专门去上过之类的课，最早还是智能信息课的实验机房里搭Hadoop用到的，然后还挺喜欢的，以至于后来卸了Win把笔记本装了Ubuntu，用的开源软件，也没有盗版的困扰了。">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/newdee/BlogImage/master/20190906102054.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: false,
+    duoshuo: {
+      userId: '0',
+      author: '鄙人'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    emojis: {
+      className: 'github-emoji'
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://dfine.tech/posts/c72229d1/">
+
+
+
+
+
+  <title>楼赛 | 阁子</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-83650950-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//tajs.qq.com/stats?sId=58292227";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">阁子</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">dfine's Blog</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-talks">
+          <a href="/talks/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-comment"></i> <br>
+            
+            闲言
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-map"></i> <br>
+            
+            友人目
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/About/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://dfine.tech/posts/c72229d1/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="dfine">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/favo.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="阁子">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">楼赛</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-10-29T02:30:31+08:00">
+                2017-10-29
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/Linux/" itemprop="url" rel="index">
+                    <span itemprop="name">Linux</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+          
+          
+             <span id="/posts/c72229d1/" class="leancloud_visitors" data-flag-title="楼赛">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body han-init-context" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>这几天登录了下实验楼，看到有个楼赛，然后就参加了，这里记录一下。<br>虽然一直用Linux，但是基本没专门去上过之类的课，最早还是智能信息课的实验机房里搭Hadoop用到的，然后还挺喜欢的，以至于后来卸了Win把笔记本装了Ubuntu，用的开源软件，也没有盗版的困扰了。<br><a id="more"></a><br>呐，就是这样说的，当然没打算拿奖，里面高手估计多得是，所以也是求个体验。</p>
+<p><center><br><img src="https://raw.githubusercontent.com/newdee/BlogImage/master/20190906102054.png" alt=""><br></center><br>楼赛一共有三题，虽然比较简单，不过比较实用，太难的屠龙之术也就没啥必要丢出来以论轩轾了。  </p>
+<h2 id="第一题-备份日志文件"><a href="#第一题-备份日志文件" class="headerlink" title="第一题 备份日志文件"></a>第一题 备份日志文件</h2><p>描述如下:<br><img src="https://raw.githubusercontent.com/newdee/BlogImage/master/20190906102137.png" alt=""><br>这个就是写个每天自动备份打包完成任务的脚本，不过里面不让写脚本，这个里面虽然说了，但是还是花了很多时间才放弃写脚本。  </p>
+<h3 id="时间输出"><a href="#时间输出" class="headerlink" title="时间输出"></a>时间输出</h3><p>首先是要获得当前时间，以确定两点开始备份。通常是使用<code>date</code>命令。<br>首先查看一下date的参数:<br><figure class="highlight sqf"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"> $ ▶ <span class="built_in">date</span> --help</div><div class="line">Usage: <span class="built_in">date</span> [OPTION]... [+<span class="built_in">FORMAT</span>]</div><div class="line">  <span class="built_in">or</span>:  <span class="built_in">date</span> [-u|--utc|--universal] [MMDDhhmm[[CC]YY][.ss]]</div><div class="line">Display the current <span class="built_in">time</span> <span class="built_in">in</span> the given <span class="built_in">FORMAT</span>, <span class="built_in">or</span> <span class="built_in">set</span> the system <span class="built_in">date</span>.</div><div class="line"></div><div class="line">Mandatory arguments <span class="keyword">to</span> long options are mandatory <span class="keyword">for</span> short options too.</div><div class="line">  -d, --<span class="built_in">date</span>=STRING          display <span class="built_in">time</span> described by STRING, <span class="built_in">not</span> <span class="string">'now'</span></div><div class="line">  -f, --file=DATEFILE        like --<span class="built_in">date</span>; once <span class="keyword">for</span> each line of DATEFILE</div><div class="line">  -I[FMT], --iso-<span class="number">8601</span>[=FMT]  output <span class="built_in">date</span>/<span class="built_in">time</span> <span class="built_in">in</span> ISO <span class="number">8601</span> <span class="built_in">format</span>.</div><div class="line">                               FMT=<span class="string">'date'</span> <span class="keyword">for</span> <span class="built_in">date</span> only (the <span class="keyword">default</span>),</div><div class="line">                               <span class="string">'hours'</span>, <span class="string">'minutes'</span>, <span class="string">'seconds'</span>, <span class="built_in">or</span> <span class="string">'ns'</span></div><div class="line">                               <span class="keyword">for</span> <span class="built_in">date</span> <span class="built_in">and</span> <span class="built_in">time</span> <span class="keyword">to</span> the indicated <span class="built_in">precision</span>.</div><div class="line">                               Example: <span class="number">2006</span>-<span class="number">08</span>-<span class="number">14</span>T02:<span class="number">34</span>:<span class="number">56</span>-<span class="number">0600</span></div><div class="line">  -R, --rfc-<span class="number">2822</span>             output <span class="built_in">date</span> <span class="built_in">and</span> <span class="built_in">time</span> <span class="built_in">in</span> RFC <span class="number">2822</span> <span class="built_in">format</span>.</div><div class="line">                               Example: Mon, <span class="number">14</span> Aug <span class="number">2006</span> <span class="number">02</span>:<span class="number">34</span>:<span class="number">56</span> -<span class="number">0600</span></div><div class="line">      --rfc-<span class="number">3339</span>=FMT         output <span class="built_in">date</span>/<span class="built_in">time</span> <span class="built_in">in</span> RFC <span class="number">3339</span> <span class="built_in">format</span>.</div><div class="line">                               FMT=<span class="string">'date'</span>, <span class="string">'seconds'</span>, <span class="built_in">or</span> <span class="string">'ns'</span></div><div class="line">                               <span class="keyword">for</span> <span class="built_in">date</span> <span class="built_in">and</span> <span class="built_in">time</span> <span class="keyword">to</span> the indicated <span class="built_in">precision</span>.</div><div class="line">                               Example: <span class="number">2006</span>-<span class="number">08</span>-<span class="number">14</span> <span class="number">02</span>:<span class="number">34</span>:<span class="number">56</span>-<span class="number">06</span>:<span class="number">00</span></div><div class="line">  -r, --reference=FILE       display the last modification <span class="built_in">time</span> of FILE</div><div class="line">  -s, --<span class="built_in">set</span>=STRING           <span class="built_in">set</span> <span class="built_in">time</span> described by STRING</div><div class="line">  -u, --utc, --universal     print <span class="built_in">or</span> <span class="built_in">set</span> Coordinated Universal <span class="built_in">Time</span> (UTC)</div><div class="line">      --help     display this help <span class="built_in">and</span> <span class="keyword">exit</span></div><div class="line">      --version  output version information <span class="built_in">and</span> <span class="keyword">exit</span></div></pre></td></tr></table></figure></p>
+<p>后面比较多就不贴了，主要是获取年月日，好给打包文件命名。<br><figure class="highlight mel"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">date</span> +%y%m%d</div><div class="line"><span class="number">171029</span></div></pre></td></tr></table></figure></p>
+<p>能获取出来这一步基本就OK了。</p>
+<h3 id="自动化任务"><a href="#自动化任务" class="headerlink" title="自动化任务"></a>自动化任务</h3><p>使用cron命令实现自动化。<br>首先编辑crontab文件，在其中加入执行时间和执行命令，即备份并打包文件。<br>比较简单，就直接贴代码了:<br><figure class="highlight stata"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">crontab -<span class="built_in">e</span></div><div class="line">0 2 * * * <span class="keyword">mkdir</span> /home/shiyanlou/backup &amp;&amp; tar -cvf /home/shiyanlou/backup/<span class="string">"$(date +%y-%m-%d)"</span>.tar  /<span class="keyword">var</span>/<span class="keyword">log</span>/dpkg.<span class="keyword">log</span> /<span class="keyword">var</span>/<span class="keyword">log</span>/mysql.<span class="keyword">log</span> /<span class="keyword">var</span>/<span class="keyword">log</span>/fontconfig.<span class="built_in">log</span></div></pre></td></tr></table></figure></p>
+<p>然后启动一下cron服务:<br><figure class="highlight routeros"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">sudo<span class="built_in"> service </span>cron start</div></pre></td></tr></table></figure></p>
+<p>或者<br><figure class="highlight crmsh"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">sudo cron <span class="literal">start</span></div></pre></td></tr></table></figure></p>
+<h2 id="第二题-批量创建删除用户和组"><a href="#第二题-批量创建删除用户和组" class="headerlink" title="第二题 批量创建删除用户和组"></a>第二题 批量创建删除用户和组</h2><p>描述如下:<br><img src="https://raw.githubusercontent.com/newdee/BlogImage/master/20190906102228.png" alt=""><br><img src="https://raw.githubusercontent.com/newdee/BlogImage/master/20190906102309.png" alt=""><br>批量创建删除用户和组，按照里面的要求，大概是创建一个脚本，可以实现创建和删除用户的功能，输入为四个参数，对于已经创建的用户显示星号。</p>
+<h3 id="确保输入正确"><a href="#确保输入正确" class="headerlink" title="确保输入正确"></a>确保输入正确</h3><p>输入正确包括</p>
+<ul>
+<li>参数数目正确</li>
+</ul>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">if</span> [ <span class="variable">$#</span> -ne <span class="number">4</span> ]</div><div class="line">then</div><div class="line">echo <span class="string">"parameter"</span></div><div class="line"><span class="keyword">exit</span></div><div class="line">fi</div></pre></td></tr></table></figure>
+<ul>
+<li>学生数量正确</li>
+</ul>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">if</span> [ <span class="variable">$4</span> -lt <span class="number">1</span> ] || [ <span class="variable">$4</span> -gt <span class="number">10</span> ]</div><div class="line">then</div><div class="line">echo <span class="string">"parameter error"</span></div><div class="line"><span class="keyword">exit</span></div><div class="line">fi</div></pre></td></tr></table></figure>
+<ul>
+<li><p>功能参数正确<br>即必须是<code>del</code>或者<code>add</code>参数，即删除或者添加用户组。可以最后加个<code>else</code>处理这个部分。</p>
+</li>
+<li><p>学生名称前缀正确<br>即学生名称前缀只允许包含小写字母。  </p>
+</li>
+</ul>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">echo <span class="variable">$3</span> | grep <span class="string">"^[a-z]\+$"</span></div><div class="line"><span class="keyword">if</span> [ $? eq <span class="number">1</span> ]</div><div class="line">then </div><div class="line">echo <span class="string">"parameter error"</span></div><div class="line"><span class="keyword">exit</span></div><div class="line">fi</div></pre></td></tr></table></figure>
+<h3 id="随机数的生成"><a href="#随机数的生成" class="headerlink" title="随机数的生成"></a>随机数的生成</h3><p>一共要生成六位随机数，虽说linux自带RANDOM，但是都是小于等于五位数的，且不能确保多少位，所以使用<code>urandom</code>来获取随机数。</p>
+<figure class="highlight lsl"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">tr -cd <span class="number">0</span><span class="number">-9</span> &lt;/dev/urandom | head -c <span class="number">6</span></div></pre></td></tr></table></figure>
+<p>大致思路是这样，然后贴代码了。<br><figure class="highlight awk"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">if</span> [ <span class="variable">$#</span> -ne <span class="number">4</span> ]</div><div class="line">then</div><div class="line">echo <span class="string">"parameter"</span></div><div class="line"><span class="keyword">exit</span></div><div class="line">fi</div><div class="line">echo <span class="variable">$3</span> | grep <span class="string">"^[a-z]\+$"</span></div><div class="line"><span class="keyword">if</span> [ $? eq <span class="number">1</span> ]</div><div class="line">then </div><div class="line">echo <span class="string">"parameter error"</span></div><div class="line"><span class="keyword">exit</span></div><div class="line">fi</div><div class="line"><span class="keyword">if</span> [ <span class="variable">$4</span> -lt <span class="number">1</span> ] || [ <span class="variable">$4</span> -gt <span class="number">10</span> ]</div><div class="line">then</div><div class="line">echo <span class="string">"parameter error"</span></div><div class="line"><span class="keyword">exit</span></div><div class="line">elif [ <span class="variable">$1</span> == <span class="string">"add"</span> ]</div><div class="line">then</div><div class="line">id <span class="variable">$2</span> &gt;&amp; <span class="regexp">/dev/</span>null</div><div class="line"><span class="keyword">if</span> [ $? -ne <span class="number">0</span> ]</div><div class="line">then</div><div class="line">pw=`tr -cd <span class="number">0</span>-<span class="number">9</span> &lt;<span class="regexp">/dev/u</span>random | head -c <span class="number">6</span>`</div><div class="line">sudo useradd -s <span class="regexp">/bin/</span>zsh <span class="variable">$2</span> -p <span class="variable">$pw</span></div><div class="line">ss=<span class="string">"#$2	ALL=(ALL:ALL) ALL"</span></div><div class="line">echo <span class="variable">$ss</span></div><div class="line">sudo sh -c <span class="string">"echo $ss &gt;&gt; /etc/sudoers"</span></div><div class="line">sudo usermod -aG sudo <span class="variable">$2</span></div><div class="line">echo <span class="variable">$2</span>:<span class="variable">$pw</span></div><div class="line"><span class="keyword">else</span></div><div class="line">echo <span class="variable">$2</span>:******</div><div class="line">fi</div><div class="line"><span class="keyword">for</span> stu <span class="keyword">in</span> `seq <span class="number">1</span> <span class="variable">$4</span>`</div><div class="line"><span class="keyword">do</span></div><div class="line">id <span class="variable">$3</span><span class="variable">$stu</span> &gt;&amp; <span class="regexp">/dev/</span>null</div><div class="line"><span class="keyword">if</span> [ $? -ne <span class="number">0</span> ]</div><div class="line">then</div><div class="line">pw=`tr -cd <span class="number">0</span>-<span class="number">9</span> &lt;<span class="regexp">/dev/u</span>random | head -c <span class="number">6</span>`</div><div class="line">echo <span class="variable">$3</span><span class="variable">$stu</span>:<span class="variable">$pw</span></div><div class="line">sudo useradd -s <span class="regexp">/bin/</span>zsh -p <span class="variable">$pw</span> <span class="variable">$3</span><span class="variable">$stu</span></div><div class="line"><span class="keyword">else</span></div><div class="line">echo <span class="variable">$3</span><span class="variable">$stu</span>:******</div><div class="line">fi</div><div class="line">done</div><div class="line">elif [ <span class="variable">$1</span> == <span class="string">"del"</span> ]</div><div class="line">then</div><div class="line">sudo userdel <span class="variable">$2</span></div><div class="line"><span class="keyword">for</span> stu <span class="keyword">in</span> `seq <span class="number">1</span> <span class="variable">$4</span>`</div><div class="line"><span class="keyword">do</span></div><div class="line">sudo userdel <span class="variable">$3</span><span class="variable">$stu</span></div><div class="line">done</div><div class="line"><span class="keyword">else</span></div><div class="line">echo <span class="string">"parameter error"</span></div><div class="line"><span class="keyword">exit</span></div><div class="line">fi</div></pre></td></tr></table></figure></p>
+<h2 id="第三题-获取系统信息"><a href="#第三题-获取系统信息" class="headerlink" title="第三题 获取系统信息"></a>第三题 获取系统信息</h2><p>描述如下:<br><img src="https://raw.githubusercontent.com/newdee/BlogImage/master/20190906103914.png" alt=""><br>获取系统信息，包括系统各部分硬件信息和软件信息。</p>
+<h3 id="CPU信息"><a href="#CPU信息" class="headerlink" title="CPU信息"></a>CPU信息</h3><p>CPU信息可以通过查看Linux的cpuinfo获取，不过并没有直接给出CPU数量，虽然可以直接看出。<br>这里通过把processor的数量加1得到<br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">echo <span class="string">"cpu num: "</span>$(<span class="keyword">grep</span> processor <span class="regexp">/proc/</span>cpuinfo | wc -l)</div></pre></td></tr></table></figure></p>
+<h3 id="内存信息"><a href="#内存信息" class="headerlink" title="内存信息"></a>内存信息</h3><p>内存信息可以通过很多方式查看，比如top，还有就是Linux的meminfo，还有就是free命令。但是要求自定义单位，所以这里用free。<br><figure class="highlight coq"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">echo $(free -g |<span class="type">grep</span> Mem |<span class="type">awk</span> '&#123;print <span class="string">"memory total: "</span> $<span class="number">2</span><span class="string">"G"</span>&#125;')</div><div class="line">echo $(free -m |<span class="type">grep</span> Mem |<span class="type">awk</span> '&#123;print <span class="string">"memory free: "</span> $<span class="number">4</span><span class="string">"M"</span>&#125;')</div></pre></td></tr></table></figure></p>
+<h3 id="磁盘信息"><a href="#磁盘信息" class="headerlink" title="磁盘信息"></a>磁盘信息</h3><p>磁盘信息一般使用<code>df</code>命令，这里要获取根目录的磁盘大小，根目录一般在输出中第一行，所以需要获取其位置:<br><figure class="highlight nginx"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="attribute">echo</span> <span class="string">"disk size: "</span>$(df -h|awk <span class="string">'&#123;print <span class="variable">$2</span>&#125;'</span>|sed -n 2p)</div></pre></td></tr></table></figure></p>
+<p>不过这个只是碰运气，有的不在第一行，就会出错了，但是grep直接过滤掉根目录是没用的，这里需要精确匹配根目录<code>/</code>，所以需要用到<code>grep -w</code><br><figure class="highlight nginx"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="attribute">echo</span> <span class="string">"disk size: "</span>$(df -h|grep -w <span class="string">'/'</span> |awk <span class="string">'&#123;print <span class="variable">$2</span>&#125;'</span>|sed -n 2p)</div></pre></td></tr></table></figure></p>
+<h3 id="系统信息"><a href="#系统信息" class="headerlink" title="系统信息"></a>系统信息</h3><p>获取系统位数，直接:<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">echo</span> <span class="string">"system bit:"</span> $(getconf LONG_BIT)</div></pre></td></tr></table></figure></p>
+<h3 id="进程数"><a href="#进程数" class="headerlink" title="进程数"></a>进程数</h3><p>查看当前所有进程可以用<code>ps</code>命令实现，但是没有计数的功能，也不必为此单独创建一个命令，可以结合<code>wc</code>命令实现该功能:<br><figure class="highlight gcode"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">echo <span class="string">"process: "</span>$<span class="comment">(ps -A |wc -l)</span></div></pre></td></tr></table></figure></p>
+<h3 id="软件数目"><a href="#软件数目" class="headerlink" title="软件数目"></a>软件数目</h3><p>和上面一样，可以通过<code>dpkg</code>命令查询所有安装的软件，再结合<code>wc</code>命令实现计数:<br><figure class="highlight 1c"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">echo <span class="string">"software num: "</span>$(dpkg -l<span class="string">|wc -l)</span></div></pre></td></tr></table></figure></p>
+<h3 id="网卡信息"><a href="#网卡信息" class="headerlink" title="网卡信息"></a>网卡信息</h3><p>查询IP很简单，一句<code>ifconfig</code>可以解决，但是输出格式不满足要求，需要删掉输出信息中多余的字符，可以用<code>awk</code>命令。<br><figure class="highlight stata"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">echo <span class="string">"ip: "</span>$(ifconfig eth0 |awk '/inet/ &#123; <span class="keyword">split</span>(<span class="variable">$2</span>,x,<span class="string">":"</span>);<span class="keyword">print</span> x[2]&#125;')</div></pre></td></tr></table></figure></p>
+<p>最后这题全部代码如下:<br><figure class="highlight coq"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">echo <span class="string">"cpu num: "</span>$(grep processor /proc/cpuinfo | <span class="type">wc</span> -l)</div><div class="line">echo $(free -g |<span class="type">grep</span> Mem |<span class="type">awk</span> '&#123;print <span class="string">"memory total: "</span> $<span class="number">2</span><span class="string">"G"</span>&#125;')</div><div class="line">echo $(free -m |<span class="type">grep</span> Mem |<span class="type">awk</span> '&#123;print <span class="string">"memory free: "</span> $<span class="number">4</span><span class="string">"M"</span>&#125;')</div><div class="line">#echo $(grep MemTotal /proc/meminfo | <span class="type">awk</span> '&#123;print <span class="string">"memory total: "</span> $<span class="number">2</span>&#125;')</div><div class="line">#echo $(grep MemFree /proc/meminfo | <span class="type">awk</span> '&#123;print <span class="string">"memory free: "</span>$<span class="number">2</span>&#125;')</div><div class="line">echo <span class="string">"disk size: "</span>$(df -h|<span class="type">grep</span> -w <span class="string">"/"</span> |<span class="type">awk</span> '&#123;print $<span class="number">2</span>&#125;'|<span class="type">sed</span> -n <span class="number">2</span>p)</div><div class="line">echo <span class="string">"system bit:"</span> $(getconf LONG_BIT)</div><div class="line">echo <span class="string">"process: "</span>$(ps -A |<span class="type">wc</span> -l)</div><div class="line">echo <span class="string">"software num: "</span>$(dpkg -l|<span class="type">wc</span> -l)</div><div class="line">echo <span class="string">"ip: "</span>$(ifconfig eth0 |<span class="type">awk</span> '/inet/ &#123; <span class="built_in">split</span>($<span class="number">2</span>,x,<span class="string">":"</span>);print x[<span class="number">2</span>]&#125;')</div></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        
+
+      </div>
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    dfine
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://dfine.tech/posts/c72229d1/" title="楼赛">http://dfine.tech/posts/c72229d1/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow noopener noreferrer" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag"><i class="fa fa-leaf" aria-hidden="true"></i>
+Linux</a>
+          
+            <a href="/tags/楼赛/" rel="tag"><i class="fa fa-leaf" aria-hidden="true"></i>
+楼赛</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/b9c74ed9/" rel="next" title="Mathjax的LaTeX公式语法">
+                <i class="fa fa-chevron-left"></i> Mathjax的LaTeX公式语法
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/ad27c4df/" rel="prev" title="网易18校招题">
+                网易18校招题 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+		<script src="/js/src/yiyan.js"></script>
+<div>   
+    <font size="4" face="Heiti" color="gray" class="hitokoto"></font>
+</div>
+<!--MOB SHARE BEGIN-->
+<div class="-mob-share-ui-button -mob-share-open">分享</div>
+<div class="-mob-share-ui" -mob-share-ui-theme="" -mob-share-ui-theme-slide-bottom="" style="display: none">
+    <ul class="-mob-share-list">
+        <li class="-mob-share-weixin"><p>微信</p></li>
+        <li class="-mob-share-qzone"><p>QQ空间</p></li>
+        <li class="-mob-share-weibo"><p>新浪微博</p></li>
+        <li class="-mob-share-facebook"><p>Facebook</p></li>
+        <li class="-mob-share-twitter"><p>Twitter</p></li>
+        <li class="-mob-share-pocket"><p>Pocket</p></li>
+        <li class="-mob-share-tumblr"><p>Tumblr</p></li>
+        <li class="-mob-share-google"><p>Google+</p></li>
+        <li class="-mob-share-linkedin"><p>Linkedin</p></li>
+        <li class="-mob-share-qq"><p>QQ好友</p></li>
+        <li class="-mob-share-tencentweibo"><p>腾讯微博</p></li>
+        <li class="-mob-share-renren"><p>人人网</p></li>
+        <li class="-mob-share-douban"><p>豆瓣</p></li>
+        <li class="-mob-share-youdao"><p>有道云笔记</p></li>
+        <li class="-mob-share-instapaper"><p>Instapaper</p></li>
+    </ul>
+    <div class="-mob-share-close">取消</div>
+</div>
+<div class="-mob-share-ui-bg"></div>
+<script id="-mob-share" src="https://f1.webshare.mob.com/code/mob-share.js?appkey=1fc60caf613fe"></script>
+<!--MOB SHARE END-->
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+  
+       
+            <div onclick="ShowValine()" id="valine-display-button">匿名评论</div>
+            <div class="comments" id="comments" style="display:none">
+       
+    </div>
+
+    
+	 <div id="gitalk-container"></div>
+	
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image" src="/images/favo.jpg" alt="dfine">
+          <p class="site-author-name" itemprop="name">dfine</p>
+           
+              <p class="site-description motion-element" itemprop="description">多可喜，亦多可悲</p>
+          
+        </div>
+
+		<!--my custom code begin-->
+		<script src="https://cdnjs.loli.net/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+		<script src="https://cdnjs.loli.net/ajax/libs/velocity/1.5.0/velocity.min.js"></script>
+		<script type="text/javascript">
+		  $("#sidebar").hover(function(){
+			$("#mydivshow").velocity('stop').velocity({opacity: 1});
+		  },function(){
+			$("#mydivshow").velocity('stop').velocity({opacity: 0});
+		  });
+		</script>
+		<div id="mydivshow" class="mydivshow">
+		<!--my custom code end-->
+
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/">
+                <span class="site-state-item-count">82</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/categories/index.html">
+                <span class="site-state-item-count">15</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">111</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://newdee.gitbook.io/leetcode/" target="_blank" title="Leetcode" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-code"></i>
+                  
+                    
+                      Leetcode
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/newdee" target="_blank" title="GayHub" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                    
+                      GayHub
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://t.me/roomrss" target="_blank" title="TelegramRss" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-telegram"></i>
+                  
+                    
+                      TelegramRss
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/stebest?refer_flag=1001030101_&is_all=1" target="_blank" title="Weibo" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                    
+                      Weibo
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="mailto:stebest1992@gmail.com" target="_blank" title="E-Mail" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-at"></i>
+                  
+                    
+                      E-Mail
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://gitter.im/Newdee/newdee" target="_blank" title="Gitter" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-comments"></i>
+                  
+                    
+                      Gitter
+                    
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        <script>
+
+try{
+ if(window.console&&window.console.log)
+  {
+    console.log("%c控制台这么好玩嘛","background-color:rgba(255,255,255,0.1);font-size:1.5em");
+     console.log("%c ","padding:200px 260px;background:url('https://i.loli.net/2020/04/27/GrdC34HINPowfXE.gif')");
+     console.info("%c互链请邮  --支持ACG及Coding","background-color:rgba(255,255,255,0.5);font-size:1.3em");
+}  }
+catch(e){
+};
+</script>
+
+<div id="player1" class="aplayer"></div>
+<script src="/js/src/APlayer.min.js"></script>
+<script type="text/javascript">
+var ap = new APlayer({
+    element: document.getElementById('player1'),                       // Optional, player element
+    narrow: false,                                                     // Optional, narrow style
+    autoplay: false,                                                    // Optional, autoplay song(s), not supported by mobile browsers
+    showlrc: 3,                                                        // Optional, show lrc, can be 0, 1, 2, see: ###With lrc
+    mutex: true,                                                       // Optional, pause other players when this player playing
+    theme: '#e6d0b2',                                                  // Optional, theme color, default: #b7daff
+    mode: 'random',                                                    // Optional, play mode, can be `random` `single` `circulation`(loop) `order`(no loop), default: `circulation`
+    preload: 'metadata',                                               // Optional, the way to load music, can be 'none' 'metadata' 'auto', default: 'auto'
+    listmaxheight: '513px',                                             // Optional, max height of play list
+	music: [
+    {
+        title: '空空如也',
+        author: '任然',
+        url: 'https://files.catbox.moe/g27m5f.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162023.jpeg',
+		lrc: 'https://dfine.tech/lrc/kongkongruye'
+    },
+    {
+        title: '美しきもの',
+        author: 'Sound Horizon',
+        url: 'https://files.catbox.moe/1oevtg.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162103.jpeg',
+		lrc: 'https://dfine.tech/lrc/SoundHorizon'
+    },
+
+    {
+        title: '天国うまれ',
+        author: '甲本ヒロト',
+        url: 'https://files.catbox.moe/epooev.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162141.jpeg',
+	lrc: 'https://dfine.tech/lrc/tianguo'
+    },
+    {
+        title: '心做し',
+        author: 'luz',
+        url: 'https://files.catbox.moe/7j58ss.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162141.jpeg',
+		lrc: 'https://dfine.tech/lrc/xin'
+    },
+    {
+        title: 'Lemon',
+        author: '米津玄师',
+        url: 'https://files.catbox.moe/6ppo2h.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162427.jpeg',
+		lrc: 'https://dfine.tech/lrc/lemon'
+    },
+    {
+        title: 'You',
+        author: '雪野五月',
+        url: 'https://files.catbox.moe/1ovgtt.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325161925.jpeg',
+		lrc: 'https://dfine.tech/lrc/you'
+    },
+    {
+        title: '钟无艳',
+        author: '谢安琪',
+        url: 'https://files.catbox.moe/55sxbh.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162505.jpeg',
+		lrc: 'https://dfine.tech/lrc/zhongwuyan'
+    },
+
+    {
+        title: '殿书',
+        author: '奇然',
+        url: 'https://files.catbox.moe/e9n6sz.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162601.jpeg',
+		lrc: 'https://dfine.tech/lrc/dianshu'
+    },
+    {
+        title: 'East of Eden',
+        author: 'Zella Day',
+        url: 'https://files.catbox.moe/qoanq2.mp3',
+        pic: 'https://p1.music.126.net/orDs-AZ0jJjB06uoP0pdMw==/6667438510952720.jpg',
+		lrc: 'https://dfine.tech/lrc/eastEden'
+    },
+    {
+        title: '茁',
+        author: '谭烧',
+        url: 'https://files.catbox.moe/5lepv3.mp3',
+        pic: 'https://p1.music.126.net/xphtETT9CVE-IjRzGx20YA==/7969260279094350.jpg',
+		lrc: 'https://dfine.tech/lrc/zhuo'
+    },
+    {
+        title: '僕が死のうと思ったのは',
+        author: '中岛美嘉',
+        url: 'https://files.catbox.moe/umshce.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162629.jpeg',
+		lrc: 'https://dfine.tech/lrc/yiliaobailiao'
+    },
+    {
+        title: 'PLANET',
+        author: 'ラムジ',
+        url: 'https://files.catbox.moe/6ioooc.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162655.jpeg',
+		lrc: 'https://dfine.tech/lrc/planet'
+    },
+]
+
+
+});
+ $('.aplayer-icon-menu')[0].click();   //initial height
+	$('.aplayer-icon.aplayer-icon-mode').css('display','inline-block');
+  var myflag=true;
+	$('.aplayer-list').css('height','180px');
+	$('.aplayer-icon-menu svg').click(function(){
+    var temp=$('#player1').css('height');
+		if(temp=='250px' && !myflag){
+      $('#mydivshow').velocity('stop').velocity({height: 250});
+			$('#player1').velocity('stop').velocity({height: 66});
+    }
+		else if(temp=='66px' && myflag){
+      $('#mydivshow').velocity('stop').velocity({height: 420});
+			$('#player1').velocity('stop').velocity({height: 250});
+    }
+    myflag=!myflag;
+	});
+
+
+
+</script>
+
+<script type="text/javascript" src="//ra.revolvermaps.com/0/0/8.js?i=0qun3l8xnmd&amp;m=7&amp;c=ff0000&amp;cr1=ffffff&amp;f=arial&amp;l=33" async="async"></script>
+
+
+		<!--my custom code begin-->
+		</div>
+		<!--my custom code end-->
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#第一题-备份日志文件"><span class="nav-number">1.</span> <span class="nav-text">第一题 备份日志文件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#时间输出"><span class="nav-number">1.1.</span> <span class="nav-text">时间输出</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#自动化任务"><span class="nav-number">1.2.</span> <span class="nav-text">自动化任务</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#第二题-批量创建删除用户和组"><span class="nav-number">2.</span> <span class="nav-text">第二题 批量创建删除用户和组</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#确保输入正确"><span class="nav-number">2.1.</span> <span class="nav-text">确保输入正确</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#随机数的生成"><span class="nav-number">2.2.</span> <span class="nav-text">随机数的生成</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#第三题-获取系统信息"><span class="nav-number">3.</span> <span class="nav-text">第三题 获取系统信息</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#CPU信息"><span class="nav-number">3.1.</span> <span class="nav-text">CPU信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内存信息"><span class="nav-number">3.2.</span> <span class="nav-text">内存信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#磁盘信息"><span class="nav-number">3.3.</span> <span class="nav-text">磁盘信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#系统信息"><span class="nav-number">3.4.</span> <span class="nav-text">系统信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#进程数"><span class="nav-number">3.5.</span> <span class="nav-text">进程数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#软件数目"><span class="nav-number">3.6.</span> <span class="nav-text">软件数目</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#网卡信息"><span class="nav-number">3.7.</span> <span class="nav-text">网卡信息</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </div></main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">
+  
+  &copy;  1992 - 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-superpowers"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder"><a href="https://dfine.tech">dfine</a></span>
+	
+
+</div>
+
+<!--
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+-->
+
+        
+<div class="busuanzi-count">
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user">This site's UV:</i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye">This site's PV:</i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="https://ajax.loli.net/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/fastclick/1.0.6/fastclick.min.js"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/velocity/1.5.0/velocity.min.js"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/velocity/1.5.0/velocity.ui.min.js"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/fancybox/3.1.25/jquery.fancybox.min.js"></script>
+
+  
+  <script type="text/javascript" src="/lib/three/three.min.js"></script>
+
+  
+  <script type="text/javascript" src="/lib/three/canvas_lines.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+   <link rel="stylesheet" href="https://dfine.tech/css/gitalk.css"> 
+ 
+  
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+   <script type="text/javascript">
+		var gitalk = new Gitalk({
+		  clientID: '4a39596c869e2498ea2c',
+		  clientSecret: '09f723a7aae19b9cd7767036df092d299793bd7a',
+		  repo: 'BlogComments',
+		  owner: 'newdee',
+		  admin: ['newdee'], 
+		  id: window.location.pathname,
+		  perPage: parseInt('5'),
+		  distractionFreeMode: 'false'
+		})
+
+		gitalk.render('gitalk-container')           
+       </script>
+	
+
+
+
+
+
+  <script src="//fastly.jsdelivr.net/npm/valine@1.4.16/dist/Valine.min.js"></script>
+    
+      <script type="text/javascript">
+        var GUEST = ['nick','mail','link'];
+        var guest = 'nick,mail,link';
+        guest = guest.split(',').filter(item=>{
+          return GUEST.indexOf(item)>-1;
+        });
+        function ShowValine(){
+            button=document.getElementById("valine-display-button");
+            vstate=document.getElementsByClassName("comments v")[0];
+            gstate=document.getElementById("gitalk-container");
+            if(vstate.style.display == "none" ){
+            button.innerHTML="Git评论";
+            vstate.style.display = "block";
+            gstate.style.display = "none";
+            }
+            else{
+            button.innerHTML="匿名评论";
+            gstate.style.display = "block";
+            vstate.style.display = "none";}
+        }
+        new Valine({
+            el: '#comments' ,
+            verify: false,
+            notify: false,
+            appId: 'HfI6KhJtyoYJVElqovLTdyIe-MdYXbMMI',
+            appKey: 'SgCg3S2tCDaEkxunnlBATRCk',
+            serverURLs: 'https://hfi6khjt.api.lncldglobal.com',
+            placeholder: '言语是花，也是刀。',
+            avatar:'mm',
+            guest_info:guest,
+            pageSize:'5' || 10,
+        });
+      </script>
+      
+
+
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $('.leancloud_visitors');
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', '/classes/Counter/' + counter.objectId, JSON.stringify({ time: { '__op': 'Increment', 'amount': 1 } }))
+            
+              .done(function() {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.time + 1);
+              })
+            
+              .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+              })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1 }))
+                .done(function() {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function() {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+        .fail(function ({ responseJSON }) {
+          console.log('LeanCloud Counter Error: ' + responseJSON.code + ' ' + responseJSON.error);
+        });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + 'HfI6KhJtyoYJVElqovLTdyIe-MdYXbMMI')
+        .done(function({ api_server }) {
+          var Counter = function(method, url, data) {
+            return $.ajax({
+              method: method,
+              url: 'https://' + api_server + '/1.1' + url,
+              headers: {
+                'X-LC-Id': 'HfI6KhJtyoYJVElqovLTdyIe-MdYXbMMI',
+                'X-LC-Key': 'SgCg3S2tCDaEkxunnlBATRCk',
+                'Content-Type': 'application/json',
+              },
+              data: data
+            });
+          };
+          
+            const localhost = /http:\/\/(localhost|127.0.0.1|0.0.0.0)/;
+            if (localhost.test(document.URL)) return;
+            addCount(Counter);
+          
+        });
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+  <script src="/js/src/Aplayer-Controler.min.js"></script>
+<div id="AP-controler"></div>
+<script type="text/javascript">
+var myapc=new APlayer_Controler({
+		APC_dom:$('#AP-controler'),
+		aplayer:ap,
+		attach_right:true,
+		position:{top:'150px',bottom:''},
+		fixed:true,
+		btn_width:100,
+		btn_height:120,
+		img_src:['https://fastly.jsdelivr.net/gh/newdee/BlogImage/20191105112417.gif', 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20191105112526.gif'],
+
+		tips_content:{
+			  on_loading:{top:'LOADING',bottom:'LIFE IS SO HARD'},
+			  on_welcome:{top:'LOADED',bottom:'NOT TOO BAD'},
+			  on_timeout:{top:'PLAYER ARE IN MARS',bottom:'TIME GOES STUPID'},
+			  on_error:{top:'PLAYER BROKEN',bottom:'NOTHING IS IMPORTANT IN LIFE'},
+			  on_listend:{top:'BOTTOM SAYS NO SONG',bottom:'TO DANCE'},
+			  on_nohistory:{top:'NO HISTORY',bottom:'YOU WILL CREATE THE HISTORY'},
+			  on_historyend:{top:'NO MORE',bottom:'HISTORY IS NOT IMPORTANT'}
+			},
+		img_style:{repeat:'no-repeat',position:'center',size:'contain'},
+		ctrls_color:'rgba(86,223,177,0.7)',
+		ctrls_hover_color:'rgba(255,140,0,0.7)',
+		tips_on:true,
+		tips_width:140,
+		tips_height:25,
+		tips_color:'rgba(255,255,255,0.8)',
+	  timeout:30,
+	  showOnPhone:false,
+	  songrecord_log:false
+	});
+</script>
+
+
+  <script type="text/javascript" src="/js/src/mouse.js"></script>
+
+
+<!--崩溃欺骗
+<script type="text/javascript" src="/js/src/broken.js"></script>
+-->
+</body>
+</html>
+
+<script type="text/javascript" src="/js/src/randbg.js"></script>
+<script src="https://fastly.jsdelivr.net/gh/newdee/live2d-widget@latest/autoload.js"></script>

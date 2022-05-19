@@ -1,0 +1,1805 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next mist" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+  <link rel="stylesheet" media="all" href="/lib/Han/dist/han.min.css?v=3.3">
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+  <link href="https://cdnjs.loli.net/ajax/libs/fancybox/3.1.25/jquery.fancybox.min.css" rel="stylesheet" type="text/css">
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.loli.net/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+  
+
+<link href="https://cdnjs.loli.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="myfirst,helloworld,建站,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="阁子" type="application/atom+xml">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2">
+
+
+
+
+
+
+<meta name="description" content="丙申九月，建站小记。">
+<meta name="keywords" content="myfirst,helloworld,建站">
+<meta property="og:type" content="article">
+<meta property="og:title" content="建站，阁子记">
+<meta property="og:url" content="http://dfine.tech/posts/6ed4d3bc/index.html">
+<meta property="og:site_name" content="阁子">
+<meta property="og:description" content="丙申九月，建站小记。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2022-05-19T04:23:59.331Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="建站，阁子记">
+<meta name="twitter:description" content="丙申九月，建站小记。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: false,
+    duoshuo: {
+      userId: '0',
+      author: '鄙人'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    emojis: {
+      className: 'github-emoji'
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://dfine.tech/posts/6ed4d3bc/">
+
+
+
+
+
+  <title>建站，阁子记 | 阁子</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-83650950-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//tajs.qq.com/stats?sId=58292227";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">阁子</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">dfine's Blog</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-talks">
+          <a href="/talks/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-comment"></i> <br>
+            
+            闲言
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-map"></i> <br>
+            
+            友人目
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/About/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://dfine.tech/posts/6ed4d3bc/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="dfine">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/favo.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="阁子">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">建站，阁子记</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-09-04T15:09:52+00:00">
+                2016-09-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/博客/" itemprop="url" rel="index">
+                    <span itemprop="name">博客</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+          
+          
+             <span id="/posts/6ed4d3bc/" class="leancloud_visitors" data-flag-title="建站，阁子记">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body han-init-context" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>  丙申九月，建站小记。<br><a id="more"></a><br>  这两天趁着双休，学着搭了一下自己的blog，利用的是github的托管页面，用的是hexo的模板，申请了一个免费域名，自己添加了一些工具之类的，再准备陆续把以前自己在CSDN中的blog搬过来。<br>  不知道有没有人能看得到，好像添加搜索那部分还有点问题，sitemap的url报错，不过总算是自己的空间了，虽然还是github提供的，今天忙这个两顿饭都忘记准时吃了，都是吃的汉堡，虽然有点累，但是开辟自己的空间的感觉真的很不错。<br>  不过不知道能不能坚持，我对自己向来是不惮报以最坏的期望的，多少年都在证明这样做的正确性。不过对于进来的人，献上欢迎的花儿，还有飞吻。</p>
+<p>现在记一下，博客搭建过程。<br>安装Nodejs和git自然不用多说。<br>然后选择主题，我选择的是一个透明的主题，不过这个主题的作者貌似很懒，只有透明效果。<br>然后布局和插件自己布置。<br>关于访问统计，一共用了百度统计/谷歌统计/腾讯统计，不过这些都是后台统计，显示在网页用的是不蒜子。<br>百度统计和腾讯统计直接在_partial下新建一个ejs，然后把获得的代码粘贴进去就行了。谷歌统计也有通用的模板，把id粘贴进去就行。最后在主题的配置文件里写一下。有的主题已经内置了百度和谷歌的统计代码的，只需要填入id就行，上面是说的没有的情况。<br>添加微博秀，直接到复制微博秀的代码。也是新建一个ejs文件，然后添加一个wedjet<br>修改背景，添加归档Archives,添加sitemap，提交谷歌搜索。<br>添加404，添加外链。<br>hexo方法大致一致，都是在百度谷歌现学现用。<br>以后有时间自己再做个主题，<br>以后有时间在用flask搭一个博客，<br>以后有时间，，，<br>不知道说什么了。</p>
+<hr>
+<p>修改了next主题后的一些配置（后加）  </p>
+<h4 id="把侧边栏头像变成圆形，并且鼠标停留在上面发生旋转效果"><a href="#把侧边栏头像变成圆形，并且鼠标停留在上面发生旋转效果" class="headerlink" title="把侧边栏头像变成圆形，并且鼠标停留在上面发生旋转效果"></a>把侧边栏头像变成圆形，并且鼠标停留在上面发生旋转效果</h4><p>主要方法：修改themes/next/source/css/_common/components/sidebar/sidebar-author.styl</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div></pre></td><td class="code"><pre><div class="line"><span class="selector-class">.site-author-image</span> &#123;</div><div class="line">  <span class="attribute">display</span>: block;</div><div class="line">  <span class="attribute">margin</span>: <span class="number">0</span> auto;</div><div class="line">  <span class="attribute">padding</span>: $site-author-image-padding;</div><div class="line">  <span class="attribute">max-width</span>: $site-author-image-width;</div><div class="line">  <span class="attribute">height</span>: $site-author-image-height;</div><div class="line">  <span class="attribute">border</span>: $site-author-image-border-width solid $site-author-image-border-color;</div><div class="line">  <span class="comment">/* 头像圆形 */</span></div><div class="line">  <span class="attribute">border-radius</span>: <span class="number">80px</span>;</div><div class="line">  <span class="attribute">-webkit-border-radius</span>: <span class="number">80px</span>;</div><div class="line">  <span class="attribute">-moz-border-radius</span>: <span class="number">80px</span>;</div><div class="line">  <span class="attribute">box-shadow</span>: inset <span class="number">0</span> -<span class="number">1px</span> <span class="number">0</span> <span class="number">#333</span>sf;</div><div class="line">  <span class="comment">/* 设置循环动画 [animation: (play)动画名称 (2s)动画播放时长单位秒或微秒 (ase-out)动画播放的速度曲线为以低速结束 </span></div><div class="line"><span class="comment">    (1s)等待1秒然后开始动画 (1)动画播放次数(infinite为循环播放) ]*/</span></div><div class="line">  <span class="attribute">-webkit-animation</span>: play <span class="number">2s</span> ease-out <span class="number">1s</span> <span class="number">1</span>;</div><div class="line">  <span class="attribute">-moz-animation</span>: play <span class="number">2s</span> ease-out <span class="number">1s</span> <span class="number">1</span>;</div><div class="line">  <span class="attribute">animation</span>: play <span class="number">2s</span> ease-out <span class="number">1s</span> <span class="number">1</span>; </div><div class="line">  <span class="comment">/* 鼠标经过头像旋转360度 */</span></div><div class="line">  <span class="attribute">-webkit-transition</span>: -webkit-transform <span class="number">1.5s</span> ease-out;</div><div class="line">  <span class="attribute">-moz-transition</span>: -moz-transform <span class="number">1.5s</span> ease-out;</div><div class="line">  <span class="attribute">transition</span>: transform <span class="number">1.5s</span> ease-out;</div><div class="line">&#125;</div><div class="line"><span class="selector-tag">img</span><span class="selector-pseudo">:hover</span> &#123;</div><div class="line">  <span class="comment">/* 鼠标经过停止头像旋转 </span></div><div class="line"><span class="comment">  -webkit-animation-play-state:paused;</span></div><div class="line"><span class="comment">  animation-play-state:paused;*/</span></div><div class="line">  <span class="comment">/* 鼠标经过头像旋转360度 */</span></div><div class="line">  <span class="attribute">-webkit-transform</span>: <span class="built_in">rotateZ</span>(360deg);</div><div class="line">  <span class="attribute">-moz-transform</span>: <span class="built_in">rotateZ</span>(360deg);</div><div class="line">  <span class="attribute">transform</span>: <span class="built_in">rotateZ</span>(360deg);</div><div class="line">&#125;</div><div class="line"><span class="comment">/* Z 轴旋转动画 */</span></div><div class="line">@-<span class="keyword">webkit</span>-<span class="keyword">keyframes</span> play &#123;</div><div class="line">  0% &#123;</div><div class="line">    <span class="attribute">-webkit-transform</span>: <span class="built_in">rotateZ</span>(0deg);</div><div class="line">  &#125;</div><div class="line">  100% &#123;</div><div class="line">    <span class="attribute">-webkit-transform</span>: <span class="built_in">rotateZ</span>(-360deg);</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line">@-<span class="keyword">moz</span>-<span class="keyword">keyframes</span> play &#123;</div><div class="line">  0% &#123;</div><div class="line">    <span class="attribute">-moz-transform</span>: <span class="built_in">rotateZ</span>(0deg);</div><div class="line">  &#125;</div><div class="line">  100% &#123;</div><div class="line">    <span class="attribute">-moz-transform</span>: <span class="built_in">rotateZ</span>(-360deg);</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line">@<span class="keyword">keyframes</span> play &#123;</div><div class="line">  0% &#123;</div><div class="line">    <span class="attribute">transform</span>: <span class="built_in">rotateZ</span>(0deg);</div><div class="line">  &#125;</div><div class="line">  100% &#123;</div><div class="line">    <span class="attribute">transform</span>: <span class="built_in">rotateZ</span>(-360deg);</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"><span class="selector-class">.site-author-name</span> &#123;</div><div class="line">  <span class="attribute">margin</span>: $site-author-name-margin;</div><div class="line">  <span class="attribute">text-align</span>: $site-author-name-align;</div><div class="line">  <span class="attribute">color</span>: $site-author-name-color;</div><div class="line">  <span class="attribute">font-weight</span>: $site-author-name-weight;</div><div class="line">&#125;</div><div class="line"><span class="selector-class">.site-description</span> &#123;</div><div class="line">  <span class="attribute">margin-top</span>: $site-description-margin-top;</div><div class="line">  <span class="attribute">text-align</span>: $site-description-align;</div><div class="line">  <span class="attribute">font-size</span>: $site-description-font-size;</div><div class="line">  <span class="attribute">color</span>: $site-description-color;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h4 id="添加nest背景特效："><a href="#添加nest背景特效：" class="headerlink" title="添加nest背景特效："></a>添加nest背景特效：</h4><p>打开next/layout/_layout.swig，在之前添加如下代码：</p>
+<figure class="highlight django"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="xml"></span><span class="template-tag">&#123;% <span class="name"><span class="name">if</span></span> theme.canvas_nest %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml"><span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span> <span class="attr">src</span>=<span class="string">"//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span></div><div class="line"><span class="xml"></span><span class="template-tag">&#123;% <span class="name"><span class="name">endif</span></span> %&#125;</span><span class="xml"></span></div></pre></td></tr></table></figure>
+<p>打开/next/_config.yml，添加以下代码：</p>
+<figure class="highlight vala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="meta"># --------------------------------------------------------------</span></div><div class="line"><span class="meta"># background settings</span></div><div class="line"><span class="meta"># --------------------------------------------------------------</span></div><div class="line"><span class="meta"># add canvas-nest effect</span></div><div class="line"><span class="meta"># see detail from https://github.com/hustcc/canvas-nest.js</span></div><div class="line">canvas_nest: <span class="literal">true</span></div></pre></td></tr></table></figure>
+<h4 id="文章链接唯一化"><a href="#文章链接唯一化" class="headerlink" title="文章链接唯一化"></a>文章链接唯一化</h4><p>文章题目或者变更文章发布时间会经常更改，在默认设置下，文章链接都会改变，不利于搜索引擎收录，也不利于分享。唯一永久链接才是更好的选择。安装此插件后，不要在hexo s模式下更改文章文件名，否则文章将成空白。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">npm <span class="keyword">install</span> hexo-abbrlink <span class="comment">--save</span></div></pre></td></tr></table></figure>
+<p>修改站点配置文件：</p>
+<figure class="highlight avrasm"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="symbol">permalink:</span> posts/:abbrlink/  <span class="meta"># “posts/” 可自行更换</span></div><div class="line"><span class="meta"># abbrlink config</span></div><div class="line"><span class="symbol">abbrlink:</span></div><div class="line"><span class="symbol">alg:</span> crc32  <span class="meta"># 算法：crc16(default) and crc32 </span></div><div class="line"><span class="symbol">rep:</span> hex    <span class="meta"># 进制：dec(default) and hex</span></div></pre></td></tr></table></figure>
+<p>可选择模式：</p>
+<ul>
+<li>crc16 &amp; hex</li>
+<li>crc16 &amp; dec</li>
+<li>crc32 &amp; hex</li>
+<li>crc32 &amp; dec</li>
+</ul>
+<h4 id="添加宠物（虽然没卵用）"><a href="#添加宠物（虽然没卵用）" class="headerlink" title="添加宠物（虽然没卵用）"></a>添加宠物（虽然没卵用）</h4><p>回到博客目录:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">npm <span class="keyword">install</span> -<span class="keyword">save</span> hexo-helper-live2d</div></pre></td></tr></table></figure>
+<p>然后打开Hexo/blog/themes/next/layout的_layout.swig,将下面代码放到之前：</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&#123;&#123; live2d() &#125;&#125;</div></pre></td></tr></table></figure>
+<p>然后在在 hexo 的_config.yml 中添加参数：</p>
+<figure class="highlight avrasm"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="symbol">live2d:</span></div><div class="line"><span class="symbol">model:</span> wanko</div><div class="line"><span class="symbol">bottom:</span> <span class="number">-30</span></div></pre></td></tr></table></figure>
+<p>下面是一些model，可以换不同的宠物:<br><figure class="highlight markdown"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"><span class="bullet">* </span>Gantzert_Felixander</div><div class="line"><span class="bullet">* </span>Epsilon2.1</div><div class="line"><span class="bullet">* </span>haru</div><div class="line"><span class="bullet">* </span>miku</div><div class="line"><span class="bullet">* </span>ni-j</div><div class="line"><span class="bullet">* </span>nico</div><div class="line"><span class="bullet">* </span>nito</div><div class="line"><span class="bullet">* </span>nipsilon</div><div class="line"><span class="bullet">* </span>nietzsche</div><div class="line"><span class="bullet">* </span>shizuku</div><div class="line"><span class="bullet">* </span>tsumiki</div><div class="line"><span class="bullet">* </span>wanko</div><div class="line"><span class="bullet">* </span>z16</div><div class="line"><span class="bullet">* </span>hibiki</div><div class="line"><span class="bullet">* </span>koharu</div><div class="line"><span class="bullet">* </span>haruto</div><div class="line"><span class="bullet">* </span>Unitychan</div><div class="line"><span class="bullet">* </span>tororo</div><div class="line"><span class="bullet">* </span>hijiki</div><div class="line"><span class="bullet">* </span>width 宽度 默认值: 150</div><div class="line"><span class="bullet">* </span>height 高度 默认值： 300</div><div class="line"><span class="bullet">* </span>className 元素的类名 默认值： live2d</div><div class="line"><span class="bullet">* </span>id 元素的id 默认值： live2dcanvas</div><div class="line"><span class="bullet">* </span>bottom 元素的底部偏移 默认值： -20 如果嫌模型位置不正确 可以调整这个参数</div></pre></td></tr></table></figure></p>
+<pre><code>详细地址:https://huaji8.top/post/live2d-plugin-2.0/
+</code></pre><h4 id="首页title的优化"><a href="#首页title的优化" class="headerlink" title="首页title的优化"></a>首页title的优化</h4><p>更改index.swig文件，文件路径是your-hexo-site\themes\next\layout，将下面代码</p>
+<figure class="highlight django"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="xml"></span><span class="template-tag">&#123;% <span class="name"><span class="name">block</span></span> title %&#125;</span><span class="xml">  </span><span class="template-variable">&#123;&#123; config.title &#125;&#125;</span><span class="xml">  </span><span class="template-tag">&#123;% <span class="name"><span class="name">endblock</span></span> %&#125;</span><span class="xml"></span></div></pre></td></tr></table></figure>
+<p>改成:</p>
+<figure class="highlight django"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="xml"></span><span class="template-tag">&#123;% <span class="name"><span class="name">block</span></span> title %&#125;</span><span class="xml">  </span><span class="template-variable">&#123;&#123; config.title &#125;&#125;</span><span class="xml"> - </span><span class="template-variable">&#123;&#123; theme.description &#125;&#125;</span><span class="xml">  </span><span class="template-tag">&#123;% <span class="name"><span class="name">endblock</span></span> %&#125;</span><span class="xml"></span></div></pre></td></tr></table></figure>
+<h4 id="添加mob-share-SDK分享"><a href="#添加mob-share-SDK分享" class="headerlink" title="添加mob_share SDK分享"></a>添加mob_share SDK分享</h4><p>方法：在_config.xml中添加</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#Share</span></div><div class="line"><span class="attr">mob_share:</span></div><div class="line"><span class="attr">  enable:</span> <span class="literal">true</span></div><div class="line"><span class="attr">  appkey:</span> <span class="string">********</span></div></pre></td></tr></table></figure>
+<p>然后添加mob模块：<br>在<code>next/layout/_partials/share/</code>文件夹中新建一个mob_share.swig文件，内容为:</p>
+<figure class="highlight django"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line"><span class="xml"><span class="comment">&lt;!--MOB SHARE BEGIN--&gt;</span></span></div><div class="line"><span class="xml"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"-mob-share-ui-button -mob-share-open"</span>&gt;</span>分享<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></div><div class="line"><span class="xml"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"-mob-share-ui"</span>  <span class="attr">-mob-share-ui-theme</span> <span class="attr">-mob-share-ui-theme-slide-bottom</span> <span class="attr">style</span>=<span class="string">"display: none"</span>&gt;</span></span></div><div class="line"><span class="xml"><span class="tag">&lt;<span class="name">ul</span> <span class="attr">class</span>=<span class="string">"-mob-share-list"</span>&gt;</span></span></div><div class="line"><span class="xml">	<span class="tag">&lt;<span class="name">li</span> <span class="attr">class</span>=<span class="string">"-mob-share-weixin"</span>&gt;</span><span class="tag">&lt;<span class="name">p</span>&gt;</span>微信<span class="tag">&lt;/<span class="name">p</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span></div><div class="line"><span class="xml">	<span class="tag">&lt;<span class="name">li</span> <span class="attr">class</span>=<span class="string">"-mob-share-qzone"</span>&gt;</span><span class="tag">&lt;<span class="name">p</span>&gt;</span>QQ空间<span class="tag">&lt;/<span class="name">p</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span></div><div class="line"><span class="xml">	<span class="tag">&lt;<span class="name">li</span> <span class="attr">class</span>=<span class="string">"-mob-share-weibo"</span>&gt;</span><span class="tag">&lt;<span class="name">p</span>&gt;</span>新浪微博<span class="tag">&lt;/<span class="name">p</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span></div><div class="line"><span class="xml">	<span class="tag">&lt;<span class="name">li</span> <span class="attr">class</span>=<span class="string">"-mob-share-facebook"</span>&gt;</span><span class="tag">&lt;<span class="name">p</span>&gt;</span>Facebook<span class="tag">&lt;/<span class="name">p</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span></div><div class="line"><span class="xml">	<span class="tag">&lt;<span class="name">li</span> <span class="attr">class</span>=<span class="string">"-mob-share-twitter"</span>&gt;</span><span class="tag">&lt;<span class="name">p</span>&gt;</span>Twitter<span class="tag">&lt;/<span class="name">p</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span></div><div class="line"><span class="xml">	<span class="tag">&lt;<span class="name">li</span> <span class="attr">class</span>=<span class="string">"-mob-share-pocket"</span>&gt;</span><span class="tag">&lt;<span class="name">p</span>&gt;</span>Pocket<span class="tag">&lt;/<span class="name">p</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span></div><div class="line"><span class="xml">	<span class="tag">&lt;<span class="name">li</span> <span class="attr">class</span>=<span class="string">"-mob-share-tumblr"</span>&gt;</span><span class="tag">&lt;<span class="name">p</span>&gt;</span>Tumblr<span class="tag">&lt;/<span class="name">p</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span></div><div class="line"><span class="xml">	<span class="tag">&lt;<span class="name">li</span> <span class="attr">class</span>=<span class="string">"-mob-share-google"</span>&gt;</span><span class="tag">&lt;<span class="name">p</span>&gt;</span>Google+<span class="tag">&lt;/<span class="name">p</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span></div><div class="line"><span class="xml">	<span class="tag">&lt;<span class="name">li</span> <span class="attr">class</span>=<span class="string">"-mob-share-linkedin"</span>&gt;</span><span class="tag">&lt;<span class="name">p</span>&gt;</span>Linkedin<span class="tag">&lt;/<span class="name">p</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span></div><div class="line"><span class="xml">	<span class="tag">&lt;<span class="name">li</span> <span class="attr">class</span>=<span class="string">"-mob-share-qq"</span>&gt;</span><span class="tag">&lt;<span class="name">p</span>&gt;</span>QQ好友<span class="tag">&lt;/<span class="name">p</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span></div><div class="line"><span class="xml">	<span class="tag">&lt;<span class="name">li</span> <span class="attr">class</span>=<span class="string">"-mob-share-tencentweibo"</span>&gt;</span><span class="tag">&lt;<span class="name">p</span>&gt;</span>腾讯微博<span class="tag">&lt;/<span class="name">p</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span></div><div class="line"><span class="xml">	<span class="tag">&lt;<span class="name">li</span> <span class="attr">class</span>=<span class="string">"-mob-share-renren"</span>&gt;</span><span class="tag">&lt;<span class="name">p</span>&gt;</span>人人网<span class="tag">&lt;/<span class="name">p</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span></div><div class="line"><span class="xml">	<span class="tag">&lt;<span class="name">li</span> <span class="attr">class</span>=<span class="string">"-mob-share-douban"</span>&gt;</span><span class="tag">&lt;<span class="name">p</span>&gt;</span>豆瓣<span class="tag">&lt;/<span class="name">p</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span></div><div class="line"><span class="xml">	<span class="tag">&lt;<span class="name">li</span> <span class="attr">class</span>=<span class="string">"-mob-share-youdao"</span>&gt;</span><span class="tag">&lt;<span class="name">p</span>&gt;</span>有道云笔记<span class="tag">&lt;/<span class="name">p</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span></div><div class="line"><span class="xml">	<span class="tag">&lt;<span class="name">li</span> <span class="attr">class</span>=<span class="string">"-mob-share-instapaper"</span>&gt;</span><span class="tag">&lt;<span class="name">p</span>&gt;</span>Instapaper<span class="tag">&lt;/<span class="name">p</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span></div><div class="line"><span class="xml"><span class="tag">&lt;/<span class="name">ul</span>&gt;</span></span></div><div class="line"><span class="xml"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"-mob-share-close"</span>&gt;</span>取消<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></div><div class="line"><span class="xml"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></div><div class="line"><span class="xml"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"-mob-share-ui-bg"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></div><div class="line"><span class="xml"><span class="tag">&lt;<span class="name">script</span> <span class="attr">id</span>=<span class="string">"-mob-share"</span> <span class="attr">src</span>=<span class="string">"http://f1.webshare.mob.com/code/mob-share.js?appkey=</span></span></span><span class="template-variable">&#123;&#123;theme.mob_share.appkey&#125;&#125;</span><span class="xml"><span class="tag"><span class="string">"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span></div><div class="line"><span class="xml"><span class="comment">&lt;!--MOB SHARE END--&gt;</span></span></div></pre></td></tr></table></figure>
+<p>然后添加引用，在<code>next/layout/post.swig</code>文件中，添加一行即可。</p>
+<figure class="highlight django"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="xml"></span><span class="template-tag">&#123;% <span class="name">elseif</span> theme.mob_share.enable %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml">      </span><span class="template-tag">&#123;% <span class="name"><span class="name">include</span></span> '_partials/share/mob_share.swig' %&#125;</span><span class="xml"></span></div></pre></td></tr></table></figure>
+<h3 id="后来添加了一些插件："><a href="#后来添加了一些插件：" class="headerlink" title="后来添加了一些插件："></a>后来添加了一些插件：</h3><h4 id="hexo-ruby-character插件"><a href="#hexo-ruby-character插件" class="headerlink" title="hexo-ruby-character插件"></a>hexo-ruby-character插件</h4><p>插件主要用来给文字注音啥的，具体效果见官方<a href="https://github.com/JamesPan/hexo-ruby-character" rel="external nofollow noopener noreferrer" target="_blank">repo</a></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">npm <span class="keyword">install</span> hexo-ruby-<span class="built_in">character</span> <span class="comment">--save</span></div></pre></td></tr></table></figure>
+<p>使用方法：</p>
+<figure class="highlight django"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="xml"></span><span class="template-tag">&#123;% <span class="name">ruby</span> Base|top %&#125;</span><span class="xml"></span></div></pre></td></tr></table></figure>
+<ruby>Base<rp> (</rp><rt>top</rt><rp>) </rp></ruby> 
+<h4 id="hexo-pdf插件"><a href="#hexo-pdf插件" class="headerlink" title="hexo-pdf插件"></a>hexo-pdf插件</h4><p>用来在文档中插入pdf的，官方<a href="https://github.com/superalsrk/hexo-pdf/" rel="external nofollow noopener noreferrer" target="_blank">repo</a><br>安装：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">npm <span class="keyword">install</span> <span class="comment">--save hexo-pdf</span></div></pre></td></tr></table></figure>
+<p>用法：</p>
+<figure class="highlight django"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="xml"></span><span class="template-tag">&#123;% <span class="name">pdf</span> http://7xov2f.com1.z0.glb.clouddn.com/bash_freshman.pdf %&#125;</span><span class="xml"></span></div></pre></td></tr></table></figure>
+<h4 id="图片懒加载"><a href="#图片懒加载" class="headerlink" title="图片懒加载"></a>图片懒加载</h4><p>虽然图片不多，没多大用，不过还是用了，想着稍微能提速一点。官方<a href="https://github.com/Troy-Yang/hexo-lazyload-image" rel="external nofollow noopener noreferrer" target="_blank">repo</a><br>安装：</p>
+<figure class="highlight maxima"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">npm install hexo-lazyload-<span class="built_in">image</span> --<span class="built_in">save</span></div></pre></td></tr></table></figure>
+<p>配置：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="attr">lazyload:</span></div><div class="line"><span class="attr">enable:</span> <span class="literal">true</span> </div><div class="line"><span class="attr">onlypost:</span> <span class="literal">false</span></div><div class="line"><span class="attr">loadingImg:</span> <span class="comment"># eg. ./images/loading.png</span></div></pre></td></tr></table></figure>
+<h4 id="添加DaoVoice插件"><a href="#添加DaoVoice插件" class="headerlink" title="添加DaoVoice插件"></a>添加DaoVoice插件</h4><p>首先在Daovoice官网注册一个账号，新建一个应用，然后进入应用，选择安装到网站，获取 接入代码 和 app_id。<br>然后编写主题配置文件_config.xml，加入几行：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="attr">daovoice:</span></div><div class="line"><span class="attr">  enable:</span> <span class="literal">true</span></div><div class="line"><span class="attr">  app_id:</span> <span class="string">******</span></div></pre></td></tr></table></figure>
+<p>然后编写 DaoVoice 接入代码：</p>
+<figure class="highlight django"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="xml">找到themes/next/lauout/_third-party/目录，在该目录下新增 daovoice/daovoice.swig 文件，然后在daovoice文件中写入：</span></div><div class="line"><span class="xml"></span><span class="template-tag">&#123;% <span class="name"><span class="name">if</span></span> theme.daovoice.enable %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml">   <span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined"></span></span></div><div class="line"><span class="xml">     (function(i,s,o,g,r,a,m)&#123;</span></div><div class="line"><span class="xml">     i["DaoVoiceObject"]=r;</span></div><div class="line"><span class="xml">     i[r]=i[r]||function()&#123;</span></div><div class="line"><span class="xml">     (i[r].q=i[r].q||[]).push(arguments)&#125;,</span></div><div class="line"><span class="xml">     i[r].l=1*new Date();</span></div><div class="line"><span class="xml">     a=s.createElement(o),</span></div><div class="line"><span class="xml">     m=s.getElementsByTagName(o)[0];</span></div><div class="line"><span class="xml">     a.async=1;</span></div><div class="line"><span class="xml">     a.src=g;</span></div><div class="line"><span class="xml">     a.charset="utf-8";</span></div><div class="line"><span class="xml">     m.parentNode.insertBefore(a,m)</span></div><div class="line"><span class="xml">     &#125;)(window,document,"script",('https:' == document.location.protocol ? 'https:' : 'http:') + "//widget.daovoice.io/widget/</span><span class="template-variable">&#123;&#123; theme.daovoice.app_id &#125;&#125;</span><span class="xml">.js","daovoice")</span></div><div class="line"><span class="xml">     daovoice('init', &#123;</span></div><div class="line"><span class="xml">     app_id: "</span><span class="template-variable">&#123;&#123; theme.daovoice.app_id &#125;&#125;</span><span class="xml">"</span></div><div class="line"><span class="xml">     &#125;);</span></div><div class="line"><span class="xml">     daovoice('update');</span></div><div class="line"><span class="xml">   <span class="tag">&lt;/<span class="name">script</span>&gt;</span></span></div><div class="line"><span class="xml"> </span><span class="template-tag">&#123;% <span class="name"><span class="name">endif</span></span> %&#125;</span><span class="xml"></span></div></pre></td></tr></table></figure>
+<p>然后再在模板文件里引入 DaoVoice 接入代码：<br>找到themes/next/lauout/_layout.swig文件，引入刚才写的 daovoice.swig 文件。</p>
+<figure class="highlight django"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="xml"></span><span class="template-tag">&#123;% <span class="name"><span class="name">include</span></span> '_third-party/daovoice/daovoice.swig' %&#125;</span><span class="xml"></span></div></pre></td></tr></table></figure>
+<h4 id="隐藏底部powered一栏"><a href="#隐藏底部powered一栏" class="headerlink" title="隐藏底部powered一栏"></a>隐藏底部powered一栏</h4><p>打开hexo/themes/next/layout/_partials/footer.swig,使用<code>&lt;!-- --&gt;</code>隐藏之间的代码即可。或者直接删除</p>
+<h4 id="修改底栏心形图标"><a href="#修改底栏心形图标" class="headerlink" title="修改底栏心形图标"></a>修改底栏心形图标</h4><p>直接去fontawesome网站找到对应的图标名字，在主题配置文件中替换掉heart就行。</p>
+<h4 id="主页文章添加阴影效果"><a href="#主页文章添加阴影效果" class="headerlink" title="主页文章添加阴影效果"></a>主页文章添加阴影效果</h4><p>打开\themes\next\source\css_custom\custom.styl,向里面加入：</p>
+<figure class="highlight scss"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 主页文章添加阴影效果</span></div><div class="line"> <span class="selector-class">.post</span> &#123;</div><div class="line">   <span class="attribute">margin-top</span>: <span class="number">60px</span>;</div><div class="line">   <span class="attribute">margin-bottom</span>: <span class="number">60px</span>;</div><div class="line">   <span class="attribute">padding</span>: <span class="number">25px</span>;</div><div class="line">   -webkit-<span class="attribute">box-shadow</span>: <span class="number">0</span> <span class="number">0</span> <span class="number">5px</span> rgba(<span class="number">202</span>, <span class="number">203</span>, <span class="number">203</span>, .<span class="number">5</span>);</div><div class="line">   -moz-<span class="attribute">box-shadow</span>: <span class="number">0</span> <span class="number">0</span> <span class="number">5px</span> rgba(<span class="number">202</span>, <span class="number">203</span>, <span class="number">204</span>, .<span class="number">5</span>);</div><div class="line">  &#125;</div></pre></td></tr></table></figure>
+<h4 id="修改页面底部标签分类的-号"><a href="#修改页面底部标签分类的-号" class="headerlink" title="修改页面底部标签分类的#号"></a>修改页面底部标签分类的#号</h4><p>修改模板<code>/themes/next/layout/_macro/post.swig</code>，搜索 <code>rel=”tag”&gt;#</code>，将 <code>#</code> 换成喜欢的图标，具体可以去FontAwesome网站去找。</p>
+<h4 id="添加脚注"><a href="#添加脚注" class="headerlink" title="添加脚注"></a>添加脚注</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">npm <span class="keyword">install</span> hexo-<span class="keyword">reference</span> <span class="comment">--save</span></div></pre></td></tr></table></figure>
+<p>用法：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">basic footnote<sup id="fnref:1"><a href="#fn:1" rel="footnote">1</a></sup></div><div class="line">here is an inline footnote[<span class="string">^2</span>](<span class="link">inline footnote</span>)</div><div class="line">and another one<sup id="fnref:3"><a href="#fn:3" rel="footnote">3</a></sup></div><div class="line">and another one<sup id="fnref:4"><a href="#fn:4" rel="footnote">4</a></sup></div><div class="line"> </div><div class="line">[<span class="symbol">^1</span>]: <span class="link">basic footnote content</span></div><div class="line">[<span class="symbol">^3</span>]: <span class="link">paragraph</span></div><div class="line">footnote</div><div class="line">content</div><div class="line">[<span class="string">^4</span>]: footnote content with some [<span class="string">markdown</span>](<span class="link">https://en.wikipedia.org/wiki/Markdown</span>)</div></pre></td></tr></table></figure>
+<h4 id="添加居中模块"><a href="#添加居中模块" class="headerlink" title="添加居中模块"></a>添加居中模块</h4><p>用HTML代码：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">blockquote</span> <span class="attr">class</span>=<span class="string">"blockquote-center"</span>&gt;</span>优秀的人，不是不合群，而是他们合群的人里面没有你<span class="tag">&lt;/<span class="name">blockquote</span>&gt;</span></div></pre></td></tr></table></figure>
+<h4 id="添加鼠标特效"><a href="#添加鼠标特效" class="headerlink" title="添加鼠标特效"></a>添加鼠标特效</h4><p>新建一个js：</p>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">vim themes<span class="regexp">/next/</span><span class="keyword">source</span><span class="regexp">/js/</span>src<span class="regexp">/mouse.js</span></div></pre></td></tr></table></figure>
+<p>在里面输入:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/* 鼠标特效 */</span></div><div class="line"><span class="keyword">var</span> a_idx = <span class="number">0</span>;</div><div class="line">jQuery(document).ready(<span class="function"><span class="keyword">function</span><span class="params">($)</span> </span>&#123;</div><div class="line">   $(<span class="string">"body"</span>).click(<span class="function"><span class="keyword">function</span><span class="params">(e)</span> </span>&#123;</div><div class="line">       <span class="keyword">var</span> a = <span class="keyword">new</span> <span class="keyword">Array</span>(<span class="string">"富强"</span>, <span class="string">"民主"</span>, <span class="string">"文明"</span>, <span class="string">"和谐"</span>, <span class="string">"自由"</span>, <span class="string">"平等"</span>, <span class="string">"公正"</span> ,<span class="string">"法治"</span>, <span class="string">"爱国"</span>, <span class="string">"敬业"</span>, <span class="string">"诚信"</span>, <span class="string">"友善"</span>);</div><div class="line">       <span class="keyword">var</span> $i = $(<span class="string">"&lt;span/&gt;"</span>).text(a[a_idx]);</div><div class="line">       a_idx = (a_idx + <span class="number">1</span>) % a.length;</div><div class="line">       <span class="keyword">var</span> x = e.pageX,</div><div class="line">       y = e.pageY;</div><div class="line">       $i.css(&#123;</div><div class="line">           <span class="string">"z-index"</span>: <span class="number">999999999999999999999999999999999999999999999999999999999999999999999</span>,</div><div class="line">           <span class="string">"top"</span>: y - <span class="number">20</span>,</div><div class="line">           <span class="string">"left"</span>: x,</div><div class="line">           <span class="string">"position"</span>: <span class="string">"absolute"</span>,</div><div class="line">           <span class="string">"font-weight"</span>: <span class="string">"bold"</span>,</div><div class="line">           <span class="string">"color"</span>: <span class="string">"#ff6651"</span></div><div class="line">       &#125;);</div><div class="line">       $(<span class="string">"body"</span>).append($i);</div><div class="line">       $i.animate(&#123;</div><div class="line">           <span class="string">"top"</span>: y - <span class="number">180</span>,</div><div class="line">           <span class="string">"opacity"</span>: <span class="number">0</span></div><div class="line">       &#125;,</div><div class="line">       <span class="number">1500</span>,</div><div class="line">       <span class="function"><span class="keyword">function</span><span class="params">()</span> </span>&#123;</div><div class="line">           $i.remove();</div><div class="line">       &#125;);</div><div class="line">   &#125;);</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>然后在<code>Blog\themes\next\layout\_layout.swig</code>文件的最下方，<code>&lt;/body&gt;</code>前面添加<code>&lt;script type=&quot;text/javascript&quot; src=&quot;/js/src/mouse.js&quot;&gt;&lt;/script&gt;</code>。</p>
+<h4 id="添加时钟"><a href="#添加时钟" class="headerlink" title="添加时钟"></a>添加时钟</h4><p>在<code>next\layout\_macro</code>中找到sidebar.swig(侧边导航栏),在合适的位置加入一下代码:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">&lt;div <span class="class"><span class="keyword">class</span></span>=<span class="string">"swf_clock"</span> align=<span class="string">"center"</span>&gt;</div><div class="line">&lt;embed name=<span class="string">"honehoneclock"</span> width=<span class="string">"160"</span> height=<span class="string">"70"</span> align=<span class="string">"middle"</span> pluginspage=<span class="string">"http://www.macromedia.com/go/getflashplayer"</span> src=<span class="string">"http://chabudai.sakura.ne.jp/blogparts/honehoneclock/honehone_clock01.swf"</span> type=<span class="string">"application/x-shockwave-flash"</span> wmode=<span class="string">"transparent"</span> quality=<span class="string">"high"</span> bgcolor=<span class="string">"#ffffff"</span> allowscriptaccess=<span class="string">"always"</span>&gt;</div><div class="line">&lt;<span class="regexp">/div&gt;</span></div></pre></td></tr></table></figure>
+<h4 id="给页面添加背景图片"><a href="#给页面添加背景图片" class="headerlink" title="给页面添加背景图片"></a>给页面添加背景图片</h4><p>在<code>theme/next/source/css/_custom</code>文件夹下打开<code>custom.styl</code>文件，往里面添加以下代码：</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="selector-tag">body</span>&#123;   </div><div class="line">        <span class="attribute">background</span>:<span class="built_in">url</span>(图片链接);</div><div class="line">        <span class="attribute">background-size</span>:cover;</div><div class="line">        <span class="attribute">background-repeat</span>:no-repeat;</div><div class="line">        <span class="attribute">background-attachment</span>:fixed;</div><div class="line">        <span class="attribute">background-position</span>:center;</div><div class="line">     &#125;</div></pre></td></tr></table></figure>
+<h4 id="文字背景色以及半透明的设置"><a href="#文字背景色以及半透明的设置" class="headerlink" title="文字背景色以及半透明的设置"></a>文字背景色以及半透明的设置</h4><p>一样，在<code>theme/next/source/css/_custom</code>文件夹下打开<code>custom.styl</code>文件，往里面添加以下代码：</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="selector-class">.content</span> &#123;</div><div class="line">            <span class="attribute">border-radius</span>: <span class="number">10px</span>;</div><div class="line">            <span class="attribute">margin-top</span>: <span class="number">60px</span>;</div><div class="line">            <span class="attribute">background</span>:<span class="built_in">rgba</span>(颜色rgb,透明度) none repeat scroll <span class="meta">!important</span>;</div><div class="line"></div><div class="line">         &#125;</div></pre></td></tr></table></figure>
+<p>其中border-radius是给文章背景设置圆角，margin-top是设置文章到顶部的距离，其中属性可根据自己的需要进行调整。<br>在修改完文章背景色之后，文字颜色可能和背景色不能很好的搭配，这时候我们就需要修改文章字体的颜色了。打开theme/next/source/css/_common/scaffolding文件夹下的base.styl文件，找到body{}，将其中的color:$text-color更改为你想要的颜色即可。代码如下：</p>
+<figure class="highlight scss"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="selector-tag">body</span> &#123;</div><div class="line">  <span class="attribute">position</span>: relative; <span class="comment">/* Required by scrollspy */</span></div><div class="line">  <span class="attribute">font-family</span>: <span class="variable">$font-family-base</span>;</div><div class="line">  <span class="attribute">font-size</span>: <span class="variable">$font-size-base</span>;</div><div class="line">  <span class="attribute">line-height</span>: <span class="variable">$line-height-base</span>;</div><div class="line">  <span class="attribute">color</span>: 颜色代码;</div><div class="line">  <span class="attribute">background</span>: <span class="variable">$body-bg-color</span>;</div><div class="line">  +mobile() &#123; <span class="attribute">padding-right</span>: <span class="number">0</span> <span class="meta">!important</span>; &#125;</div><div class="line">  +tablet() &#123; <span class="attribute">padding-right</span>: <span class="number">0</span> <span class="meta">!important</span>; &#125;</div><div class="line">  +desktop-large() &#123; <span class="attribute">font-size</span>: <span class="variable">$font-size-large</span>; &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h4 id="文章页面宽度设置"><a href="#文章页面宽度设置" class="headerlink" title="文章页面宽度设置"></a>文章页面宽度设置</h4><p>还是在<code>theme/next/source/css/_custom</code>文件夹下打开<code>custom.styl</code>文件，往里面添加以下代码：</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="selector-tag">main-inner</span> &#123;<span class="attribute">width</span>: 页面宽度;&#125;</div></pre></td></tr></table></figure>
+<h4 id="文章内单行代码的样式设置"><a href="#文章内单行代码的样式设置" class="headerlink" title="文章内单行代码的样式设置"></a>文章内单行代码的样式设置</h4><p>如果更改了网页底色，单行代码的颜色可能与背景色不搭配，这时就需要我们自己设置了。在<code>theme/next/source/css/_custom</code>文件夹下打开<code>custom.styl</code>文件，往里面添加以下代码：</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="selector-id">#posts</span> <span class="selector-tag">code</span> &#123;<span class="attribute">color</span>: 颜色代码;<span class="attribute">background-color</span>:颜色代码;&#125;</div></pre></td></tr></table></figure>
+<h4 id="网页顶部和底部的文字颜色修改"><a href="#网页顶部和底部的文字颜色修改" class="headerlink" title="网页顶部和底部的文字颜色修改"></a>网页顶部和底部的文字颜色修改</h4><h5 id="头部文字颜色"><a href="#头部文字颜色" class="headerlink" title="头部文字颜色"></a>头部文字颜色</h5><ul>
+<li>更改头部<code>site-title</code>的字体颜色<br>在<code>theme/next/source/css/_common/components/header</code>文件夹下打开<code>site-meta.styl</code>文件，找到<code>.brand{}</code>向里面添加以下代码：</li>
+</ul>
+<figure class="highlight scss"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="attribute">color</span>: 颜色代码 <span class="meta">!important</span>;</div></pre></td></tr></table></figure>
+<ul>
+<li>更改头部<code>menu</code>的字体颜色<br>在相同的文件夹下打开<code>menu.styl</code>文件，找到<code>a{}</code>，向里面添加以下代码：</li>
+</ul>
+<figure class="highlight scss"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="attribute">color</span>: 颜色代码 <span class="meta">!important</span>;</div></pre></td></tr></table></figure>
+<h5 id="底部文字颜色"><a href="#底部文字颜色" class="headerlink" title="底部文字颜色"></a>底部文字颜色</h5><p>底部文字颜色的修改就显得很简单了，还是在<code>theme/next/source/css/_custom</code>文件夹下打开<code>custom.styl</code>文件，往里面添加以下代码：</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="selector-class">.footer-inner</span> &#123;<span class="attribute">color</span>: 颜色代码;&#125;</div></pre></td></tr></table></figure>
+<h4 id="侧栏背景图以及内部文字颜色的修改"><a href="#侧栏背景图以及内部文字颜色的修改" class="headerlink" title="侧栏背景图以及内部文字颜色的修改"></a>侧栏背景图以及内部文字颜色的修改</h4><p>还是在<code>theme/next/source/css/_custom</code>文件夹下打开<code>custom.styl</code>文件，往里面添加以下代码：</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="selector-id">#sidebar</span> &#123;</div><div class="line">            <span class="attribute">background</span>:url(图片链接);</div><div class="line">            <span class="attribute">background-size</span>: cover;</div><div class="line">            <span class="attribute">background-position</span>:center;</div><div class="line">            <span class="attribute">background-repeat</span>:no-repeat;</div><div class="line">            <span class="selector-tag">p</span>,<span class="selector-tag">span</span>,<span class="selector-tag">a</span> &#123;<span class="attribute">color</span>: 颜色代码;&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>其中设置<code>p,span,a{color:颜色代码}</code>，即可修改侧边栏内部文字的颜色。</p>
+<h4 id="修改Mist风格下的侧边栏位置为左边"><a href="#修改Mist风格下的侧边栏位置为左边" class="headerlink" title="修改Mist风格下的侧边栏位置为左边"></a>修改Mist风格下的侧边栏位置为左边</h4><p>此设置为修改next主题Mist风格下侧边栏的位置为左边（默认为右边）以及侧边栏变化后页面变化的方向，具体操作如下：</p>
+<h5 id="更改页面变化方向："><a href="#更改页面变化方向：" class="headerlink" title="更改页面变化方向："></a>更改页面变化方向：</h5><p>首先，打开next/source/js/src文件夹下的motion.js文件Ctrl+F查找paddingRight；把所有（2个）PaddingRight更改为paddingLeft即可。<br>代码样式如下：</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">&#123;<span class="string">paddingLeft:</span> SIDEBAR_WIDTH&#125;,</div><div class="line">NexT.utils.isDesktop() &amp;&amp; $(<span class="string">'body'</span>).velocity(<span class="string">'stop'</span>).velocity(&#123;<span class="string">paddingLeft:</span> <span class="number">0</span>&#125;);</div></pre></td></tr></table></figure>
+<h5 id="更改所有和sidebar相关的元素："><a href="#更改所有和sidebar相关的元素：" class="headerlink" title="更改所有和sidebar相关的元素："></a>更改所有和sidebar相关的元素：</h5><ul>
+<li>更改sidebar：</li>
+</ul>
+<p>打开next/source/css/_common/components/sidebar文件夹下的sidebar.styl文件，将.sidebar{}内的right: 0;改为left: 0;，形式如下：</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="selector-class">.sidebar</span> &#123;</div><div class="line">              <span class="attribute">position</span>: fixed;</div><div class="line">              <span class="attribute">left</span>: <span class="number">0</span>;</div></pre></td></tr></table></figure>
+<ul>
+<li>打开相同路径下的sidebar-toggle.styl文件，将.sidebar-toggle{}内的right: $b2t-position-right;改为left: $b2t-position-right;，形式如下：</li>
+</ul>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="selector-class">.sidebar-toggle</span> &#123;</div><div class="line">                      <span class="attribute">position</span>: fixed;</div><div class="line">                      <span class="attribute">left</span>: $b2t-position-right;</div></pre></td></tr></table></figure>
+<ul>
+<li>返回上一个文件夹，打开back-to-top.styl文件，将.back-to-top {}内的right: $b2t-position-right;改为left: $b2t-position-right;，形式如下：</li>
+</ul>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="selector-class">.back-to-top</span> &#123;</div><div class="line">                  <span class="attribute">box-sizing</span>: border-box;</div><div class="line">                  <span class="attribute">position</span>: fixed;</div><div class="line">                  <span class="attribute">bottom</span>: $b2t-position-bottom;</div><div class="line">                  <span class="attribute">left</span>: $b2t-position-right;</div></pre></td></tr></table></figure>
+<h5 id="修正侧边栏在左边时的小BUG"><a href="#修正侧边栏在左边时的小BUG" class="headerlink" title="修正侧边栏在左边时的小BUG"></a>修正侧边栏在左边时的小BUG</h5><p>BUG描述：在更改浏览器大小的时候，顶部栏和底部栏未和侧边栏同步。<br>解决方法：在themes/next/layout/source/js/src文件夹下打开motion.js文件，在$(document).ready(function (){}顶部其中添加代码</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">window</span>.onload=<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">    <span class="keyword">var</span> bwol=<span class="built_in">document</span>.body.offsetWidth;</div><div class="line">    <span class="keyword">if</span>(bwol &lt; <span class="number">975</span>)&#123;</div><div class="line">        $(<span class="string">'aside#sidebar'</span>).css(<span class="string">"display"</span>,<span class="string">"none"</span>);</div><div class="line">        $(<span class="string">'body'</span>).css(<span class="string">"paddingLeft"</span>,<span class="string">"0px"</span>);</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"><span class="built_in">window</span>.onresize = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">    <span class="keyword">var</span> bwos=<span class="built_in">document</span>.body.offsetWidth;</div><div class="line">    bwos &lt; <span class="number">975</span> &amp;&amp; $(<span class="string">'body'</span>).velocity(<span class="string">'stop'</span>).velocity(&#123;<span class="attr">paddingLeft</span>: <span class="number">0</span>&#125;,<span class="number">0</span>);</div><div class="line">    <span class="keyword">if</span>($(<span class="string">'aside#sidebar'</span>).css(<span class="string">'display'</span>) != <span class="string">'none'</span> &amp;&amp; $(<span class="string">'aside#sidebar'</span>).css(<span class="string">'width'</span>)!=<span class="string">'0px'</span>)</div><div class="line">        $(<span class="string">'body'</span>).velocity(<span class="string">'stop'</span>).velocity(&#123;<span class="attr">paddingLeft</span>: <span class="number">350</span>&#125;,<span class="number">0</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h5 id="更改侧边栏控制按钮的样式"><a href="#更改侧边栏控制按钮的样式" class="headerlink" title="更改侧边栏控制按钮的样式"></a>更改侧边栏控制按钮的样式</h5><p>在themes/next/layout/source/js/src文件夹下打开motion.js文件，在顶部其中更改代码。找到以下代码的位置：</p>
+<figure class="highlight haxe"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> sidebarToggleLine1st = <span class="keyword">new</span> <span class="type">SidebarToggleLine</span>();</div><div class="line"><span class="keyword">var</span> sidebarToggleLine2st = <span class="keyword">new</span> <span class="type">SidebarToggleLine</span>();</div><div class="line"><span class="keyword">var</span> sidebarToggleLine3st = <span class="keyword">new</span> <span class="type">SidebarToggleLine</span>();</div></pre></td></tr></table></figure>
+<p>将其内部内容更改为以下内容：</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">var sidebarToggleLine1st = <span class="keyword">new</span> SidebarToggleLine(&#123;</div><div class="line"><span class="symbol">    el:</span> <span class="string">'.sidebar-toggle-line-first'</span>,</div><div class="line"><span class="symbol">    status:</span> &#123;</div><div class="line"><span class="symbol">      arrow:</span> &#123;<span class="string">width:</span> <span class="string">'50%'</span>, <span class="string">rotateZ:</span> <span class="string">'45deg'</span>, <span class="string">top:</span> <span class="string">'2px'</span>, <span class="string">left:</span> <span class="string">'6px'</span>&#125;,</div><div class="line">      <span class="comment">// close: &#123;width: '100%', rotateZ: '-45deg', top: '5px', left: '0px'&#125; //叉字形</span></div><div class="line"><span class="symbol">      close:</span> &#123;<span class="string">width:</span> <span class="string">'50%'</span>, <span class="string">rotateZ:</span> <span class="string">'-45deg'</span>, <span class="string">top:</span> <span class="string">'2px'</span>, <span class="string">left:</span> <span class="string">'0px'</span>&#125; <span class="comment">//箭头形</span></div><div class="line">    &#125;</div><div class="line">  &#125;);</div><div class="line">  var sidebarToggleLine2nd = <span class="keyword">new</span> SidebarToggleLine(&#123;</div><div class="line"><span class="symbol">    el:</span> <span class="string">'.sidebar-toggle-line-middle'</span>,</div><div class="line"><span class="symbol">    status:</span> &#123;</div><div class="line"><span class="symbol">      arrow:</span> &#123;<span class="string">width:</span> <span class="string">'90%'</span>&#125;,</div><div class="line">      <span class="comment">// close: &#123;opacity: 0&#125;  //箭头形</span></div><div class="line"><span class="symbol">      close:</span> &#123;<span class="string">width:</span> <span class="string">'90%'</span>&#125;</div><div class="line">    &#125;</div><div class="line">  &#125;);</div><div class="line">  var sidebarToggleLine3rd = <span class="keyword">new</span> SidebarToggleLine(&#123;</div><div class="line"><span class="symbol">    el:</span> <span class="string">'.sidebar-toggle-line-last'</span>,</div><div class="line"><span class="symbol">    status:</span> &#123;</div><div class="line"><span class="symbol">      arrow:</span> &#123;<span class="string">width:</span> <span class="string">'50%'</span>, <span class="string">rotateZ:</span> <span class="string">'-45deg'</span>, <span class="string">top:</span> <span class="string">'-2px'</span>, <span class="string">left:</span> <span class="string">'6px'</span>&#125;,</div><div class="line">      <span class="comment">// close: &#123;width: '100%', rotateZ: '45deg', top: '-5px', left: '0px'&#125; //叉字形</span></div><div class="line"><span class="symbol">      close:</span> &#123;<span class="string">width:</span> <span class="string">'50%'</span>, <span class="string">rotateZ:</span> <span class="string">'45deg'</span>, <span class="string">top:</span> <span class="string">'-2px'</span>, <span class="string">left:</span> <span class="string">'0px'</span>&#125; <span class="comment">//箭头形</span></div><div class="line">    &#125;</div><div class="line">  &#125;);</div></pre></td></tr></table></figure>
+<h4 id="添加侧边栏头像的链接"><a href="#添加侧边栏头像的链接" class="headerlink" title="添加侧边栏头像的链接"></a>添加侧边栏头像的链接</h4><h5 id="修改鼠标样式："><a href="#修改鼠标样式：" class="headerlink" title="修改鼠标样式："></a>修改鼠标样式：</h5><p>在themes/next/layout/source/css/_common/componets/sidebar文件夹下打开sidebar-author.styl文件，在.site-author-image{}内添加cursor: pointer;形如：</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="selector-class">.site-author-image</span> &#123;</div><div class="line">                            <span class="attribute">display</span>: block;</div><div class="line">                            <span class="attribute">margin</span>: <span class="number">0</span> auto;</div><div class="line">                            <span class="attribute">padding</span>: $site-author-image-padding;</div><div class="line">                            <span class="attribute">max-width</span>: $site-author-image-width;</div><div class="line">                            <span class="attribute">height</span>: $site-author-image-height;</div><div class="line">                            <span class="attribute">border</span>: $site-author-image-border-width solid $site-author-image-border-color;</div><div class="line">                            <span class="attribute">cursor</span>: pointer;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h5 id="添加链接："><a href="#添加链接：" class="headerlink" title="添加链接："></a>添加链接：</h5><p>在themes/next/layout/source/js/src文件夹下打开motion.js文件，在顶部其中添加代码：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">$(<span class="string">'.site-author-image'</span>).click(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">      <span class="built_in">window</span>.location.href=<span class="string">"自定义链接"</span>;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<h4 id="设置鼠标划入侧边栏才显示站点信息："><a href="#设置鼠标划入侧边栏才显示站点信息：" class="headerlink" title="设置鼠标划入侧边栏才显示站点信息："></a>设置鼠标划入侧边栏才显示站点信息：</h4><p>在theme/next/layout/_macro文件夹下打开sidebar.swig文件，找到以下代码行的位置：</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&lt;nav <span class="keyword">class</span>=<span class="string">"site-state motion-element"</span>&gt;</div></pre></td></tr></table></figure>
+<p>在其上添加以下代码：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="comment">&lt;!--my custom code begin--&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"https://cdnjs.cloudflare.com/ajax/libs/velocity/1.5.0/velocity.min.js"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span><span class="undefined"></span></div><div class="line"><span class="javascript">  $(<span class="string">"#sidebar"</span>).hover(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span></div><div class="line"><span class="javascript">    $(<span class="string">"#mydivshow"</span>).velocity(<span class="string">'stop'</span>).velocity(&#123;<span class="attr">opacity</span>: <span class="number">1</span>&#125;);</span></div><div class="line"><span class="actionscript">  &#125;,<span class="function"><span class="keyword">function</span><span class="params">()</span></span>&#123;</span></div><div class="line"><span class="javascript">    $(<span class="string">"#mydivshow"</span>).velocity(<span class="string">'stop'</span>).velocity(&#123;<span class="attr">opacity</span>: <span class="number">0</span>&#125;);</span></div><div class="line"><span class="undefined">  &#125;);</span></div><div class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"mydivshow"</span> <span class="attr">class</span>=<span class="string">"mydivshow"</span>&gt;</span></div><div class="line"><span class="comment">&lt;!--my custom code end--&gt;</span></div></pre></td></tr></table></figure>
+<p>然后找到代码行：</p>
+<figure class="highlight django"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="xml"><span class="tag">&lt;/<span class="name">section</span>&gt;</span></span></div><div class="line"><span class="xml"></span><span class="template-tag">&#123;% <span class="name"><span class="name">if</span></span> display_toc and toc(page.content).length &gt; 1 %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml"><span class="comment">&lt;!--noindex--&gt;</span></span></div><div class="line"><span class="xml"><span class="tag">&lt;<span class="name">section</span> <span class="attr">class</span>=<span class="string">"post-toc-wrap motion-element sidebar-panel sidebar-panel-active"</span>&gt;</span></span></div></pre></td></tr></table></figure>
+<p>在此的上方添加一个，如下所示：</p>
+<figure class="highlight django"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="xml"><span class="comment">&lt;!--my custom code begin--&gt;</span></span></div><div class="line"><span class="xml"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></div><div class="line"><span class="xml"><span class="comment">&lt;!--my custom code end--&gt;</span></span></div><div class="line"><span class="xml"><span class="tag">&lt;/<span class="name">section</span>&gt;</span></span></div><div class="line"><span class="xml"></span><span class="template-tag">&#123;% <span class="name"><span class="name">if</span></span> display_toc and toc(page.content).length &gt; 1 %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml"><span class="comment">&lt;!--noindex--&gt;</span></span></div><div class="line"><span class="xml">  <span class="tag">&lt;<span class="name">section</span> <span class="attr">class</span>=<span class="string">"post-toc-wrap motion-element sidebar-panel sidebar-panel-active"</span>&gt;</span></span></div><div class="line"><span class="xml">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"post-toc"</span>&gt;</span></span></div></pre></td></tr></table></figure>
+<h5 id="自定义区域的初始化设置"><a href="#自定义区域的初始化设置" class="headerlink" title="自定义区域的初始化设置"></a>自定义区域的初始化设置</h5><p>在theme/next/source/css/_custom文件夹下打开custom.styl文件，向里面增添下列代码：</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="selector-id">#mydivshow</span>&#123;<span class="attribute">opacity</span>: <span class="number">0</span>;&#125;</div></pre></td></tr></table></figure>
+<p>注：具体代码添加位置以及代码里的section.site-overview可以自己修改，<div id="mydivshow" class="mydivshow">和末尾的</div>是控制显示区域，section.site-overview则是用户鼠标滑入划出时的触发事件区域。</p>
+<h4 id="自定义音乐播放器"><a href="#自定义音乐播放器" class="headerlink" title="自定义音乐播放器"></a>自定义音乐播放器</h4><h5 id="安装APlayer插件"><a href="#安装APlayer插件" class="headerlink" title="安装APlayer插件"></a>安装APlayer插件</h5><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">npm <span class="keyword">install</span> aplayer <span class="comment">--save</span></div></pre></td></tr></table></figure>
+<p>安装完后在node_modules目录下找到APlayer.min.js文件，将其复制到theme/next/source/js/src/目录下。</p>
+<h5 id="生成音乐播放器"><a href="#生成音乐播放器" class="headerlink" title="生成音乐播放器"></a>生成音乐播放器</h5><p>在你想要加入音乐播放器的地方插入以下代码，<br>本站把他放在了侧边栏里，具体操作如下。<br>打开theme/next/layout/_custom/文件夹下的sidebar.swig文件，向其中添加以下代码：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"player1"</span> <span class="attr">class</span>=<span class="string">"aplayer"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"/js/src/APlayer.min.js"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span><span class="undefined"></span></div><div class="line"><span class="actionscript"><span class="keyword">var</span> ap = <span class="keyword">new</span> APlayer(&#123;</span></div><div class="line"><span class="javascript">    element: <span class="built_in">document</span>.getElementById(<span class="string">'player1'</span>),                       <span class="comment">// Optional, player element</span></span></div><div class="line"><span class="actionscript">    narrow: <span class="literal">false</span>,                                                     <span class="comment">// Optional, narrow style</span></span></div><div class="line"><span class="actionscript">    autoplay: <span class="literal">true</span>,                                                    <span class="comment">// Optional, autoplay song(s), not supported by mobile browsers</span></span></div><div class="line"><span class="actionscript">    showlrc: <span class="number">0</span>,                                                        <span class="comment">// Optional, show lrc, can be 0, 1, 2, see: ###With lrc</span></span></div><div class="line"><span class="actionscript">    mutex: <span class="literal">true</span>,                                                       <span class="comment">// Optional, pause other players when this player playing</span></span></div><div class="line"><span class="actionscript">    theme: <span class="string">'#e6d0b2'</span>,                                                  <span class="comment">// Optional, theme color, default: #b7daff</span></span></div><div class="line"><span class="actionscript">    mode: <span class="string">'random'</span>,                                                    <span class="comment">// Optional, play mode, can be `random` `single` `circulation`(loop) `order`(no loop), default: `circulation`</span></span></div><div class="line"><span class="actionscript">    preload: <span class="string">'metadata'</span>,                                               <span class="comment">// Optional, the way to load music, can be 'none' 'metadata' 'auto', default: 'auto'</span></span></div><div class="line"><span class="actionscript">    listmaxheight: <span class="string">'513px'</span>,                                             <span class="comment">// Optional, max height of play list</span></span></div><div class="line"><span class="actionscript">    music: &#123;                                                           <span class="comment">// Required, music info, see: ###With playlist</span></span></div><div class="line"><span class="actionscript">        title: <span class="string">'Preparation'</span>,                                          <span class="comment">// Required, music title</span></span></div><div class="line"><span class="actionscript">        author: <span class="string">'Hans Zimmer/Richard Harvey'</span>,                          <span class="comment">// Required, music author</span></span></div><div class="line"><span class="actionscript">        url: <span class="string">'http://7xifn9.com1.z0.glb.clouddn.com/Preparation.mp3'</span>,  <span class="comment">// Required, music url</span></span></div><div class="line"><span class="actionscript">        pic: <span class="string">'http://7xifn9.com1.z0.glb.clouddn.com/Preparation.jpg'</span>,  <span class="comment">// Optional, music picture</span></span></div><div class="line"><span class="actionscript">        lrc: <span class="string">'[00:00.00]lrc here\n[00:01.00]aplayer'</span>                   <span class="comment">// Optional, lrc, see: ###With lrc</span></span></div><div class="line"><span class="undefined">    &#125;</span></div><div class="line"><span class="undefined">&#125;);</span></div><div class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></div></pre></td></tr></table></figure>
+<h5 id="自定义播放器样式"><a href="#自定义播放器样式" class="headerlink" title="自定义播放器样式"></a>自定义播放器样式</h5><p>包含颜色更改，列表歌曲信息的排版修改。<br>在theme/next/source/css/_custom文件夹下打开custom.styl文件，往里面添加以下代码：</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="selector-class">.aplayer-list</span> <span class="selector-tag">ol</span> <span class="selector-tag">li</span>:hover &#123;   <span class="comment">/*列表悬停颜色*/</span></div><div class="line">                  <span class="attribute">background</span>:rgba(颜色代码,透明度) none repeat scroll !important;&#125;</div><div class="line"><span class="selector-class">.aplayer-list</span> <span class="selector-tag">ol</span> <span class="selector-tag">li</span> &#123;   <span class="comment">/*列表底色*/</span></div><div class="line">                        <span class="attribute">background</span>:rgba(颜色代码,透明度);&#125;</div><div class="line"><span class="selector-class">.aplayer-list-light</span> &#123;   <span class="comment">/*列表播放歌曲颜色*/</span></div><div class="line">                      <span class="attribute">background</span>:rgba(颜色代码,透明度) none repeat scroll !important;&#125;</div><div class="line"><span class="selector-id">#player1</span> &#123;    <span class="comment">/*边框样式*/</span></div><div class="line">          <span class="attribute">border-radius</span>: <span class="number">6px</span>;</div><div class="line">          <span class="selector-tag">div</span>,<span class="selector-tag">ol</span> &#123;<span class="attribute">border-radius</span>: <span class="number">6px</span>;&#125;</div><div class="line">        &#125;</div><div class="line"><span class="selector-id">#player1</span> *&#123;<span class="attribute">color</span>: 颜色代码;&#125;    <span class="comment">/*字体颜色*/</span></div><div class="line"><span class="comment">/*列表歌曲信息的排版*/</span></div><div class="line">.aplayer-list-index&#123;<span class="attribute">float</span>:left;&#125;</div><div class="line">.aplayer-list-title&#123;<span class="attribute">float</span>:left;&#125;</div><div class="line">.aplayer-list-author&#123;<span class="attribute">float</span>:right;&#125;</div></pre></td></tr></table></figure>
+<h5 id="自定义萌萌哒音乐播放控制边栏"><a href="#自定义萌萌哒音乐播放控制边栏" class="headerlink" title="自定义萌萌哒音乐播放控制边栏"></a>自定义萌萌哒音乐播放控制边栏</h5><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">npm <span class="keyword">install</span> aplayer-controler <span class="comment">--save</span></div></pre></td></tr></table></figure>
+<p>仓库<a href="https://github.com/Mashiro-Sorata/APlayer-Controler" rel="external nofollow noopener noreferrer" target="_blank">链接</a></p>
+<h4 id="DOS风格的404页面"><a href="#DOS风格的404页面" class="headerlink" title="DOS风格的404页面"></a>DOS风格的404页面</h4><p>效果在<a href="https://codepen.io/team/nclud/pen/vEyzaY" rel="external nofollow noopener noreferrer" target="_blank">这里</a></p>
+<h4 id="博客自动部署"><a href="#博客自动部署" class="headerlink" title="博客自动部署"></a>博客自动部署</h4><p>刚开始是准备用AppVeyor的，托管在github上，教程在<a href="https://formulahendry.github.io/2016/12/04/hexo-ci/" rel="external nofollow noopener noreferrer" target="_blank">这里</a><br>不过发现私有仓库没法添加。<br>然后发现GitLab自有CI，所以尝试用GitLab部署。<br>就是那个最近因为不小心使用 rm rf 把自家数据库删光、还在 YouTube 上直播修库、让失误的程序员看了 10 小时的 nyancat 的那个 GitLab。。。<br>参考链接见<a href="https://blog.nfz.moe/archives/hexo-auto-deploy-with-gitlab-ci.html" rel="external nofollow noopener noreferrer" target="_blank">这里</a></p>
+<h4 id="live2d插件手机端隐藏"><a href="#live2d插件手机端隐藏" class="headerlink" title="live2d插件手机端隐藏"></a>live2d插件手机端隐藏</h4><p>由于现在这个模型在手机上比较大，而且不是很清晰，视觉效果不是很好，所以决定在手机端隐藏。<br>方法很简单，判断一下是否移动端即可。<br>在theme/next/source/css/_custom文件夹下打开custom.styl文件，往里面添加以下代码：<br><figure class="highlight less"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="selector-id">#live2dcanvas</span> &#123; +<span class="selector-tag">mobile</span>() &#123; <span class="attribute">display</span>: none; &#125; &#125;</div></pre></td></tr></table></figure></p>
+<h4 id="Gitment评论插件"><a href="#Gitment评论插件" class="headerlink" title="Gitment评论插件"></a>Gitment评论插件</h4><p>最初用的多说，后来多说挂了，之后采用来必力，看起来挺好看的，而且next主题也集成了这个插件，但是后端都是不靠谱的啊!这两天又抽风了，完全加载不出来，官方还没挂，但是页面已经显示不了了。最后还是决定采用Gayhub的评论系统，集成Gitment插件。Gitment的作者是imsun，其项目主页<a href="https://github.com/imsun/gitment" rel="external nofollow noopener noreferrer" target="_blank">在这</a>.</p>
+<h5 id="首先创建Gitment的swig文件，放到主题中，为了便于管理，我决定放在next-layout-third-party-comments文件夹下。其内容为"><a href="#首先创建Gitment的swig文件，放到主题中，为了便于管理，我决定放在next-layout-third-party-comments文件夹下。其内容为" class="headerlink" title="首先创建Gitment的swig文件，放到主题中，为了便于管理，我决定放在next/layout/_third-party/comments文件夹下。其内容为:"></a>首先创建Gitment的swig文件，放到主题中，为了便于管理，我决定放在<code>next/layout/_third-party/comments</code>文件夹下。其内容为:</h5><figure class="highlight twig"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div></pre></td><td class="code"><pre><div class="line"><span class="xml"></span><span class="template-tag">&#123;% <span class="name"><span class="keyword">if</span></span> theme.gitment.enable %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml">   </span><span class="template-tag">&#123;% <span class="name"><span class="keyword">set</span></span> owner = theme.gitment.githubID %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml">   </span><span class="template-tag">&#123;% <span class="name"><span class="keyword">set</span></span> repo = theme.gitment.repo %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml">   </span><span class="template-tag">&#123;% <span class="name"><span class="keyword">set</span></span> cid = theme.gitment.ClientID %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml">   </span><span class="template-tag">&#123;% <span class="name"><span class="keyword">set</span></span> cs = theme.gitment.ClientSecret %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml">   <span class="tag">&lt;<span class="name">link</span> <span class="attr">rel</span>=<span class="string">"stylesheet"</span> <span class="attr">href</span>=<span class="string">"https://imsun.github.io/gitment/style/default.css"</span>&gt;</span></span></div><div class="line"><span class="xml">   <span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"https://imsun.github.io/gitment/dist/gitment.browser.js"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span></div><div class="line"><span class="xml">   </span><span class="template-tag">&#123;% <span class="name"><span class="keyword">if</span></span> not theme.gitment.lazy %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml">       <span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span><span class="undefined"></span></span></div><div class="line"><span class="xml">           var gitment = new Gitment(&#123;</span></div><div class="line"><span class="xml">               id: window.location.pathname, </span></div><div class="line"><span class="xml">               owner: '</span><span class="template-variable">&#123;&#123;owner&#125;&#125;</span><span class="xml">',</span></div><div class="line"><span class="xml">               repo: '</span><span class="template-variable">&#123;&#123;repo&#125;&#125;</span><span class="xml">',</span></div><div class="line"><span class="xml">               oauth: &#123;</span></div><div class="line"><span class="xml">                   client_id: '</span><span class="template-variable">&#123;&#123;cid&#125;&#125;</span><span class="xml">',</span></div><div class="line"><span class="xml">                   client_secret: '</span><span class="template-variable">&#123;&#123;cs&#125;&#125;</span><span class="xml">',</span></div><div class="line"><span class="xml">               &#125;&#125;);</span></div><div class="line"><span class="xml">           gitment.render('gitment-container');</span></div><div class="line"><span class="xml">       <span class="tag">&lt;/<span class="name">script</span>&gt;</span></span></div><div class="line"><span class="xml">   </span><span class="template-tag">&#123;% <span class="name">else</span> %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml">       <span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span><span class="undefined"></span></span></div><div class="line"><span class="xml">           function ShowGitment()&#123;</span></div><div class="line"><span class="xml">               document.getElementById("gitment-display-button").style.display = "none";</span></div><div class="line"><span class="xml">               document.getElementById("gitment-container").style.display = "block";</span></div><div class="line"><span class="xml">               var gitment = new Gitment(&#123;</span></div><div class="line"><span class="xml">                   id: document.location.href, </span></div><div class="line"><span class="xml">                   owner: '</span><span class="template-variable">&#123;&#123;owner&#125;&#125;</span><span class="xml">',</span></div><div class="line"><span class="xml">                   repo: '</span><span class="template-variable">&#123;&#123;repo&#125;&#125;</span><span class="xml">',</span></div><div class="line"><span class="xml">                   oauth: &#123;</span></div><div class="line"><span class="xml">                       client_id: '</span><span class="template-variable">&#123;&#123;cid&#125;&#125;</span><span class="xml">',</span></div><div class="line"><span class="xml">                       client_secret: '</span><span class="template-variable">&#123;&#123;cs&#125;&#125;</span><span class="xml">',</span></div><div class="line"><span class="xml">                   &#125;&#125;);</span></div><div class="line"><span class="xml">               gitment.render('gitment-container');</span></div><div class="line"><span class="xml">           &#125;</span></div><div class="line"><span class="xml">       <span class="tag">&lt;/<span class="name">script</span>&gt;</span></span></div><div class="line"><span class="xml">   </span><span class="template-tag">&#123;% <span class="name"><span class="keyword">endif</span></span> %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml"></span><span class="template-tag">&#123;% <span class="name"><span class="keyword">endif</span></span> %&#125;</span><span class="xml"></span></div></pre></td></tr></table></figure>
+<h5 id="在主题文件layout-third-party-comments-index-swig中引入刚刚添加的文件"><a href="#在主题文件layout-third-party-comments-index-swig中引入刚刚添加的文件" class="headerlink" title="在主题文件layout/_third-party/comments/index.swig中引入刚刚添加的文件:"></a>在主题文件<code>layout/_third-party/comments/index.swig</code>中引入刚刚添加的文件:</h5><figure class="highlight django"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="xml"></span><span class="template-tag">&#123;% <span class="name"><span class="name">include</span></span> 'gitment.swig' %&#125;</span><span class="xml"></span></div></pre></td></tr></table></figure>
+<h5 id="设置按钮样式"><a href="#设置按钮样式" class="headerlink" title="设置按钮样式"></a>设置按钮样式</h5><p>按钮样式可以放在css的文件夹下，具体目录是之前的<code>source/css/_common/components/third-party/</code>文件夹。在其中添加<code>gitment.styl</code>样式设置文件。</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="selector-id">#gitment-display-button</span>&#123;</div><div class="line">     <span class="attribute">display</span>: inline-block;</div><div class="line">     <span class="attribute">padding</span>: <span class="number">0</span> <span class="number">15px</span>;</div><div class="line">     <span class="attribute">color</span>: <span class="number">#0a9caf</span>;</div><div class="line">     <span class="attribute">cursor</span>: pointer;</div><div class="line">     <span class="attribute">font-size</span>: <span class="number">14px</span>;</div><div class="line">     <span class="attribute">border</span>: <span class="number">1px</span> solid <span class="number">#0a9caf</span>;</div><div class="line">     <span class="attribute">border-radius</span>: <span class="number">4px</span>;</div><div class="line"> &#125;</div><div class="line"> <span class="selector-id">#gitment-display-button</span><span class="selector-pseudo">:hover</span>&#123;</div><div class="line">     <span class="attribute">color</span>: <span class="number">#fff</span>;</div><div class="line">     <span class="attribute">background</span>: <span class="number">#0a9caf</span>;</div><div class="line"> &#125;</div></pre></td></tr></table></figure>
+<p>具体button的样式可以自己修改里面的参数。<br>然后在主题下<code>source/css/_common/components/third-party/third-party.styl</code>文件中引入相应的CSS样式:</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">@<span class="keyword">import</span> <span class="string">"gitment"</span>;</div></pre></td></tr></table></figure>
+<h5 id="修改button显示文字"><a href="#修改button显示文字" class="headerlink" title="修改button显示文字:"></a>修改button显示文字:</h5><p>在主题的<code>en.yml</code>增加:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">gitmentbutton: <span class="keyword">Show</span> comments <span class="keyword">from</span> Gitment</div></pre></td></tr></table></figure>
+<p><code>zh-Hans.yml</code>增加:</p>
+<figure class="highlight avrasm"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="symbol">gitmentbutton:</span> 显示 Gitment 评论</div></pre></td></tr></table></figure>
+<h5 id="修改主题评论代码"><a href="#修改主题评论代码" class="headerlink" title="修改主题评论代码"></a>修改主题评论代码</h5><p>在<code>layout/_partials/comments.swig</code>文件中找到最后一个if分支，应该是这两句:</p>
+<figure class="highlight applescript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">&#123;% elseif theme.valine.appid <span class="keyword">and</span> theme.valine.appkey %&#125;</div><div class="line">      &lt;<span class="keyword">div</span> <span class="built_in">id</span>=<span class="string">"vcomments"</span>&gt;&lt;/<span class="keyword">div</span>&gt;</div></pre></td></tr></table></figure>
+<p>在最后一个if分支后加一个Gitment的:</p>
+<figure class="highlight django"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="xml"></span><span class="template-tag">&#123;% <span class="name">elseif</span> theme.gitment.enable %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml">   </span><span class="template-tag">&#123;% <span class="name"><span class="name">if</span></span> theme.gitment.lazy %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml">     <span class="tag">&lt;<span class="name">div</span> <span class="attr">onclick</span>=<span class="string">"ShowGitment()"</span> <span class="attr">id</span>=<span class="string">"gitment-display-button"</span>&gt;</span></span><span class="template-variable">&#123;&#123;  __('gitmentbutton') &#125;&#125;</span><span class="xml"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></div><div class="line"><span class="xml">     <span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"gitment-container"</span> <span class="attr">style</span>=<span class="string">"display:none"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></div><div class="line"><span class="xml">   </span><span class="template-tag">&#123;% <span class="name"><span class="name">else</span></span> %&#125;</span><span class="xml"></span></div><div class="line"><span class="xml">     <span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"gitment-container"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></div><div class="line"><span class="xml">   </span><span class="template-tag">&#123;% <span class="name"><span class="name">endif</span></span> %&#125;</span><span class="xml"></span></div></pre></td></tr></table></figure>
+<h5 id="在主题配置文件中加入开启Gitment评论"><a href="#在主题配置文件中加入开启Gitment评论" class="headerlink" title="在主题配置文件中加入开启Gitment评论:"></a>在主题配置文件中加入开启Gitment评论:</h5><figure class="highlight yaml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># Gitment</span></div><div class="line"> <span class="comment"># Introduction: https://imsun.net/posts/gitment-introduction/</span></div><div class="line"><span class="attr">gitment:</span></div><div class="line"><span class="attr">  enable:</span> <span class="literal">true</span></div><div class="line"><span class="attr">  githubID:</span> <span class="comment">#your github ID</span></div><div class="line"><span class="attr">  repo:</span> <span class="comment">#your comment repo</span></div><div class="line"><span class="attr">  ClientID:</span> <span class="bullet">------</span></div><div class="line"><span class="attr">  ClientSecret:</span> <span class="bullet">------</span></div><div class="line"><span class="attr">  lazy:</span> <span class="literal">false</span></div></pre></td></tr></table></figure>
+<p>OK,到这里基本上是完成了。<br>不过，有点麻烦，每个页面都要手动初始化，懒得折腾了，用了一段时间，还是换回来必力了，前几天官方给回复说已经修复了，暂时先用着罢。  </p>
+<h4 id="Hexo中插入流程图"><a href="#Hexo中插入流程图" class="headerlink" title="Hexo中插入流程图"></a>Hexo中插入流程图</h4><p>因为hexo中的markdown语法并未支持流程图，或者说流程图语法现在并不是markdown的基本语法。但在挖坑填坑过程中，偶尔需要解释清楚一个Pipeline的时候，还是需要流程图的。偶然发现了一个插件，hexo-filter-flowchart，官方Repo<a href="https://github.com/bubkoo/hexo-filter-flowchart" rel="external nofollow noopener noreferrer" target="_blank">在此</a>.  </p>
+<h5 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h5><p>在blog根目录下使用npm安装：<br><figure class="highlight processing"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">npm install --<span class="built_in">save</span> hexo-<span class="built_in">filter</span>-flowchart</div></pre></td></tr></table></figure></p>
+<h5 id="配置站点文件-可选"><a href="#配置站点文件-可选" class="headerlink" title="配置站点文件(可选)"></a>配置站点文件(可选)</h5><p>可以在站点配置文件中修改默认的样式。<br><figure class="highlight clean"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">vim _config.xml</div><div class="line">flowchart:</div><div class="line">  # raphael:   # optional, the source url <span class="keyword">of</span> raphael.js</div><div class="line">  # flowchart: # optional, the source url <span class="keyword">of</span> flowchart.js</div><div class="line">  options: # options used for `drawSVG`</div></pre></td></tr></table></figure></p>
+<h5 id="流程图用法"><a href="#流程图用法" class="headerlink" title="流程图用法"></a>流程图用法</h5><p>一般是三个反引号加flow开始，最后三个反引号结束。其中语法示例如下:<br><figure class="highlight routeros"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="attribute">st</span>=&gt;start: Start</div><div class="line"><span class="attribute">e</span>=&gt;end</div><div class="line"><span class="attribute">op</span>=&gt;operation: My Operation</div><div class="line"><span class="attribute">cond</span>=&gt;condition: <span class="literal">Yes</span> <span class="keyword">or</span> <span class="literal">No</span>?</div><div class="line"></div><div class="line">st-&gt;op-&gt;cond</div><div class="line">cond(<span class="literal">yes</span>)-&gt;e</div><div class="line">cond(<span class="literal">no</span>)-&gt;op</div></pre></td></tr></table></figure></p>
+<p>最后效果如下:  </p>
+<center><br><div id="flowchart-0" class="flow-chart"></div><br></center>
+
+<h4 id="Hexo中插入序列图"><a href="#Hexo中插入序列图" class="headerlink" title="Hexo中插入序列图"></a>Hexo中插入序列图</h4><h5 id="安装-1"><a href="#安装-1" class="headerlink" title="安装"></a>安装</h5><p>官方Repo<a href="https://github.com/bubkoo/hexo-filter-sequence" rel="external nofollow noopener noreferrer" target="_blank">在这</a>,一样的，安装一个插件:<br><figure class="highlight fortran"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">npm install --<span class="keyword">save</span> hexo-filter-<span class="keyword">sequence</span></div></pre></td></tr></table></figure></p>
+<h5 id="加速"><a href="#加速" class="headerlink" title="加速"></a>加速</h5><p>修改<code>node_modules/hexo-filter-sequence/index.js</code>文件，将其中的<code>cndjs.cloudflare.com</code>替换成<code>cdnjs.cat.net</code>。</p>
+<h4 id="序列图绘制"><a href="#序列图绘制" class="headerlink" title="序列图绘制"></a>序列图绘制</h4><p>一般是三个反引号加一个sequence开始，以三个反引号结束。<br>示例:<br><figure class="highlight routeros"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">Alice-&gt;Bob: Hello Bob, how are you?</div><div class="line">Note right of Bob: Bob thinks</div><div class="line">Bob--&gt;Alice: I am good thanks!</div></pre></td></tr></table></figure></p>
+<p>在反引号后加上sequence后效果如下:</p>
+<center><br><div id="sequence-0"></div><br></center>
+
+<h5 id="加速-1"><a href="#加速-1" class="headerlink" title="加速"></a>加速</h5><p>修改<code>node_modules/hexo-filter-flowchart/index.js</code>文件，将其中的<code>cndjs.cloudflare.com</code>替换成<code>cdnjs.cat.net</code>。</p>
+<h5 id="插入视频"><a href="#插入视频" class="headerlink" title="插入视频"></a>插入视频</h5><p>使用Dplayer插件。效果如下:<br><figure class="highlight gcode"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&#123;<span class="meta">%</span> dplayer <span class="string">"url=https://******.mp4"</span> <span class="string">"http://******.jpg"</span> <span class="string">"api=https://api.prprpr.me/dplayer/"</span> <span class="string">"id="</span> <span class="string">"loop=false"</span> <span class="meta">%</span>&#125;</div></pre></td></tr></table></figure></p>
+<p>而且，，，dplayer和live2d冲突了，导致无法显示live2d，而且这么久了也没见dplayer改，也就没用了。<br>不过对于B站，现在不能直接提取外链了，感觉直接用iframe更方便一点:</p>
+<iframe src="//player.bilibili.com/player.html?aid=4778954&cid=7755149&page=1" width="480" height="270" align="middle" allowfullscreen="true"> </iframe>
+
+<p><script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.2.7/raphael.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/flowchart/1.6.5/flowchart.min.js"></script><textarea id="flowchart-0-code" style="display: none">st=>start: Start
+e=>end
+op=>operation: My Operation
+cond=>condition: Yes or No?
+
+st->op->cond
+cond(yes)->e
+cond(no)->op</textarea><textarea id="flowchart-0-options" style="display: none">{"theme":"simple","scale":1,"line-width":2,"line-length":50,"text-margin":10,"font-size":12}</textarea><script>  var code = document.getElementById("flowchart-0-code").value;  var options = JSON.parse(decodeURIComponent(document.getElementById("flowchart-0-options").value));  var diagram = flowchart.parse(code);  diagram.drawSVG("flowchart-0", options);</script><script src="https://cdnjs.cloudflare.com/ajax/libs/webfont/1.6.27/webfontloader.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/snap.svg/0.4.1/snap.svg-min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/js-sequence-diagrams/1.0.6/sequence-diagram-min.js"></script><textarea id="sequence-0-code" style="display: none">Alice->Bob: Hello Bob, how are you?
+Note right of Bob: Bob thinks
+Bob-->Alice: I am good thanks!</textarea><textarea id="sequence-0-options" style="display: none">{"theme":"simple","scale":1,"line-width":2,"line-length":50,"text-margin":10,"font-size":12}</textarea><script>  var code = document.getElementById("sequence-0-code").value;  var options = JSON.parse(decodeURIComponent(document.getElementById("sequence-0-options").value));  var diagram = Diagram.parse(code);  diagram.drawSVG("sequence-0", options);</script></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        
+
+      </div>
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    dfine
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://dfine.tech/posts/6ed4d3bc/" title="建站，阁子记">http://dfine.tech/posts/6ed4d3bc/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow noopener noreferrer" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/myfirst/" rel="tag"><i class="fa fa-leaf" aria-hidden="true"></i>
+myfirst</a>
+          
+            <a href="/tags/helloworld/" rel="tag"><i class="fa fa-leaf" aria-hidden="true"></i>
+helloworld</a>
+          
+            <a href="/tags/建站/" rel="tag"><i class="fa fa-leaf" aria-hidden="true"></i>
+建站</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/f3656e8e/" rel="next" title="Cvsba编译过程（在VS2015下的编译与测试）">
+                <i class="fa fa-chevron-left"></i> Cvsba编译过程（在VS2015下的编译与测试）
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/48f0e3fe/" rel="prev" title="镜语">
+                镜语 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+		<script src="/js/src/yiyan.js"></script>
+<div>   
+    <font size="4" face="Heiti" color="gray" class="hitokoto"></font>
+</div>
+<!--MOB SHARE BEGIN-->
+<div class="-mob-share-ui-button -mob-share-open">分享</div>
+<div class="-mob-share-ui" -mob-share-ui-theme="" -mob-share-ui-theme-slide-bottom="" style="display: none">
+    <ul class="-mob-share-list">
+        <li class="-mob-share-weixin"><p>微信</p></li>
+        <li class="-mob-share-qzone"><p>QQ空间</p></li>
+        <li class="-mob-share-weibo"><p>新浪微博</p></li>
+        <li class="-mob-share-facebook"><p>Facebook</p></li>
+        <li class="-mob-share-twitter"><p>Twitter</p></li>
+        <li class="-mob-share-pocket"><p>Pocket</p></li>
+        <li class="-mob-share-tumblr"><p>Tumblr</p></li>
+        <li class="-mob-share-google"><p>Google+</p></li>
+        <li class="-mob-share-linkedin"><p>Linkedin</p></li>
+        <li class="-mob-share-qq"><p>QQ好友</p></li>
+        <li class="-mob-share-tencentweibo"><p>腾讯微博</p></li>
+        <li class="-mob-share-renren"><p>人人网</p></li>
+        <li class="-mob-share-douban"><p>豆瓣</p></li>
+        <li class="-mob-share-youdao"><p>有道云笔记</p></li>
+        <li class="-mob-share-instapaper"><p>Instapaper</p></li>
+    </ul>
+    <div class="-mob-share-close">取消</div>
+</div>
+<div class="-mob-share-ui-bg"></div>
+<script id="-mob-share" src="https://f1.webshare.mob.com/code/mob-share.js?appkey=1fc60caf613fe"></script>
+<!--MOB SHARE END-->
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+  
+       
+            <div onclick="ShowValine()" id="valine-display-button">匿名评论</div>
+            <div class="comments" id="comments" style="display:none">
+       
+    </div>
+
+    
+	 <div id="gitalk-container"></div>
+	
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image" src="/images/favo.jpg" alt="dfine">
+          <p class="site-author-name" itemprop="name">dfine</p>
+           
+              <p class="site-description motion-element" itemprop="description">多可喜，亦多可悲</p>
+          
+        </div>
+
+		<!--my custom code begin-->
+		<script src="https://cdnjs.loli.net/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+		<script src="https://cdnjs.loli.net/ajax/libs/velocity/1.5.0/velocity.min.js"></script>
+		<script type="text/javascript">
+		  $("#sidebar").hover(function(){
+			$("#mydivshow").velocity('stop').velocity({opacity: 1});
+		  },function(){
+			$("#mydivshow").velocity('stop').velocity({opacity: 0});
+		  });
+		</script>
+		<div id="mydivshow" class="mydivshow">
+		<!--my custom code end-->
+
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/">
+                <span class="site-state-item-count">82</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/categories/index.html">
+                <span class="site-state-item-count">15</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">111</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://newdee.gitbook.io/leetcode/" target="_blank" title="Leetcode" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-code"></i>
+                  
+                    
+                      Leetcode
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/newdee" target="_blank" title="GayHub" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                    
+                      GayHub
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://t.me/roomrss" target="_blank" title="TelegramRss" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-telegram"></i>
+                  
+                    
+                      TelegramRss
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/stebest?refer_flag=1001030101_&is_all=1" target="_blank" title="Weibo" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                    
+                      Weibo
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="mailto:stebest1992@gmail.com" target="_blank" title="E-Mail" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-at"></i>
+                  
+                    
+                      E-Mail
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://gitter.im/Newdee/newdee" target="_blank" title="Gitter" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-comments"></i>
+                  
+                    
+                      Gitter
+                    
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        <script>
+
+try{
+ if(window.console&&window.console.log)
+  {
+    console.log("%c控制台这么好玩嘛","background-color:rgba(255,255,255,0.1);font-size:1.5em");
+     console.log("%c ","padding:200px 260px;background:url('https://i.loli.net/2020/04/27/GrdC34HINPowfXE.gif')");
+     console.info("%c互链请邮  --支持ACG及Coding","background-color:rgba(255,255,255,0.5);font-size:1.3em");
+}  }
+catch(e){
+};
+</script>
+
+<div id="player1" class="aplayer"></div>
+<script src="/js/src/APlayer.min.js"></script>
+<script type="text/javascript">
+var ap = new APlayer({
+    element: document.getElementById('player1'),                       // Optional, player element
+    narrow: false,                                                     // Optional, narrow style
+    autoplay: false,                                                    // Optional, autoplay song(s), not supported by mobile browsers
+    showlrc: 3,                                                        // Optional, show lrc, can be 0, 1, 2, see: ###With lrc
+    mutex: true,                                                       // Optional, pause other players when this player playing
+    theme: '#e6d0b2',                                                  // Optional, theme color, default: #b7daff
+    mode: 'random',                                                    // Optional, play mode, can be `random` `single` `circulation`(loop) `order`(no loop), default: `circulation`
+    preload: 'metadata',                                               // Optional, the way to load music, can be 'none' 'metadata' 'auto', default: 'auto'
+    listmaxheight: '513px',                                             // Optional, max height of play list
+	music: [
+    {
+        title: '空空如也',
+        author: '任然',
+        url: 'https://files.catbox.moe/g27m5f.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162023.jpeg',
+		lrc: 'https://dfine.tech/lrc/kongkongruye'
+    },
+    {
+        title: '美しきもの',
+        author: 'Sound Horizon',
+        url: 'https://files.catbox.moe/1oevtg.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162103.jpeg',
+		lrc: 'https://dfine.tech/lrc/SoundHorizon'
+    },
+
+    {
+        title: '天国うまれ',
+        author: '甲本ヒロト',
+        url: 'https://files.catbox.moe/epooev.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162141.jpeg',
+	lrc: 'https://dfine.tech/lrc/tianguo'
+    },
+    {
+        title: '心做し',
+        author: 'luz',
+        url: 'https://files.catbox.moe/7j58ss.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162141.jpeg',
+		lrc: 'https://dfine.tech/lrc/xin'
+    },
+    {
+        title: 'Lemon',
+        author: '米津玄师',
+        url: 'https://files.catbox.moe/6ppo2h.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162427.jpeg',
+		lrc: 'https://dfine.tech/lrc/lemon'
+    },
+    {
+        title: 'You',
+        author: '雪野五月',
+        url: 'https://files.catbox.moe/1ovgtt.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325161925.jpeg',
+		lrc: 'https://dfine.tech/lrc/you'
+    },
+    {
+        title: '钟无艳',
+        author: '谢安琪',
+        url: 'https://files.catbox.moe/55sxbh.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162505.jpeg',
+		lrc: 'https://dfine.tech/lrc/zhongwuyan'
+    },
+
+    {
+        title: '殿书',
+        author: '奇然',
+        url: 'https://files.catbox.moe/e9n6sz.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162601.jpeg',
+		lrc: 'https://dfine.tech/lrc/dianshu'
+    },
+    {
+        title: 'East of Eden',
+        author: 'Zella Day',
+        url: 'https://files.catbox.moe/qoanq2.mp3',
+        pic: 'https://p1.music.126.net/orDs-AZ0jJjB06uoP0pdMw==/6667438510952720.jpg',
+		lrc: 'https://dfine.tech/lrc/eastEden'
+    },
+    {
+        title: '茁',
+        author: '谭烧',
+        url: 'https://files.catbox.moe/5lepv3.mp3',
+        pic: 'https://p1.music.126.net/xphtETT9CVE-IjRzGx20YA==/7969260279094350.jpg',
+		lrc: 'https://dfine.tech/lrc/zhuo'
+    },
+    {
+        title: '僕が死のうと思ったのは',
+        author: '中岛美嘉',
+        url: 'https://files.catbox.moe/umshce.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162629.jpeg',
+		lrc: 'https://dfine.tech/lrc/yiliaobailiao'
+    },
+    {
+        title: 'PLANET',
+        author: 'ラムジ',
+        url: 'https://files.catbox.moe/6ioooc.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162655.jpeg',
+		lrc: 'https://dfine.tech/lrc/planet'
+    },
+]
+
+
+});
+ $('.aplayer-icon-menu')[0].click();   //initial height
+	$('.aplayer-icon.aplayer-icon-mode').css('display','inline-block');
+  var myflag=true;
+	$('.aplayer-list').css('height','180px');
+	$('.aplayer-icon-menu svg').click(function(){
+    var temp=$('#player1').css('height');
+		if(temp=='250px' && !myflag){
+      $('#mydivshow').velocity('stop').velocity({height: 250});
+			$('#player1').velocity('stop').velocity({height: 66});
+    }
+		else if(temp=='66px' && myflag){
+      $('#mydivshow').velocity('stop').velocity({height: 420});
+			$('#player1').velocity('stop').velocity({height: 250});
+    }
+    myflag=!myflag;
+	});
+
+
+
+</script>
+
+<script type="text/javascript" src="//ra.revolvermaps.com/0/0/8.js?i=0qun3l8xnmd&amp;m=7&amp;c=ff0000&amp;cr1=ffffff&amp;f=arial&amp;l=33" async="async"></script>
+
+
+		<!--my custom code begin-->
+		</div>
+		<!--my custom code end-->
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#把侧边栏头像变成圆形，并且鼠标停留在上面发生旋转效果"><span class="nav-number">1.</span> <span class="nav-text">把侧边栏头像变成圆形，并且鼠标停留在上面发生旋转效果</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#添加nest背景特效："><span class="nav-number">2.</span> <span class="nav-text">添加nest背景特效：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#文章链接唯一化"><span class="nav-number">3.</span> <span class="nav-text">文章链接唯一化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#添加宠物（虽然没卵用）"><span class="nav-number">4.</span> <span class="nav-text">添加宠物（虽然没卵用）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#首页title的优化"><span class="nav-number">5.</span> <span class="nav-text">首页title的优化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#添加mob-share-SDK分享"><span class="nav-number">6.</span> <span class="nav-text">添加mob_share SDK分享</span></a></li></ol><li class="nav-item nav-level-3"><a class="nav-link" href="#后来添加了一些插件："><span class="nav-number"></span> <span class="nav-text">后来添加了一些插件：</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#hexo-ruby-character插件"><span class="nav-number">1.</span> <span class="nav-text">hexo-ruby-character插件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#hexo-pdf插件"><span class="nav-number">2.</span> <span class="nav-text">hexo-pdf插件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#图片懒加载"><span class="nav-number">3.</span> <span class="nav-text">图片懒加载</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#添加DaoVoice插件"><span class="nav-number">4.</span> <span class="nav-text">添加DaoVoice插件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#隐藏底部powered一栏"><span class="nav-number">5.</span> <span class="nav-text">隐藏底部powered一栏</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#修改底栏心形图标"><span class="nav-number">6.</span> <span class="nav-text">修改底栏心形图标</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#主页文章添加阴影效果"><span class="nav-number">7.</span> <span class="nav-text">主页文章添加阴影效果</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#修改页面底部标签分类的-号"><span class="nav-number">8.</span> <span class="nav-text">修改页面底部标签分类的#号</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#添加脚注"><span class="nav-number">9.</span> <span class="nav-text">添加脚注</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#添加居中模块"><span class="nav-number">10.</span> <span class="nav-text">添加居中模块</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#添加鼠标特效"><span class="nav-number">11.</span> <span class="nav-text">添加鼠标特效</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#添加时钟"><span class="nav-number">12.</span> <span class="nav-text">添加时钟</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#给页面添加背景图片"><span class="nav-number">13.</span> <span class="nav-text">给页面添加背景图片</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#文字背景色以及半透明的设置"><span class="nav-number">14.</span> <span class="nav-text">文字背景色以及半透明的设置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#文章页面宽度设置"><span class="nav-number">15.</span> <span class="nav-text">文章页面宽度设置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#文章内单行代码的样式设置"><span class="nav-number">16.</span> <span class="nav-text">文章内单行代码的样式设置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#网页顶部和底部的文字颜色修改"><span class="nav-number">17.</span> <span class="nav-text">网页顶部和底部的文字颜色修改</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#头部文字颜色"><span class="nav-number">17.1.</span> <span class="nav-text">头部文字颜色</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#底部文字颜色"><span class="nav-number">17.2.</span> <span class="nav-text">底部文字颜色</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#侧栏背景图以及内部文字颜色的修改"><span class="nav-number">18.</span> <span class="nav-text">侧栏背景图以及内部文字颜色的修改</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#修改Mist风格下的侧边栏位置为左边"><span class="nav-number">19.</span> <span class="nav-text">修改Mist风格下的侧边栏位置为左边</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#更改页面变化方向："><span class="nav-number">19.1.</span> <span class="nav-text">更改页面变化方向：</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#更改所有和sidebar相关的元素："><span class="nav-number">19.2.</span> <span class="nav-text">更改所有和sidebar相关的元素：</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#修正侧边栏在左边时的小BUG"><span class="nav-number">19.3.</span> <span class="nav-text">修正侧边栏在左边时的小BUG</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#更改侧边栏控制按钮的样式"><span class="nav-number">19.4.</span> <span class="nav-text">更改侧边栏控制按钮的样式</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#添加侧边栏头像的链接"><span class="nav-number">20.</span> <span class="nav-text">添加侧边栏头像的链接</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#修改鼠标样式："><span class="nav-number">20.1.</span> <span class="nav-text">修改鼠标样式：</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#添加链接："><span class="nav-number">20.2.</span> <span class="nav-text">添加链接：</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#设置鼠标划入侧边栏才显示站点信息："><span class="nav-number">21.</span> <span class="nav-text">设置鼠标划入侧边栏才显示站点信息：</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#自定义区域的初始化设置"><span class="nav-number">21.1.</span> <span class="nav-text">自定义区域的初始化设置</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#自定义音乐播放器"><span class="nav-number">22.</span> <span class="nav-text">自定义音乐播放器</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#安装APlayer插件"><span class="nav-number">22.1.</span> <span class="nav-text">安装APlayer插件</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#生成音乐播放器"><span class="nav-number">22.2.</span> <span class="nav-text">生成音乐播放器</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#自定义播放器样式"><span class="nav-number">22.3.</span> <span class="nav-text">自定义播放器样式</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#自定义萌萌哒音乐播放控制边栏"><span class="nav-number">22.4.</span> <span class="nav-text">自定义萌萌哒音乐播放控制边栏</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#DOS风格的404页面"><span class="nav-number">23.</span> <span class="nav-text">DOS风格的404页面</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#博客自动部署"><span class="nav-number">24.</span> <span class="nav-text">博客自动部署</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#live2d插件手机端隐藏"><span class="nav-number">25.</span> <span class="nav-text">live2d插件手机端隐藏</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Gitment评论插件"><span class="nav-number">26.</span> <span class="nav-text">Gitment评论插件</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#首先创建Gitment的swig文件，放到主题中，为了便于管理，我决定放在next-layout-third-party-comments文件夹下。其内容为"><span class="nav-number">26.1.</span> <span class="nav-text">首先创建Gitment的swig文件，放到主题中，为了便于管理，我决定放在next/layout/_third-party/comments文件夹下。其内容为:</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#在主题文件layout-third-party-comments-index-swig中引入刚刚添加的文件"><span class="nav-number">26.2.</span> <span class="nav-text">在主题文件layout/_third-party/comments/index.swig中引入刚刚添加的文件:</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#设置按钮样式"><span class="nav-number">26.3.</span> <span class="nav-text">设置按钮样式</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#修改button显示文字"><span class="nav-number">26.4.</span> <span class="nav-text">修改button显示文字:</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#修改主题评论代码"><span class="nav-number">26.5.</span> <span class="nav-text">修改主题评论代码</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#在主题配置文件中加入开启Gitment评论"><span class="nav-number">26.6.</span> <span class="nav-text">在主题配置文件中加入开启Gitment评论:</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Hexo中插入流程图"><span class="nav-number">27.</span> <span class="nav-text">Hexo中插入流程图</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#安装"><span class="nav-number">27.1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#配置站点文件-可选"><span class="nav-number">27.2.</span> <span class="nav-text">配置站点文件(可选)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#流程图用法"><span class="nav-number">27.3.</span> <span class="nav-text">流程图用法</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Hexo中插入序列图"><span class="nav-number">28.</span> <span class="nav-text">Hexo中插入序列图</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#安装-1"><span class="nav-number">28.1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#加速"><span class="nav-number">28.2.</span> <span class="nav-text">加速</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#序列图绘制"><span class="nav-number">29.</span> <span class="nav-text">序列图绘制</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#加速-1"><span class="nav-number">29.1.</span> <span class="nav-text">加速</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#插入视频"><span class="nav-number">29.2.</span> <span class="nav-text">插入视频</span></a></li></ol></li></ol></li></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </div></main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">
+  
+  &copy;  1992 - 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-superpowers"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder"><a href="https://dfine.tech">dfine</a></span>
+	
+
+</div>
+
+<!--
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+-->
+
+        
+<div class="busuanzi-count">
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user">This site's UV:</i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye">This site's PV:</i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="https://ajax.loli.net/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/fastclick/1.0.6/fastclick.min.js"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/velocity/1.5.0/velocity.min.js"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/velocity/1.5.0/velocity.ui.min.js"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/fancybox/3.1.25/jquery.fancybox.min.js"></script>
+
+  
+  <script type="text/javascript" src="/lib/three/three.min.js"></script>
+
+  
+  <script type="text/javascript" src="/lib/three/canvas_lines.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+   <link rel="stylesheet" href="https://dfine.tech/css/gitalk.css"> 
+ 
+  
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+   <script type="text/javascript">
+		var gitalk = new Gitalk({
+		  clientID: '4a39596c869e2498ea2c',
+		  clientSecret: '09f723a7aae19b9cd7767036df092d299793bd7a',
+		  repo: 'BlogComments',
+		  owner: 'newdee',
+		  admin: ['newdee'], 
+		  id: window.location.pathname,
+		  perPage: parseInt('5'),
+		  distractionFreeMode: 'false'
+		})
+
+		gitalk.render('gitalk-container')           
+       </script>
+	
+
+
+
+
+
+  <script src="//fastly.jsdelivr.net/npm/valine@1.4.16/dist/Valine.min.js"></script>
+    
+      <script type="text/javascript">
+        var GUEST = ['nick','mail','link'];
+        var guest = 'nick,mail,link';
+        guest = guest.split(',').filter(item=>{
+          return GUEST.indexOf(item)>-1;
+        });
+        function ShowValine(){
+            button=document.getElementById("valine-display-button");
+            vstate=document.getElementsByClassName("comments v")[0];
+            gstate=document.getElementById("gitalk-container");
+            if(vstate.style.display == "none" ){
+            button.innerHTML="Git评论";
+            vstate.style.display = "block";
+            gstate.style.display = "none";
+            }
+            else{
+            button.innerHTML="匿名评论";
+            gstate.style.display = "block";
+            vstate.style.display = "none";}
+        }
+        new Valine({
+            el: '#comments' ,
+            verify: false,
+            notify: false,
+            appId: 'HfI6KhJtyoYJVElqovLTdyIe-MdYXbMMI',
+            appKey: 'SgCg3S2tCDaEkxunnlBATRCk',
+            serverURLs: 'https://hfi6khjt.api.lncldglobal.com',
+            placeholder: '言语是花，也是刀。',
+            avatar:'mm',
+            guest_info:guest,
+            pageSize:'5' || 10,
+        });
+      </script>
+      
+
+
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $('.leancloud_visitors');
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', '/classes/Counter/' + counter.objectId, JSON.stringify({ time: { '__op': 'Increment', 'amount': 1 } }))
+            
+              .done(function() {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.time + 1);
+              })
+            
+              .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+              })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1 }))
+                .done(function() {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function() {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+        .fail(function ({ responseJSON }) {
+          console.log('LeanCloud Counter Error: ' + responseJSON.code + ' ' + responseJSON.error);
+        });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + 'HfI6KhJtyoYJVElqovLTdyIe-MdYXbMMI')
+        .done(function({ api_server }) {
+          var Counter = function(method, url, data) {
+            return $.ajax({
+              method: method,
+              url: 'https://' + api_server + '/1.1' + url,
+              headers: {
+                'X-LC-Id': 'HfI6KhJtyoYJVElqovLTdyIe-MdYXbMMI',
+                'X-LC-Key': 'SgCg3S2tCDaEkxunnlBATRCk',
+                'Content-Type': 'application/json',
+              },
+              data: data
+            });
+          };
+          
+            const localhost = /http:\/\/(localhost|127.0.0.1|0.0.0.0)/;
+            if (localhost.test(document.URL)) return;
+            addCount(Counter);
+          
+        });
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+  <script src="/js/src/Aplayer-Controler.min.js"></script>
+<div id="AP-controler"></div>
+<script type="text/javascript">
+var myapc=new APlayer_Controler({
+		APC_dom:$('#AP-controler'),
+		aplayer:ap,
+		attach_right:true,
+		position:{top:'150px',bottom:''},
+		fixed:true,
+		btn_width:100,
+		btn_height:120,
+		img_src:['https://fastly.jsdelivr.net/gh/newdee/BlogImage/20191105112417.gif', 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20191105112526.gif'],
+
+		tips_content:{
+			  on_loading:{top:'LOADING',bottom:'LIFE IS SO HARD'},
+			  on_welcome:{top:'LOADED',bottom:'NOT TOO BAD'},
+			  on_timeout:{top:'PLAYER ARE IN MARS',bottom:'TIME GOES STUPID'},
+			  on_error:{top:'PLAYER BROKEN',bottom:'NOTHING IS IMPORTANT IN LIFE'},
+			  on_listend:{top:'BOTTOM SAYS NO SONG',bottom:'TO DANCE'},
+			  on_nohistory:{top:'NO HISTORY',bottom:'YOU WILL CREATE THE HISTORY'},
+			  on_historyend:{top:'NO MORE',bottom:'HISTORY IS NOT IMPORTANT'}
+			},
+		img_style:{repeat:'no-repeat',position:'center',size:'contain'},
+		ctrls_color:'rgba(86,223,177,0.7)',
+		ctrls_hover_color:'rgba(255,140,0,0.7)',
+		tips_on:true,
+		tips_width:140,
+		tips_height:25,
+		tips_color:'rgba(255,255,255,0.8)',
+	  timeout:30,
+	  showOnPhone:false,
+	  songrecord_log:false
+	});
+</script>
+
+
+  <script type="text/javascript" src="/js/src/mouse.js"></script>
+
+
+<!--崩溃欺骗
+<script type="text/javascript" src="/js/src/broken.js"></script>
+-->
+</body>
+</html>
+
+<script type="text/javascript" src="/js/src/randbg.js"></script>
+<script src="https://fastly.jsdelivr.net/gh/newdee/live2d-widget@latest/autoload.js"></script>

@@ -1,0 +1,1655 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next mist" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+  <link rel="stylesheet" media="all" href="/lib/Han/dist/han.min.css?v=3.3">
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+  <link href="https://cdnjs.loli.net/ajax/libs/fancybox/3.1.25/jquery.fancybox.min.css" rel="stylesheet" type="text/css">
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.loli.net/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+  
+
+<link href="https://cdnjs.loli.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="Linux,GStreamer,TX1,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="阁子" type="application/atom+xml">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2">
+
+
+
+
+
+
+<meta name="description" content="主要是关于如何将GStreamer集成到图形用户界面(GUI)工具箱中。基本上当GUI工具箱处理用户界面时，GStreamer主要负责媒体播放。其中两个库必须交互的部分是最有趣的两个部分，即:指导GStreamer将视频输出到GTK+的窗口中并将用户操作转发给GStreamer。">
+<meta name="keywords" content="Linux,GStreamer,TX1">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GSreamer笔记四: GUI Toolkit Integration">
+<meta property="og:url" content="http://dfine.tech/posts/40a79901/index.html">
+<meta property="og:site_name" content="阁子">
+<meta property="og:description" content="主要是关于如何将GStreamer集成到图形用户界面(GUI)工具箱中。基本上当GUI工具箱处理用户界面时，GStreamer主要负责媒体播放。其中两个库必须交互的部分是最有趣的两个部分，即:指导GStreamer将视频输出到GTK+的窗口中并将用户操作转发给GStreamer。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://raw.githubusercontent.com/newdee/BlogImage/master/20190906101926.png">
+<meta property="og:updated_time" content="2022-05-19T04:23:59.331Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="GSreamer笔记四: GUI Toolkit Integration">
+<meta name="twitter:description" content="主要是关于如何将GStreamer集成到图形用户界面(GUI)工具箱中。基本上当GUI工具箱处理用户界面时，GStreamer主要负责媒体播放。其中两个库必须交互的部分是最有趣的两个部分，即:指导GStreamer将视频输出到GTK+的窗口中并将用户操作转发给GStreamer。">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/newdee/BlogImage/master/20190906101926.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: false,
+    duoshuo: {
+      userId: '0',
+      author: '鄙人'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    emojis: {
+      className: 'github-emoji'
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://dfine.tech/posts/40a79901/">
+
+
+
+
+
+  <title>GSreamer笔记四: GUI Toolkit Integration | 阁子</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-83650950-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//tajs.qq.com/stats?sId=58292227";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">阁子</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">dfine's Blog</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-talks">
+          <a href="/talks/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-comment"></i> <br>
+            
+            闲言
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-map"></i> <br>
+            
+            友人目
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/About/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://dfine.tech/posts/40a79901/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="dfine">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/favo.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="阁子">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">GSreamer笔记四: GUI Toolkit Integration</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-04T16:23:14+08:00">
+                2017-12-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/TX1入坑/" itemprop="url" rel="index">
+                    <span itemprop="name">TX1入坑</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+          
+          
+             <span id="/posts/40a79901/" class="leancloud_visitors" data-flag-title="GSreamer笔记四: GUI Toolkit Integration">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body han-init-context" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>主要是关于如何将GStreamer集成到图形用户界面(GUI)工具箱中。基本上当GUI工具箱处理用户界面时，GStreamer主要负责媒体播放。其中两个库必须交互的部分是最有趣的两个部分，即:指导GStreamer将视频输出到GTK+的窗口中并将用户操作转发给GStreamer。<br><a id="more"></a><br>需要解决的问题有:  </p>
+<ul>
+<li>告诉GStreamer如何将视频输出到特定窗口，而不是自己创建窗口；</li>
+<li>如何使用GStreamer的信息持续刷新GUI；</li>
+<li>如何从GStreamer的多个线程更新GUI(这是大多数GUI工具包中被禁止的操作)；</li>
+<li>一个只订阅感兴趣的消息而不是通知所有人的机制。</li>
+</ul>
+<h3 id="关于GTK"><a href="#关于GTK" class="headerlink" title="关于GTK+"></a>关于GTK+</h3><p>这里将使用GTK+工具包构建媒体播放器，这些概念亦适用于其他工具包如QT。<br>关键是告诉GStreamer将视频输出到所选择的窗口。具体机制取决于操作系统(或者窗口系统)，但GStreamer为平台独立性提供了一个抽象层。这种独立性来自GstVideoOverlay接口，它允许应用程序告诉视频接收器(sink)应该接收渲染的窗口的处理程序。<br>Gstreamer所使用的是GObject 接口。GObject的接口是元素可以实现的一组函数，包括GstVideoOverlay等。具体介绍如下:  </p>
+<blockquote>
+<p>A GObject interface (which GStreamer uses) is a set of functions that an element can implement. If it does, then it is said to support that particular interface. For example, video sinks usually create their own windows to display video, but, if they are also capable of rendering to an external window, they can choose to implement the GstVideoOverlay interface and provide functions to specify this external window. From the application developer point of view, if a certain interface is supported, you can use it and forget about which kind of element is implementing it. Moreover, if you are using playbin, it will automatically expose some of the interfaces supported by its internal elements: You can use your interface functions directly on playbin without knowing who is implementing them!</p>
+</blockquote>
+<p>另一个问题是，GUI工具包通常只允许主（或应用）线程来操作图形“小部件”，而GStreamer通常会派生多个线程来处理不同的任务。从回调函数中调用GTK +函数通常会失败，因为回调函数在调用线程中执行，并不需要在主线程中。这个问题可以通过回调函数在GStreamer总线上发布消息来解决: 主线程接收消息并做出相应反应。<br>这里已经注册了一个handle_message函数，每次在总线上出现一条消息时都会调用这个函数，这迫使我们解析每条消息，看看我们是否对其感兴趣。本例中使用了一种不同的方法来为每种消息注册一个回调，所以解析更少，代码更少。  </p>
+<h3 id="GTK-播放器示例"><a href="#GTK-播放器示例" class="headerlink" title="GTK+播放器示例"></a>GTK+播放器示例</h3><p>一个简单的基于playbin的带GUI的媒体播放器如下:<br><figure class="highlight xl"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div><div class="line">155</div><div class="line">156</div><div class="line">157</div><div class="line">158</div><div class="line">159</div><div class="line">160</div><div class="line">161</div><div class="line">162</div><div class="line">163</div><div class="line">164</div><div class="line">165</div><div class="line">166</div><div class="line">167</div><div class="line">168</div><div class="line">169</div><div class="line">170</div><div class="line">171</div><div class="line">172</div><div class="line">173</div><div class="line">174</div><div class="line">175</div><div class="line">176</div><div class="line">177</div><div class="line">178</div><div class="line">179</div><div class="line">180</div><div class="line">181</div><div class="line">182</div><div class="line">183</div><div class="line">184</div><div class="line">185</div><div class="line">186</div><div class="line">187</div><div class="line">188</div><div class="line">189</div><div class="line">190</div><div class="line">191</div><div class="line">192</div><div class="line">193</div><div class="line">194</div><div class="line">195</div><div class="line">196</div><div class="line">197</div><div class="line">198</div><div class="line">199</div><div class="line">200</div><div class="line">201</div><div class="line">202</div><div class="line">203</div><div class="line">204</div><div class="line">205</div><div class="line">206</div><div class="line">207</div><div class="line">208</div><div class="line">209</div><div class="line">210</div><div class="line">211</div><div class="line">212</div><div class="line">213</div><div class="line">214</div><div class="line">215</div><div class="line">216</div><div class="line">217</div><div class="line">218</div><div class="line">219</div><div class="line">220</div><div class="line">221</div><div class="line">222</div><div class="line">223</div><div class="line">224</div><div class="line">225</div><div class="line">226</div><div class="line">227</div><div class="line">228</div><div class="line">229</div><div class="line">230</div><div class="line">231</div><div class="line">232</div><div class="line">233</div><div class="line">234</div><div class="line">235</div><div class="line">236</div><div class="line">237</div><div class="line">238</div><div class="line">239</div><div class="line">240</div><div class="line">241</div><div class="line">242</div><div class="line">243</div><div class="line">244</div><div class="line">245</div><div class="line">246</div><div class="line">247</div><div class="line">248</div><div class="line">249</div><div class="line">250</div><div class="line">251</div><div class="line">252</div><div class="line">253</div><div class="line">254</div><div class="line">255</div><div class="line">256</div><div class="line">257</div><div class="line">258</div><div class="line">259</div><div class="line">260</div><div class="line">261</div><div class="line">262</div><div class="line">263</div><div class="line">264</div><div class="line">265</div><div class="line">266</div><div class="line">267</div><div class="line">268</div><div class="line">269</div><div class="line">270</div><div class="line">271</div><div class="line">272</div><div class="line">273</div><div class="line">274</div><div class="line">275</div><div class="line">276</div><div class="line">277</div><div class="line">278</div><div class="line">279</div><div class="line">280</div><div class="line">281</div><div class="line">282</div><div class="line">283</div><div class="line">284</div><div class="line">285</div><div class="line">286</div><div class="line">287</div><div class="line">288</div><div class="line">289</div><div class="line">290</div><div class="line">291</div><div class="line">292</div><div class="line">293</div><div class="line">294</div><div class="line">295</div><div class="line">296</div><div class="line">297</div><div class="line">298</div><div class="line">299</div><div class="line">300</div><div class="line">301</div><div class="line">302</div><div class="line">303</div><div class="line">304</div><div class="line">305</div><div class="line">306</div><div class="line">307</div><div class="line">308</div><div class="line">309</div><div class="line">310</div><div class="line">311</div><div class="line">312</div><div class="line">313</div><div class="line">314</div><div class="line">315</div><div class="line">316</div><div class="line">317</div><div class="line">318</div><div class="line">319</div><div class="line">320</div><div class="line">321</div><div class="line">322</div><div class="line">323</div><div class="line">324</div><div class="line">325</div><div class="line">326</div><div class="line">327</div><div class="line">328</div><div class="line">329</div><div class="line">330</div><div class="line">331</div><div class="line">332</div><div class="line">333</div><div class="line">334</div><div class="line">335</div><div class="line">336</div><div class="line">337</div><div class="line">338</div><div class="line">339</div><div class="line">340</div><div class="line">341</div><div class="line">342</div><div class="line">343</div><div class="line">344</div><div class="line">345</div><div class="line">346</div><div class="line">347</div><div class="line">348</div><div class="line">349</div><div class="line">350</div><div class="line">351</div><div class="line">352</div><div class="line">353</div><div class="line">354</div><div class="line">355</div><div class="line">356</div><div class="line">357</div><div class="line">358</div><div class="line">359</div><div class="line">360</div><div class="line">361</div><div class="line">362</div><div class="line">363</div><div class="line">364</div><div class="line">365</div><div class="line">366</div><div class="line">367</div><div class="line">368</div><div class="line">369</div><div class="line">370</div><div class="line">371</div><div class="line">372</div><div class="line">373</div><div class="line">374</div><div class="line">375</div><div class="line">376</div><div class="line">377</div><div class="line">378</div><div class="line">379</div><div class="line">380</div></pre></td><td class="code"><pre><div class="line">#include &lt;string.h&gt;</div><div class="line"></div><div class="line">#include &lt;gtk/gtk.h&gt;</div><div class="line">#include &lt;gst/gst.h&gt;</div><div class="line">#include &lt;gst/video/videooverlay.h&gt;</div><div class="line"></div><div class="line">#include &lt;gdk/gdk.h&gt;</div><div class="line">#<span class="keyword">if</span> defined (GDK_WINDOWING_X11)</div><div class="line">#include &lt;gdk/gdkx.h&gt;</div><div class="line">#elif defined (GDK_WINDOWING_WIN32)</div><div class="line">#include &lt;gdk/gdkwin32.h&gt;</div><div class="line">#elif defined (GDK_WINDOWING_QUARTZ)</div><div class="line">#include &lt;gdk/gdkquartz.h&gt;</div><div class="line">#endif</div><div class="line"></div><div class="line"><span class="comment">/* Structure to contain all our information, so we can pass it around */</span></div><div class="line">typedef struct _CustomData &#123;</div><div class="line">  GstElement *playbin;           <span class="comment">/* Our one and only pipeline */</span></div><div class="line"></div><div class="line">  GtkWidget *slider;              <span class="comment">/* Slider widget to keep track of current position */</span></div><div class="line">  GtkWidget *streams_list;        <span class="comment">/* Text widget to display info about the streams */</span></div><div class="line">  gulong slider_update_signal_id; <span class="comment">/* Signal ID for the slider update signal */</span></div><div class="line"></div><div class="line">  GstState state;                 <span class="comment">/* Current state of the pipeline */</span></div><div class="line">  gint64 duration;                <span class="comment">/* Duration of the clip, in nanoseconds */</span></div><div class="line">&#125; CustomData;</div><div class="line"></div><div class="line"><span class="comment">/* This function is called when the GUI toolkit creates the physical window that will hold the video.</span></div><div class="line"><span class="comment"> * At this point we can retrieve its handler (which has a different meaning depending on the windowing system)</span></div><div class="line"><span class="comment"> * and pass it to GStreamer through the VideoOverlay interface. */</span></div><div class="line">static void realize_cb (GtkWidget *widget, CustomData *<span class="keyword">data</span>) &#123;</div><div class="line">  GdkWindow *window = gtk_widget_get_window (widget);</div><div class="line">  guintptr window_handle;</div><div class="line"></div><div class="line">  <span class="keyword">if</span> (!gdk_window_ensure_native (window))</div><div class="line">    g_error (<span class="string">"Couldn't create native window needed for GstVideoOverlay!"</span>);</div><div class="line"></div><div class="line">  <span class="comment">/* Retrieve window handler from GDK */</span></div><div class="line">#<span class="keyword">if</span> defined (GDK_WINDOWING_WIN32)</div><div class="line">  window_handle = (guintptr)GDK_WINDOW_HWND (window);</div><div class="line">#elif defined (GDK_WINDOWING_QUARTZ)</div><div class="line">  window_handle = gdk_quartz_window_get_nsview (window);</div><div class="line">#elif defined (GDK_WINDOWING_X11)</div><div class="line">  window_handle = GDK_WINDOW_XID (window);</div><div class="line">#endif</div><div class="line">  <span class="comment">/* Pass it to playbin, which implements VideoOverlay and will forward it to the video sink */</span></div><div class="line">  <span class="function"><span class="title">gst_video_overlay_set_window_handle</span> (GST_VIDEO_OVERLAY (<span class="keyword">data</span>-&gt;</span>playbin), window_handle);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/* This function is called when the PLAY button is clicked */</span></div><div class="line">static void play_cb (GtkButton *button, CustomData *<span class="keyword">data</span>) &#123;</div><div class="line">  <span class="function"><span class="title">gst_element_set_state</span> (<span class="keyword">data</span>-&gt;</span>playbin, GST_STATE_PLAYING);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/* This function is called when the PAUSE button is clicked */</span></div><div class="line">static void pause_cb (GtkButton *button, CustomData *<span class="keyword">data</span>) &#123;</div><div class="line">  <span class="function"><span class="title">gst_element_set_state</span> (<span class="keyword">data</span>-&gt;</span>playbin, GST_STATE_PAUSED);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/* This function is called when the STOP button is clicked */</span></div><div class="line">static void stop_cb (GtkButton *button, CustomData *<span class="keyword">data</span>) &#123;</div><div class="line">  <span class="function"><span class="title">gst_element_set_state</span> (<span class="keyword">data</span>-&gt;</span>playbin, GST_STATE_READY);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/* This function is called when the main window is closed */</span></div><div class="line">static void delete_event_cb (GtkWidget *widget, GdkEvent *event, CustomData *<span class="keyword">data</span>) &#123;</div><div class="line">  stop_cb (NULL, <span class="keyword">data</span>);</div><div class="line">  gtk_main_quit ();</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/* This function is called everytime the video window needs to be redrawn (due to damage/exposure,</span></div><div class="line"><span class="comment"> * rescaling, etc). GStreamer takes care of this in the PAUSED and PLAYING states, otherwise,</span></div><div class="line"><span class="comment"> * we simply draw a black rectangle to avoid garbage showing up. */</span></div><div class="line">static gboolean draw_cb (GtkWidget *widget, cairo_t *cr, CustomData *<span class="keyword">data</span>) &#123;</div><div class="line">  <span class="function"><span class="title">if</span> (<span class="keyword">data</span>-&gt;</span>state &lt; GST_STATE_PAUSED) &#123;</div><div class="line">    GtkAllocation allocation;</div><div class="line"></div><div class="line">    <span class="comment">/* Cairo is a 2D graphics library which we use here to clean the video window.</span></div><div class="line"><span class="comment">     * It is used by GStreamer for other reasons, so it will always be available to us. */</span></div><div class="line">    gtk_widget_get_allocation (widget, &amp;allocation);</div><div class="line">    cairo_set_source_rgb (cr, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>);</div><div class="line">    cairo_rectangle (cr, <span class="number">0</span>, <span class="number">0</span>, allocation.width, allocation.height);</div><div class="line">    cairo_fill (cr);</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  return FALSE;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/* This function is called when the slider changes its position. We perform a seek to the</span></div><div class="line"><span class="comment"> * new position here. */</span></div><div class="line">static void slider_cb (GtkRange *range, CustomData *<span class="keyword">data</span>) &#123;</div><div class="line">  <span class="function"><span class="title">gdouble</span> value = gtk_range_get_value (GTK_RANGE (<span class="keyword">data</span>-&gt;</span>slider));</div><div class="line">  <span class="function"><span class="title">gst_element_seek_simple</span> (<span class="keyword">data</span>-&gt;</span>playbin, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_KEY_UNIT,</div><div class="line">      (gint64)(value * GST_SECOND));</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/* This creates all the GTK+ widgets that compose our application, and registers the callbacks */</span></div><div class="line">static void create_ui (CustomData *<span class="keyword">data</span>) &#123;</div><div class="line">  GtkWidget *main_window;  <span class="comment">/* The uppermost window, containing all other windows */</span></div><div class="line">  GtkWidget *video_window; <span class="comment">/* The drawing area where the video will be shown */</span></div><div class="line">  GtkWidget *main_box;     <span class="comment">/* VBox to hold main_hbox and the controls */</span></div><div class="line">  GtkWidget *main_hbox;    <span class="comment">/* HBox to hold the video_window and the stream info text widget */</span></div><div class="line">  GtkWidget *controls;     <span class="comment">/* HBox to hold the buttons and the slider */</span></div><div class="line">  GtkWidget *play_button, *pause_button, *stop_button; <span class="comment">/* Buttons */</span></div><div class="line"></div><div class="line">  main_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);</div><div class="line">  g_signal_connect (G_OBJECT (main_window), <span class="string">"delete-event"</span>, G_CALLBACK (delete_event_cb), <span class="keyword">data</span>);</div><div class="line"></div><div class="line">  video_window = gtk_drawing_area_new ();</div><div class="line">  gtk_widget_set_double_buffered (video_window, FALSE);</div><div class="line">  g_signal_connect (video_window, <span class="string">"realize"</span>, G_CALLBACK (realize_cb), <span class="keyword">data</span>);</div><div class="line">  g_signal_connect (video_window, <span class="string">"draw"</span>, G_CALLBACK (draw_cb), <span class="keyword">data</span>);</div><div class="line"></div><div class="line">  play_button = gtk_button_new_from_icon_name (<span class="string">"media-playback-start"</span>, GTK_ICON_SIZE_SMALL_TOOLBAR);</div><div class="line">  g_signal_connect (G_OBJECT (play_button), <span class="string">"clicked"</span>, G_CALLBACK (play_cb), <span class="keyword">data</span>);</div><div class="line"></div><div class="line">  pause_button = gtk_button_new_from_icon_name (<span class="string">"media-playback-pause"</span>, GTK_ICON_SIZE_SMALL_TOOLBAR);</div><div class="line">  g_signal_connect (G_OBJECT (pause_button), <span class="string">"clicked"</span>, G_CALLBACK (pause_cb), <span class="keyword">data</span>);</div><div class="line"></div><div class="line">  stop_button = gtk_button_new_from_icon_name (<span class="string">"media-playback-stop"</span>, GTK_ICON_SIZE_SMALL_TOOLBAR);</div><div class="line">  g_signal_connect (G_OBJECT (stop_button), <span class="string">"clicked"</span>, G_CALLBACK (stop_cb), <span class="keyword">data</span>);</div><div class="line"></div><div class="line">  <span class="function"><span class="title">data</span>-&gt;</span>slider = gtk_scale_new_with_range (GTK_ORIENTATION_HORIZONTAL, <span class="number">0</span>, <span class="number">100</span>, <span class="number">1</span>);</div><div class="line">  <span class="function"><span class="title">gtk_scale_set_draw_value</span> (GTK_SCALE (<span class="keyword">data</span>-&gt;</span>slider), <span class="number">0</span>);</div><div class="line">  <span class="function"><span class="title">data</span>-&gt;</span><span class="function"><span class="title">slider_update_signal_id</span> = g_signal_connect (G_OBJECT (<span class="keyword">data</span>-&gt;</span>slider), <span class="string">"value-changed"</span>, G_CALLBACK (slider_cb), <span class="keyword">data</span>);</div><div class="line"></div><div class="line">  <span class="function"><span class="title">data</span>-&gt;</span>streams_list = gtk_text_view_new ();</div><div class="line">  <span class="function"><span class="title">gtk_text_view_set_editable</span> (GTK_TEXT_VIEW (<span class="keyword">data</span>-&gt;</span>streams_list), FALSE);</div><div class="line"></div><div class="line">  controls = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, <span class="number">0</span>);</div><div class="line">  gtk_box_pack_start (GTK_BOX (controls), play_button, FALSE, FALSE, <span class="number">2</span>);</div><div class="line">  gtk_box_pack_start (GTK_BOX (controls), pause_button, FALSE, FALSE, <span class="number">2</span>);</div><div class="line">  gtk_box_pack_start (GTK_BOX (controls), stop_button, FALSE, FALSE, <span class="number">2</span>);</div><div class="line">  <span class="function"><span class="title">gtk_box_pack_start</span> (GTK_BOX (controls), <span class="keyword">data</span>-&gt;</span>slider, TRUE, TRUE, <span class="number">2</span>);</div><div class="line"></div><div class="line">  main_hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, <span class="number">0</span>);</div><div class="line">  gtk_box_pack_start (GTK_BOX (main_hbox), video_window, TRUE, TRUE, <span class="number">0</span>);</div><div class="line">  <span class="function"><span class="title">gtk_box_pack_start</span> (GTK_BOX (main_hbox), <span class="keyword">data</span>-&gt;</span>streams_list, FALSE, FALSE, <span class="number">2</span>);</div><div class="line"></div><div class="line">  main_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, <span class="number">0</span>);</div><div class="line">  gtk_box_pack_start (GTK_BOX (main_box), main_hbox, TRUE, TRUE, <span class="number">0</span>);</div><div class="line">  gtk_box_pack_start (GTK_BOX (main_box), controls, FALSE, FALSE, <span class="number">0</span>);</div><div class="line">  gtk_container_add (GTK_CONTAINER (main_window), main_box);</div><div class="line">  gtk_window_set_default_size (GTK_WINDOW (main_window), <span class="number">640</span>, <span class="number">480</span>);</div><div class="line"></div><div class="line">  gtk_widget_show_all (main_window);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/* This function is called periodically to refresh the GUI */</span></div><div class="line">static gboolean refresh_ui (CustomData *<span class="keyword">data</span>) &#123;</div><div class="line">  gint64 current = -<span class="number">1</span>;</div><div class="line"></div><div class="line">  <span class="comment">/* We do not want to update anything unless we are in the PAUSED or PLAYING states */</span></div><div class="line">  <span class="function"><span class="title">if</span> (<span class="keyword">data</span>-&gt;</span>state &lt; GST_STATE_PAUSED)</div><div class="line">    return TRUE;</div><div class="line"></div><div class="line">  <span class="comment">/* If we didn't know it yet, query the stream duration */</span></div><div class="line">  <span class="function"><span class="title">if</span> (!GST_CLOCK_TIME_IS_VALID (<span class="keyword">data</span>-&gt;</span>duration)) &#123;</div><div class="line">    <span class="function"><span class="title">if</span> (!gst_element_query_duration (<span class="keyword">data</span>-&gt;</span><span class="function"><span class="title">playbin</span>, GST_FORMAT_TIME, &amp;<span class="keyword">data</span>-&gt;</span>duration)) &#123;</div><div class="line">      g_printerr (<span class="string">"Could not query current duration.\n"</span>);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">      <span class="comment">/* Set the range of the slider to the clip duration, in SECONDS */</span></div><div class="line">      <span class="function"><span class="title">gtk_range_set_range</span> (GTK_RANGE (<span class="keyword">data</span>-&gt;</span><span class="function"><span class="title">slider</span>), 0, (gdouble)<span class="keyword">data</span>-&gt;</span>duration / GST_SECOND);</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="function"><span class="title">if</span> (gst_element_query_position (<span class="keyword">data</span>-&gt;</span>playbin, GST_FORMAT_TIME, &amp;current)) &#123;</div><div class="line">    <span class="comment">/* Block the "value-changed" signal, so the slider_cb function is not called</span></div><div class="line"><span class="comment">     * (which would trigger a seek the user has not requested) */</span></div><div class="line">    <span class="function"><span class="title">g_signal_handler_block</span> (<span class="keyword">data</span>-&gt;</span><span class="function"><span class="title">slider</span>, <span class="keyword">data</span>-&gt;</span>slider_update_signal_id);</div><div class="line">    <span class="comment">/* Set the position of the slider to the current pipeline positoin, in SECONDS */</span></div><div class="line">    <span class="function"><span class="title">gtk_range_set_value</span> (GTK_RANGE (<span class="keyword">data</span>-&gt;</span>slider), (gdouble)current / GST_SECOND);</div><div class="line">    <span class="comment">/* Re-enable the signal */</span></div><div class="line">    <span class="function"><span class="title">g_signal_handler_unblock</span> (<span class="keyword">data</span>-&gt;</span><span class="function"><span class="title">slider</span>, <span class="keyword">data</span>-&gt;</span>slider_update_signal_id);</div><div class="line">  &#125;</div><div class="line">  return TRUE;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/* This function is called when new metadata is discovered in the stream */</span></div><div class="line">static void tags_cb (GstElement *playbin, gint stream, CustomData *<span class="keyword">data</span>) &#123;</div><div class="line">  <span class="comment">/* We are possibly in a GStreamer working thread, so we notify the main</span></div><div class="line"><span class="comment">   * thread of this event through a message in the bus */</span></div><div class="line">  gst_element_post_message (playbin,</div><div class="line">    gst_message_new_application (GST_OBJECT (playbin),</div><div class="line">      gst_structure_new_empty (<span class="string">"tags-changed"</span>)));</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/* This function is called when an error message is posted on the bus */</span></div><div class="line">static void error_cb (GstBus *bus, GstMessage *msg, CustomData *<span class="keyword">data</span>) &#123;</div><div class="line">  GError *err;</div><div class="line">  gchar *debug_info;</div><div class="line"></div><div class="line">  <span class="comment">/* Print error details on the screen */</span></div><div class="line">  gst_message_parse_error (msg, &amp;err, &amp;debug_info);</div><div class="line">  <span class="function"><span class="title">g_printerr</span> ("Error received from element %s: %s\n", GST_OBJECT_NAME (msg-&gt;</span><span class="function"><span class="title">src</span>), err-&gt;</span>message);</div><div class="line">  g_printerr (<span class="string">"Debugging information: %s\n"</span>, debug_info ? debug_info : <span class="string">"none"</span>);</div><div class="line">  g_clear_error (&amp;err);</div><div class="line">  g_free (debug_info);</div><div class="line"></div><div class="line">  <span class="comment">/* Set the pipeline to READY (which stops playback) */</span></div><div class="line">  <span class="function"><span class="title">gst_element_set_state</span> (<span class="keyword">data</span>-&gt;</span>playbin, GST_STATE_READY);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/* This function is called when an End-Of-Stream message is posted on the bus.</span></div><div class="line"><span class="comment"> * We just set the pipeline to READY (which stops playback) */</span></div><div class="line">static void eos_cb (GstBus *bus, GstMessage *msg, CustomData *<span class="keyword">data</span>) &#123;</div><div class="line">  g_print (<span class="string">"End-Of-Stream reached.\n"</span>);</div><div class="line">  <span class="function"><span class="title">gst_element_set_state</span> (<span class="keyword">data</span>-&gt;</span>playbin, GST_STATE_READY);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/* This function is called when the pipeline changes states. We use it to</span></div><div class="line"><span class="comment"> * keep track of the current state. */</span></div><div class="line">static void state_changed_cb (GstBus *bus, GstMessage *msg, CustomData *<span class="keyword">data</span>) &#123;</div><div class="line">  GstState old_state, new_state, pending_state;</div><div class="line">  gst_message_parse_state_changed (msg, &amp;old_state, &amp;new_state, &amp;pending_state);</div><div class="line">  <span class="function"><span class="title">if</span> (GST_MESSAGE_SRC (msg) == GST_OBJECT (<span class="keyword">data</span>-&gt;</span>playbin)) &#123;</div><div class="line">    <span class="function"><span class="title">data</span>-&gt;</span>state = new_state;</div><div class="line">    g_print (<span class="string">"State set to %s\n"</span>, gst_element_state_get_name (new_state));</div><div class="line">    <span class="keyword">if</span> (old_state == GST_STATE_READY &amp;&amp; new_state == GST_STATE_PAUSED) &#123;</div><div class="line">      <span class="comment">/* For extra responsiveness, we refresh the GUI as soon as we reach the PAUSED state */</span></div><div class="line">      refresh_ui (<span class="keyword">data</span>);</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/* Extract metadata from all the streams and write it to the text widget in the GUI */</span></div><div class="line">static void analyze_streams (CustomData *<span class="keyword">data</span>) &#123;</div><div class="line">  gint i;</div><div class="line">  GstTagList *tags;</div><div class="line">  gchar *str, *total_str;</div><div class="line">  guint rate;</div><div class="line">  gint n_video, n_audio, n_text;</div><div class="line">  GtkTextBuffer *<span class="keyword">text</span>;</div><div class="line"></div><div class="line">  <span class="comment">/* Clean current contents of the widget */</span></div><div class="line">  <span class="function"><span class="title">text</span> = gtk_text_view_get_buffer (GTK_TEXT_VIEW (<span class="keyword">data</span>-&gt;</span>streams_list));</div><div class="line">  gtk_text_buffer_set_text (<span class="keyword">text</span>, <span class="string">""</span>, -<span class="number">1</span>);</div><div class="line"></div><div class="line">  <span class="comment">/* Read some properties */</span></div><div class="line">  <span class="function"><span class="title">g_object_get</span> (<span class="keyword">data</span>-&gt;</span>playbin, <span class="string">"n-video"</span>, &amp;n_video, NULL);</div><div class="line">  <span class="function"><span class="title">g_object_get</span> (<span class="keyword">data</span>-&gt;</span>playbin, <span class="string">"n-audio"</span>, &amp;n_audio, NULL);</div><div class="line">  <span class="function"><span class="title">g_object_get</span> (<span class="keyword">data</span>-&gt;</span>playbin, <span class="string">"n-text"</span>, &amp;n_text, NULL);</div><div class="line"></div><div class="line">  <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; n_video; i++) &#123;</div><div class="line">    tags = NULL;</div><div class="line">    <span class="comment">/* Retrieve the stream's video tags */</span></div><div class="line">    <span class="function"><span class="title">g_signal_emit_by_name</span> (<span class="keyword">data</span>-&gt;</span>playbin, <span class="string">"get-video-tags"</span>, i, &amp;tags);</div><div class="line">    <span class="keyword">if</span> (tags) &#123;</div><div class="line">      total_str = g_strdup_printf (<span class="string">"video stream %d:\n"</span>, i);</div><div class="line">      gtk_text_buffer_insert_at_cursor (<span class="keyword">text</span>, total_str, -<span class="number">1</span>);</div><div class="line">      g_free (total_str);</div><div class="line">      gst_tag_list_get_string (tags, GST_TAG_VIDEO_CODEC, &amp;str);</div><div class="line">      total_str = g_strdup_printf (<span class="string">"  codec: %s\n"</span>, str ? str : <span class="string">"unknown"</span>);</div><div class="line">      gtk_text_buffer_insert_at_cursor (<span class="keyword">text</span>, total_str, -<span class="number">1</span>);</div><div class="line">      g_free (total_str);</div><div class="line">      g_free (str);</div><div class="line">      gst_tag_list_free (tags);</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; n_audio; i++) &#123;</div><div class="line">    tags = NULL;</div><div class="line">    <span class="comment">/* Retrieve the stream's audio tags */</span></div><div class="line">    <span class="function"><span class="title">g_signal_emit_by_name</span> (<span class="keyword">data</span>-&gt;</span>playbin, <span class="string">"get-audio-tags"</span>, i, &amp;tags);</div><div class="line">    <span class="keyword">if</span> (tags) &#123;</div><div class="line">      total_str = g_strdup_printf (<span class="string">"\naudio stream %d:\n"</span>, i);</div><div class="line">      gtk_text_buffer_insert_at_cursor (<span class="keyword">text</span>, total_str, -<span class="number">1</span>);</div><div class="line">      g_free (total_str);</div><div class="line">      <span class="keyword">if</span> (gst_tag_list_get_string (tags, GST_TAG_AUDIO_CODEC, &amp;str)) &#123;</div><div class="line">        total_str = g_strdup_printf (<span class="string">"  codec: %s\n"</span>, str);</div><div class="line">        gtk_text_buffer_insert_at_cursor (<span class="keyword">text</span>, total_str, -<span class="number">1</span>);</div><div class="line">        g_free (total_str);</div><div class="line">        g_free (str);</div><div class="line">      &#125;</div><div class="line">      <span class="keyword">if</span> (gst_tag_list_get_string (tags, GST_TAG_LANGUAGE_CODE, &amp;str)) &#123;</div><div class="line">        total_str = g_strdup_printf (<span class="string">"  language: %s\n"</span>, str);</div><div class="line">        gtk_text_buffer_insert_at_cursor (<span class="keyword">text</span>, total_str, -<span class="number">1</span>);</div><div class="line">        g_free (total_str);</div><div class="line">        g_free (str);</div><div class="line">      &#125;</div><div class="line">      <span class="keyword">if</span> (gst_tag_list_get_uint (tags, GST_TAG_BITRATE, &amp;rate)) &#123;</div><div class="line">        total_str = g_strdup_printf (<span class="string">"  bitrate: %d\n"</span>, rate);</div><div class="line">        gtk_text_buffer_insert_at_cursor (<span class="keyword">text</span>, total_str, -<span class="number">1</span>);</div><div class="line">        g_free (total_str);</div><div class="line">      &#125;</div><div class="line">      gst_tag_list_free (tags);</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; n_text; i++) &#123;</div><div class="line">    tags = NULL;</div><div class="line">    <span class="comment">/* Retrieve the stream's subtitle tags */</span></div><div class="line">    <span class="function"><span class="title">g_signal_emit_by_name</span> (<span class="keyword">data</span>-&gt;</span>playbin, <span class="string">"get-text-tags"</span>, i, &amp;tags);</div><div class="line">    <span class="keyword">if</span> (tags) &#123;</div><div class="line">      total_str = g_strdup_printf (<span class="string">"\nsubtitle stream %d:\n"</span>, i);</div><div class="line">      gtk_text_buffer_insert_at_cursor (<span class="keyword">text</span>, total_str, -<span class="number">1</span>);</div><div class="line">      g_free (total_str);</div><div class="line">      <span class="keyword">if</span> (gst_tag_list_get_string (tags, GST_TAG_LANGUAGE_CODE, &amp;str)) &#123;</div><div class="line">        total_str = g_strdup_printf (<span class="string">"  language: %s\n"</span>, str);</div><div class="line">        gtk_text_buffer_insert_at_cursor (<span class="keyword">text</span>, total_str, -<span class="number">1</span>);</div><div class="line">        g_free (total_str);</div><div class="line">        g_free (str);</div><div class="line">      &#125;</div><div class="line">      gst_tag_list_free (tags);</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/* This function is called when an "application" message is posted on the bus.</span></div><div class="line"><span class="comment"> * Here we retrieve the message posted by the tags_cb callback */</span></div><div class="line">static void application_cb (GstBus *bus, GstMessage *msg, CustomData *<span class="keyword">data</span>) &#123;</div><div class="line">  <span class="keyword">if</span> (g_strcmp0 (gst_structure_get_name (gst_message_get_structure (msg)), <span class="string">"tags-changed"</span>) == <span class="number">0</span>) &#123;</div><div class="line">    <span class="comment">/* If the message is the "tags-changed" (only one we are currently issuing), update</span></div><div class="line"><span class="comment">     * the stream info GUI */</span></div><div class="line">    analyze_streams (<span class="keyword">data</span>);</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">int main(int argc, char *argv[]) &#123;</div><div class="line">  CustomData <span class="keyword">data</span>;</div><div class="line">  GstStateChangeReturn ret;</div><div class="line">  GstBus *bus;</div><div class="line"></div><div class="line">  <span class="comment">/* Initialize GTK */</span></div><div class="line">  gtk_init (&amp;argc, &amp;argv);</div><div class="line"></div><div class="line">  <span class="comment">/* Initialize GStreamer */</span></div><div class="line">  gst_init (&amp;argc, &amp;argv);</div><div class="line"></div><div class="line">  <span class="comment">/* Initialize our data structure */</span></div><div class="line">  memset (&amp;<span class="keyword">data</span>, <span class="number">0</span>, sizeof (<span class="keyword">data</span>));</div><div class="line">  <span class="keyword">data</span>.duration = GST_CLOCK_TIME_NONE;</div><div class="line"></div><div class="line">  <span class="comment">/* Create the elements */</span></div><div class="line">  <span class="keyword">data</span>.playbin = gst_element_factory_make (<span class="string">"playbin"</span>, <span class="string">"playbin"</span>);</div><div class="line"></div><div class="line">  <span class="keyword">if</span> (!<span class="keyword">data</span>.playbin) &#123;</div><div class="line">    g_printerr (<span class="string">"Not all elements could be created.\n"</span>);</div><div class="line">    return -<span class="number">1</span>;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="comment">/* Set the URI to play */</span></div><div class="line">  g_object_set (<span class="keyword">data</span>.playbin, <span class="string">"uri"</span>, <span class="string">"https://www.freedesktop.org/software/gstreamer-sdk/data/media/sintel_trailer-480p.webm"</span>, NULL);</div><div class="line"></div><div class="line">  <span class="comment">/* Connect to interesting signals in playbin */</span></div><div class="line">  g_signal_connect (G_OBJECT (<span class="keyword">data</span>.playbin), <span class="string">"video-tags-changed"</span>, (GCallback) tags_cb, &amp;<span class="keyword">data</span>);</div><div class="line">  g_signal_connect (G_OBJECT (<span class="keyword">data</span>.playbin), <span class="string">"audio-tags-changed"</span>, (GCallback) tags_cb, &amp;<span class="keyword">data</span>);</div><div class="line">  g_signal_connect (G_OBJECT (<span class="keyword">data</span>.playbin), <span class="string">"text-tags-changed"</span>, (GCallback) tags_cb, &amp;<span class="keyword">data</span>);</div><div class="line"></div><div class="line">  <span class="comment">/* Create the GUI */</span></div><div class="line">  create_ui (&amp;<span class="keyword">data</span>);</div><div class="line"></div><div class="line">  <span class="comment">/* Instruct the bus to emit signals for each received message, and connect to the interesting signals */</span></div><div class="line">  bus = gst_element_get_bus (<span class="keyword">data</span>.playbin);</div><div class="line">  gst_bus_add_signal_watch (bus);</div><div class="line">  g_signal_connect (G_OBJECT (bus), <span class="string">"message::error"</span>, (GCallback)error_cb, &amp;<span class="keyword">data</span>);</div><div class="line">  g_signal_connect (G_OBJECT (bus), <span class="string">"message::eos"</span>, (GCallback)eos_cb, &amp;<span class="keyword">data</span>);</div><div class="line">  g_signal_connect (G_OBJECT (bus), <span class="string">"message::state-changed"</span>, (GCallback)state_changed_cb, &amp;<span class="keyword">data</span>);</div><div class="line">  g_signal_connect (G_OBJECT (bus), <span class="string">"message::application"</span>, (GCallback)application_cb, &amp;<span class="keyword">data</span>);</div><div class="line">  gst_object_unref (bus);</div><div class="line"></div><div class="line">  <span class="comment">/* Start playing */</span></div><div class="line">  ret = gst_element_set_state (<span class="keyword">data</span>.playbin, GST_STATE_PLAYING);</div><div class="line">  <span class="keyword">if</span> (ret == GST_STATE_CHANGE_FAILURE) &#123;</div><div class="line">    g_printerr (<span class="string">"Unable to set the pipeline to the playing state.\n"</span>);</div><div class="line">    gst_object_unref (<span class="keyword">data</span>.playbin);</div><div class="line">    return -<span class="number">1</span>;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="comment">/* Register a function that GLib will call every second */</span></div><div class="line">  g_timeout_add_seconds (<span class="number">1</span>, (GSourceFunc)refresh_ui, &amp;<span class="keyword">data</span>);</div><div class="line"></div><div class="line">  <span class="comment">/* Start the GTK main loop. We will not regain control until gtk_main_quit is called. */</span></div><div class="line">  gtk_main ();</div><div class="line"></div><div class="line">  <span class="comment">/* Free resources */</span></div><div class="line">  gst_element_set_state (<span class="keyword">data</span>.playbin, GST_STATE_NULL);</div><div class="line">  gst_object_unref (<span class="keyword">data</span>.playbin);</div><div class="line">  return <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>Required libraries: gstreamer-video-1.0 gtk+-3.0 gstreamer-1.0<br>所以此时编译需加上<code>pkg-config --cflags --libs gstreamer-video-1.0 gtk+-3.0 gstreamer-1.0</code>参数获取所需的头文件和库文件。<br>如果提示找不到gtk+-3.0,则安装。<code>sudo apt install build-essential libgtk-3-dev</code><br>提示未安装gstreamer-video-1.0，则安装。<code>sudo apt install libgstreamer-plugins-base1.0-dev</code><br>该例将会打开一个GTK+窗口并显示一个伴有音频的电影。媒体来自于互联网，所以窗口可能需要几秒才能显示，具体取决于网速。该窗口有一些按钮来暂停、停止和播放电影，还有个滑块显示当前位置，可以拖动或者改变它。此外，关于流的信息显示在右边的一列上。  </p>
+<h3 id="代码分析"><a href="#代码分析" class="headerlink" title="代码分析"></a>代码分析</h3><p>本例中，函数不再在使用之前定义，代码呈现的顺序也不总是和程序顺序相匹配。<br><figure class="highlight dts"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;gdk/gdk.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">if</span> defined (GDK_WINDOWING_X11)</span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;gdk/gdkx.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">elif</span> defined (GDK_WINDOWING_WIN32)</span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;gdk/gdkwin32.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">elif</span> defined (GDK_WINDOWING_QUARTZ)</span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;gdk/gdkquartzwindow.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></div></pre></td></tr></table></figure></p>
+<p>首先需要注意的是，现在并不是与平台完全无关的了，因为我们需要为所使用的窗口系统包含适当的头文件。幸运的是，没有那么多支持的窗口系统，所以X11 for Linux，Win32 for Windows和Quartz for Mac OSX这三行足够了。本例主要有回调函数组成，这些回调函数将从GStreamer或GTK+中调用。所以先看一下主函数，其中将会用到所有的回调函数。  </p>
+<figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line">int main(int argc, char *argv[]) &#123;</div><div class="line">  CustomData data<span class="comment">;</span></div><div class="line">  GstStateChangeReturn ret<span class="comment">;</span></div><div class="line">  GstBus *<span class="keyword">bus;</span></div><div class="line"><span class="keyword"></span></div><div class="line"><span class="keyword"> </span> <span class="comment">/* Initialize GTK */</span></div><div class="line">  gtk_init (&amp;argc, &amp;argv)<span class="comment">;</span></div><div class="line"></div><div class="line">  <span class="comment">/* Initialize GStreamer */</span></div><div class="line">  gst_init (&amp;argc, &amp;argv)<span class="comment">;</span></div><div class="line"></div><div class="line">  <span class="comment">/* Initialize our data structure */</span></div><div class="line">  memset (&amp;data, <span class="number">0</span>, sizeof (data))<span class="comment">;</span></div><div class="line">  data.duration = GST_CLOCK_TIME_NONE<span class="comment">;</span></div><div class="line"></div><div class="line">  <span class="comment">/* Create the elements */</span></div><div class="line">  data.playbin = gst_element_factory_make (<span class="string">"playbin"</span>, <span class="string">"playbin"</span>)<span class="comment">;</span></div><div class="line"></div><div class="line">  if (!data.playbin) &#123;</div><div class="line">    g_printerr (<span class="string">"Not all elements could be created.\n"</span>)<span class="comment">;</span></div><div class="line">    return -<span class="number">1</span><span class="comment">;</span></div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="comment">/* Set the URI to play */</span></div><div class="line">  g_object_set (data.playbin, <span class="string">"uri"</span>, <span class="string">"https://www.freedesktop.org/software/gstreamer-sdk/data/media/sintel_trailer-480p.webm"</span>, NULL)<span class="comment">;</span></div></pre></td></tr></table></figure>
+<p>标准的GStreamer和playbin管道创建，以及GTK+初始化。<br><figure class="highlight lisp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">/* Connect to interesting signals in playbin */</div><div class="line">g_signal_connect (<span class="name">G_OBJECT</span> (<span class="name">data</span>.playbin), <span class="string">"video-tags-changed"</span>, (<span class="name">GCallback</span>) tags_cb, <span class="symbol">&amp;data</span>)<span class="comment">;</span></div><div class="line">g_signal_connect (<span class="name">G_OBJECT</span> (<span class="name">data</span>.playbin), <span class="string">"audio-tags-changed"</span>, (<span class="name">GCallback</span>) tags_cb, <span class="symbol">&amp;data</span>)<span class="comment">;</span></div><div class="line">g_signal_connect (<span class="name">G_OBJECT</span> (<span class="name">data</span>.playbin), <span class="string">"text-tags-changed"</span>, (<span class="name">GCallback</span>) tags_cb, <span class="symbol">&amp;data</span>)<span class="comment">;</span></div></pre></td></tr></table></figure></p>
+<p>我们希望在流上出现新标签(元数据)时收到通知，为了简单起见，将处理来自相同回调函数<code>tag_cb</code>的所有种类标签(视频、音频和文本)。<br>然后创建GUI:<br><figure class="highlight armasm"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/* Create the GUI */</span></div><div class="line"><span class="symbol">create_ui</span> (&amp;<span class="meta">data</span>)<span class="comment">;</span></div></pre></td></tr></table></figure></p>
+<p>所有的GTK+部件创建和信号注册都发生在这个函数中，它只包含GTK相关的函数调用，所以可以跳过它的定义。其所注册的信号传递用户命令，如下面在查看回调时所示。<br><figure class="highlight armasm"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/* Instruct the bus to emit signals for each received message, and connect to the interesting signals */</span></div><div class="line">  <span class="keyword">bus </span>= gst_element_get_bus (<span class="meta">data</span>.playbin)<span class="comment">;</span></div><div class="line">  gst_bus_add_signal_watch (<span class="keyword">bus);</span></div><div class="line"><span class="keyword"> </span> g_signal_connect (G_OBJECT (<span class="keyword">bus), </span><span class="string">"message::error"</span>, (GCallback)error_cb, &amp;<span class="meta">data</span>)<span class="comment">;</span></div><div class="line">  g_signal_connect (G_OBJECT (<span class="keyword">bus), </span><span class="string">"message::eos"</span>, (GCallback)eos_cb, &amp;<span class="meta">data</span>)<span class="comment">;</span></div><div class="line">  g_signal_connect (G_OBJECT (<span class="keyword">bus), </span><span class="string">"message::state-changed"</span>, (GCallback)state_changed_cb, &amp;<span class="meta">data</span>)<span class="comment">;</span></div><div class="line">  g_signal_connect (G_OBJECT (<span class="keyword">bus), </span><span class="string">"message::application"</span>, (GCallback)application_cb, &amp;<span class="meta">data</span>)<span class="comment">;</span></div><div class="line">  gst_object_unref (<span class="keyword">bus);</span></div></pre></td></tr></table></figure></p>
+<p>其中，<code>gst_bus_add_watch</code>函数用于注册用于接收所有的消息并发送给GStreamer总线。可以通过使用信号来达到更精细的粒度，这使得我们仅注册感兴趣的消息。<br>通过调用<code>gst_bus_add_signal_watch</code>函数，我们指导总线在每次收到一个消息时发出一个信号。信号名称是<code>message::detail</code>，其中‘detail’是触发信号发出的消息。例如，当总线接收到EOS消息时，将发出一个名为<code>message::eos</code>的信号。<br>例中仅使用信号描述(detail)来注册所感兴趣的消息。如果我们注册了一个消息的信号，我们将收到每个消息的通知，如<code>gst_bus_add_watch</code>函数所做的一样。<br>为了使“bus watches”工作（无论是<code>gst_bus_add_watch</code>还是<code>gst_bus_add_signal_watch</code>），必须运行GLib主循环。这种情况下，它隐藏在GTK+主循环中。<br><figure class="highlight armasm"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/* Register a function that GLib will call every second */</span></div><div class="line"><span class="symbol">g_timeout_add_seconds</span> (<span class="number">1</span>, (GSourceFunc)refresh_ui, &amp;<span class="meta">data</span>)<span class="comment">;</span></div></pre></td></tr></table></figure></p>
+<p>在将控制移交给GTK+之前，使用<code>g_timeout_add_seconds</code>函数来注册另一个回调函数————超时，且每秒会被调用：用其从<code>refresh_ui</code>函数刷新GUI。<br>在这之后，我们完成了建立并启动GTK+主循环。感兴趣的事件发生时，将从回调函数中重新获取控制权。每个回调函数都有不同的签名，具体取决于调用者。可以再信号的文档中查找签名(参数的含义和返回值)。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/* This function is called when the GUI toolkit creates the physical window that will hold the video.</span></div><div class="line"><span class="comment"> * At this point we can retrieve its handler (which has a different meaning depending on the windowing system)</span></div><div class="line"><span class="comment"> * and pass it to GStreamer through the VideoOverlay interface. */</span></div><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">realize_cb</span> <span class="params">(GtkWidget *widget, CustomData *data)</span> </span>&#123;</div><div class="line">  GdkWindow *window = gtk_widget_get_window (widget);</div><div class="line">  guintptr window_handle;</div><div class="line"></div><div class="line">  <span class="keyword">if</span> (!gdk_window_ensure_native (window))</div><div class="line">    g_error (<span class="string">"Couldn't create native window needed for GstVideoOverlay!"</span>);</div><div class="line"></div><div class="line">  <span class="comment">/* Retrieve window handler from GDK */</span></div><div class="line"><span class="meta">#<span class="meta-keyword">if</span> defined (GDK_WINDOWING_WIN32)</span></div><div class="line">  window_handle = (guintptr)GDK_WINDOW_HWND (window);</div><div class="line"><span class="meta">#<span class="meta-keyword">elif</span> defined (GDK_WINDOWING_QUARTZ)</span></div><div class="line">  window_handle = gdk_quartz_window_get_nsview (window);</div><div class="line"><span class="meta">#<span class="meta-keyword">elif</span> defined (GDK_WINDOWING_X11)</span></div><div class="line">  window_handle = GDK_WINDOW_XID (window);</div><div class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></div><div class="line">  <span class="comment">/* Pass it to playbin, which implements VideoOverlay and will forward it to the video sink */</span></div><div class="line">  gst_video_overlay_set_window_handle (GST_VIDEO_OVERLAY (data-&gt;playbin), window_handle);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>在应用程序生命周期的这一点上，我们知道GStreamer应该呈现视频的窗口句柄（无论是X11的XID，Window的HWND还是Quartz的NSView）。我们只需从窗口系统中检索它，并使用<code>gst_video_overlay_set_window_handle</code>通过GstVideoOverlay接口将其传递给playbin。playbin将定位视频接收器并将处理程序传递给它，所以它不会创建自己的窗口并使用它。playbin和GstVideoOverlay将此过程简化了许多。<br><figure class="highlight xl"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/* This function is called when the PLAY button is clicked */</span></div><div class="line">static void play_cb (GtkButton *button, CustomData *<span class="keyword">data</span>) &#123;</div><div class="line">  <span class="function"><span class="title">gst_element_set_state</span> (<span class="keyword">data</span>-&gt;</span>playbin, GST_STATE_PLAYING);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/* This function is called when the PAUSE button is clicked */</span></div><div class="line">static void pause_cb (GtkButton *button, CustomData *<span class="keyword">data</span>) &#123;</div><div class="line">  <span class="function"><span class="title">gst_element_set_state</span> (<span class="keyword">data</span>-&gt;</span>playbin, GST_STATE_PAUSED);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/* This function is called when the STOP button is clicked */</span></div><div class="line">static void stop_cb (GtkButton *button, CustomData *<span class="keyword">data</span>) &#123;</div><div class="line">  <span class="function"><span class="title">gst_element_set_state</span> (<span class="keyword">data</span>-&gt;</span>playbin, GST_STATE_READY);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>这三个回调函数是关于GUI的播放，暂停和停止按钮的，它们只需要将管道设置为相应的状态即可。值得注意的是，在STOP状态下，将管道状态设置为READY。可以将流水线一直带到NULL状态，但是会导致过渡慢一点，因为有些资源(如音频设备)需要重新释放重新获取。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/* This function is called when the main window is closed */</span></div><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">delete_event_cb</span> <span class="params">(GtkWidget *widget, GdkEvent *event, CustomData *data)</span> </span>&#123;</div><div class="line">  stop_cb (<span class="literal">NULL</span>, data);</div><div class="line">  gtk_main_quit ();</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p><code>gtk_main_quit</code>最终会在main中调用<code>gtk_main_run</code>来终止，并在这种情况下完成整个程序。这里，在停止管道(只是为了整洁)后，当主窗口关闭时调用它。  </p>
+<figure class="highlight lsl"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/* This function is called everytime the video window needs to be redrawn (due to damage/exposure,</span></div><div class="line"><span class="comment"> * rescaling, etc). GStreamer takes care of this in the PAUSED and PLAYING states, otherwise,</span></div><div class="line"><span class="comment"> * we simply draw a black rectangle to avoid garbage showing up. */</span></div><div class="line">static gboolean draw_cb (GtkWidget *widget, cairo_t *cr, CustomData *data) &#123;</div><div class="line">  if (data-&gt;<span class="section">state</span> &lt; GST_STATE_PAUSED) &#123;</div><div class="line">    GtkAllocation allocation;</div><div class="line"></div><div class="line">    <span class="comment">/* Cairo is a 2D graphics library which we use here to clean the video window.</span></div><div class="line"><span class="comment">     * It is used by GStreamer for other reasons, so it will always be available to us. */</span></div><div class="line">    gtk_widget_get_allocation (widget, &amp;allocation);</div><div class="line">    cairo_set_source_rgb (cr, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>);</div><div class="line">    cairo_rectangle (cr, <span class="number">0</span>, <span class="number">0</span>, allocation.width, allocation.height);</div><div class="line">    cairo_fill (cr);</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  return <span class="literal">FALSE</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>当有数据流时（处于PAUSED和PLAYING状态），视频接收器负责刷新视频窗口的内容。但其他情况下不会这样，所以必须我们自己来做: 例中我们是使用一个黑色的矩形填充窗口。  </p>
+<figure class="highlight xl"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/* This function is called when the slider changes its position. We perform a seek to the</span></div><div class="line"><span class="comment"> * new position here. */</span></div><div class="line">static void slider_cb (GtkRange *range, CustomData *<span class="keyword">data</span>) &#123;</div><div class="line">  <span class="function"><span class="title">gdouble</span> value = gtk_range_get_value (GTK_RANGE (<span class="keyword">data</span>-&gt;</span>slider));</div><div class="line">  <span class="function"><span class="title">gst_element_seek_simple</span> (<span class="keyword">data</span>-&gt;</span>playbin, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_KEY_UNIT,</div><div class="line">      (gint64)(value * GST_SECOND));</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>通过GStreamer和GTK+的协作，可以非常容易地实现一个复杂的GUI元素，如一个搜索条（或者允许搜索的滑块）。如果滑块被拖动到新位置，则告诉GStreamer使用<code>gst_element_seek_simple</code>查找该位置。 滑块已经设置，它的值代表秒。<br>值得注意的是，一些性能和响应可以通过不去响应所有的单个用户的搜索请求来获得。由于搜索操作需要花费一些时间，所以在允许另一个搜索操作之前，更好的办法是等待一会(如半秒钟)。否则，如果用户疯狂的拖拽滑动条，应用程序看起来可能也没有响应，因为在一个新的搜索操作在队列中之前将不会允许任何搜索。  </p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/* This function is called periodically to refresh the GUI */</span></div><div class="line">static gboolean refresh_ui (CustomData *<span class="keyword">data</span>) &#123;</div><div class="line">  gint64 current = <span class="number">-1</span>;</div><div class="line"></div><div class="line">  <span class="comment">/* We do not want to update anything unless we are in the PAUSED or PLAYING states */</span></div><div class="line">  <span class="keyword">if</span> (<span class="keyword">data</span>-&gt;state &lt; GST_STATE_PAUSED)</div><div class="line">    <span class="keyword">return</span> TRUE;</div></pre></td></tr></table></figure>
+<p>该函数将移动滑块以反映媒体当前的位置。如果我们不处于PLAYING状态，那么在这里没有任何事情可做（位置和持续时间查询通常会失败）。  </p>
+<figure class="highlight xl"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/* If we didn't know it yet, query the stream duration */</span></div><div class="line"><span class="function"><span class="title">if</span> (!GST_CLOCK_TIME_IS_VALID (<span class="keyword">data</span>-&gt;</span>duration)) &#123;</div><div class="line">  <span class="function"><span class="title">if</span> (!gst_element_query_duration (<span class="keyword">data</span>-&gt;</span><span class="function"><span class="title">playbin</span>, GST_FORMAT_TIME, &amp;<span class="keyword">data</span>-&gt;</span>duration)) &#123;</div><div class="line">    g_printerr (<span class="string">"Could not query current duration.\n"</span>);</div><div class="line">  &#125; <span class="keyword">else</span> &#123;</div><div class="line">    <span class="comment">/* Set the range of the slider to the clip duration, in SECONDS */</span></div><div class="line">    <span class="function"><span class="title">gtk_range_set_range</span> (GTK_RANGE (<span class="keyword">data</span>-&gt;</span><span class="function"><span class="title">slider</span>), 0, (gdouble)<span class="keyword">data</span>-&gt;</span>duration / GST_SECOND);</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>可以设置滑块的范围以防我们在不知情的情况下恢复clip的持续时间。  </p>
+<figure class="highlight xl"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="title">if</span> (gst_element_query_position (<span class="keyword">data</span>-&gt;</span>playbin, GST_FORMAT_TIME, &amp;current)) &#123;</div><div class="line">  <span class="comment">/* Block the "value-changed" signal, so the slider_cb function is not called</span></div><div class="line"><span class="comment">   * (which would trigger a seek the user has not requested) */</span></div><div class="line">  <span class="function"><span class="title">g_signal_handler_block</span> (<span class="keyword">data</span>-&gt;</span><span class="function"><span class="title">slider</span>, <span class="keyword">data</span>-&gt;</span>slider_update_signal_id);</div><div class="line">  <span class="comment">/* Set the position of the slider to the current pipeline positoin, in SECONDS */</span></div><div class="line">  <span class="function"><span class="title">gtk_range_set_value</span> (GTK_RANGE (<span class="keyword">data</span>-&gt;</span>slider), (gdouble)current / GST_SECOND);</div><div class="line">  <span class="comment">/* Re-enable the signal */</span></div><div class="line">  <span class="function"><span class="title">g_signal_handler_unblock</span> (<span class="keyword">data</span>-&gt;</span><span class="function"><span class="title">slider</span>, <span class="keyword">data</span>-&gt;</span>slider_update_signal_id);</div><div class="line">&#125;</div><div class="line">return TRUE;</div></pre></td></tr></table></figure>
+<p>查询当前的管道位置，并根据滑块设置其位置。这将会触发一个<code>value-changed</code>信号，我们可以通过其知道用户在拖动滑块。除非用户请求它们，否则我们不希望发生这种情况，所以在此操作期间，使用<code>g_sinal_handler_block</code>和<code>g_signal_handler_unblock</code>禁用<code>value-changed</code>的信号发出。<br>该函数返回True将在之后保持其调用。如果返回FALSE，定时器将被删除。  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/* This function is called when new metadata is discovered in the stream */</span></div><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">tags_cb</span> <span class="params">(GstElement *playbin, gint stream, CustomData *data)</span> </span>&#123;</div><div class="line">  <span class="comment">/* We are possibly in a GStreamer working thread, so we notify the main</span></div><div class="line"><span class="comment">   * thread of this event through a message in the bus */</span></div><div class="line">  gst_element_post_message (playbin,</div><div class="line">    gst_message_new_application (GST_OBJECT (playbin),</div><div class="line">      gst_structure_new_empty (<span class="string">"tags-changed"</span>)));</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这里是该例的重点。当媒体中发现新标签时，该函数将会从streaming线程中调用，即从一个应用程序线程(或主线程)之外的线程调用。我们这里希望做的是更新GTK+的部件来反映这个新的信息，但GTK+不允许主线程之外的其它线程的操作。<br>解决方法是让playbin在总线上发布消息并返回给调用线程。在适当时候，主线程会接收到这个消息并更新GTK。<br><code>gst_element_post_message</code>函数使GStreamer元素将给定的消息发送到总线。<code>gst_message_new_application</code>函数创建一个新的应用程序类型的消息。GStreamer消息有不同的类型，且这种特殊类型将保留给应用程序:它会通过不受GStreamer影响的总线。<br>类型列表可在GstMessageType文档中找到。<br>消息可以通过嵌入的GstStructure提供额外的信息，GstStructure是一个非常灵活的数据容器。这里使用<code>gst_structure_new</code>创建一个新结构体，并将其命名为tags-changed，以避免在我们想发送其它应用程序消息时发生混淆。<br>然后，一旦在主线程中，总线将会收到这个消息并发送<code>message::application</code>信号，该信号与<code>application_cb</code>函数关联:<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/* This function is called when an "application" message is posted on the bus.</span></div><div class="line"><span class="comment"> * Here we retrieve the message posted by the tags_cb callback */</span></div><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">application_cb</span> <span class="params">(GstBus *bus, GstMessage *msg, CustomData *data)</span> </span>&#123;</div><div class="line">  <span class="keyword">if</span> (g_strcmp0 (gst_structure_get_name (gst_message_get_structure (msg)), <span class="string">"tags-changed"</span>) == <span class="number">0</span>) &#123;</div><div class="line">    <span class="comment">/* If the message is the "tags-changed" (only one we are currently issuing), update</span></div><div class="line"><span class="comment">     * the stream info GUI */</span></div><div class="line">    analyze_streams (data);</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>一旦确定它是标签变化(tag-changed)消息，则调用<code>analyze_streams</code>函数。其基本上从流中恢复标签，并将其写入GUI中的文本小部件中。<br>虽然该例代码量较大，但所需的概念很少且很容易。<br>最后效果图如下:</p>
+<center><br><img src="https://raw.githubusercontent.com/newdee/BlogImage/master/20190906101926.png" alt=""><br></center>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        
+
+      </div>
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    dfine
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://dfine.tech/posts/40a79901/" title="GSreamer笔记四: GUI Toolkit Integration">http://dfine.tech/posts/40a79901/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow noopener noreferrer" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag"><i class="fa fa-leaf" aria-hidden="true"></i>
+Linux</a>
+          
+            <a href="/tags/GStreamer/" rel="tag"><i class="fa fa-leaf" aria-hidden="true"></i>
+GStreamer</a>
+          
+            <a href="/tags/TX1/" rel="tag"><i class="fa fa-leaf" aria-hidden="true"></i>
+TX1</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/58b8a847/" rel="next" title="GStreamer笔记三: Time Management">
+                <i class="fa fa-chevron-left"></i> GStreamer笔记三: Time Management
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/79fb69ed/" rel="prev" title="GStreamer笔记五: Media Formats and Pad Capabilities">
+                GStreamer笔记五: Media Formats and Pad Capabilities <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+		<script src="/js/src/yiyan.js"></script>
+<div>   
+    <font size="4" face="Heiti" color="gray" class="hitokoto"></font>
+</div>
+<!--MOB SHARE BEGIN-->
+<div class="-mob-share-ui-button -mob-share-open">分享</div>
+<div class="-mob-share-ui" -mob-share-ui-theme="" -mob-share-ui-theme-slide-bottom="" style="display: none">
+    <ul class="-mob-share-list">
+        <li class="-mob-share-weixin"><p>微信</p></li>
+        <li class="-mob-share-qzone"><p>QQ空间</p></li>
+        <li class="-mob-share-weibo"><p>新浪微博</p></li>
+        <li class="-mob-share-facebook"><p>Facebook</p></li>
+        <li class="-mob-share-twitter"><p>Twitter</p></li>
+        <li class="-mob-share-pocket"><p>Pocket</p></li>
+        <li class="-mob-share-tumblr"><p>Tumblr</p></li>
+        <li class="-mob-share-google"><p>Google+</p></li>
+        <li class="-mob-share-linkedin"><p>Linkedin</p></li>
+        <li class="-mob-share-qq"><p>QQ好友</p></li>
+        <li class="-mob-share-tencentweibo"><p>腾讯微博</p></li>
+        <li class="-mob-share-renren"><p>人人网</p></li>
+        <li class="-mob-share-douban"><p>豆瓣</p></li>
+        <li class="-mob-share-youdao"><p>有道云笔记</p></li>
+        <li class="-mob-share-instapaper"><p>Instapaper</p></li>
+    </ul>
+    <div class="-mob-share-close">取消</div>
+</div>
+<div class="-mob-share-ui-bg"></div>
+<script id="-mob-share" src="https://f1.webshare.mob.com/code/mob-share.js?appkey=1fc60caf613fe"></script>
+<!--MOB SHARE END-->
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+  
+       
+            <div onclick="ShowValine()" id="valine-display-button">匿名评论</div>
+            <div class="comments" id="comments" style="display:none">
+       
+    </div>
+
+    
+	 <div id="gitalk-container"></div>
+	
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image" src="/images/favo.jpg" alt="dfine">
+          <p class="site-author-name" itemprop="name">dfine</p>
+           
+              <p class="site-description motion-element" itemprop="description">多可喜，亦多可悲</p>
+          
+        </div>
+
+		<!--my custom code begin-->
+		<script src="https://cdnjs.loli.net/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+		<script src="https://cdnjs.loli.net/ajax/libs/velocity/1.5.0/velocity.min.js"></script>
+		<script type="text/javascript">
+		  $("#sidebar").hover(function(){
+			$("#mydivshow").velocity('stop').velocity({opacity: 1});
+		  },function(){
+			$("#mydivshow").velocity('stop').velocity({opacity: 0});
+		  });
+		</script>
+		<div id="mydivshow" class="mydivshow">
+		<!--my custom code end-->
+
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/">
+                <span class="site-state-item-count">82</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/categories/index.html">
+                <span class="site-state-item-count">15</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">111</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://newdee.gitbook.io/leetcode/" target="_blank" title="Leetcode" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-code"></i>
+                  
+                    
+                      Leetcode
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/newdee" target="_blank" title="GayHub" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                    
+                      GayHub
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://t.me/roomrss" target="_blank" title="TelegramRss" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-telegram"></i>
+                  
+                    
+                      TelegramRss
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/stebest?refer_flag=1001030101_&is_all=1" target="_blank" title="Weibo" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                    
+                      Weibo
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="mailto:stebest1992@gmail.com" target="_blank" title="E-Mail" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-at"></i>
+                  
+                    
+                      E-Mail
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://gitter.im/Newdee/newdee" target="_blank" title="Gitter" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-comments"></i>
+                  
+                    
+                      Gitter
+                    
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        <script>
+
+try{
+ if(window.console&&window.console.log)
+  {
+    console.log("%c控制台这么好玩嘛","background-color:rgba(255,255,255,0.1);font-size:1.5em");
+     console.log("%c ","padding:200px 260px;background:url('https://i.loli.net/2020/04/27/GrdC34HINPowfXE.gif')");
+     console.info("%c互链请邮  --支持ACG及Coding","background-color:rgba(255,255,255,0.5);font-size:1.3em");
+}  }
+catch(e){
+};
+</script>
+
+<div id="player1" class="aplayer"></div>
+<script src="/js/src/APlayer.min.js"></script>
+<script type="text/javascript">
+var ap = new APlayer({
+    element: document.getElementById('player1'),                       // Optional, player element
+    narrow: false,                                                     // Optional, narrow style
+    autoplay: false,                                                    // Optional, autoplay song(s), not supported by mobile browsers
+    showlrc: 3,                                                        // Optional, show lrc, can be 0, 1, 2, see: ###With lrc
+    mutex: true,                                                       // Optional, pause other players when this player playing
+    theme: '#e6d0b2',                                                  // Optional, theme color, default: #b7daff
+    mode: 'random',                                                    // Optional, play mode, can be `random` `single` `circulation`(loop) `order`(no loop), default: `circulation`
+    preload: 'metadata',                                               // Optional, the way to load music, can be 'none' 'metadata' 'auto', default: 'auto'
+    listmaxheight: '513px',                                             // Optional, max height of play list
+	music: [
+    {
+        title: '空空如也',
+        author: '任然',
+        url: 'https://files.catbox.moe/g27m5f.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162023.jpeg',
+		lrc: 'https://dfine.tech/lrc/kongkongruye'
+    },
+    {
+        title: '美しきもの',
+        author: 'Sound Horizon',
+        url: 'https://files.catbox.moe/1oevtg.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162103.jpeg',
+		lrc: 'https://dfine.tech/lrc/SoundHorizon'
+    },
+
+    {
+        title: '天国うまれ',
+        author: '甲本ヒロト',
+        url: 'https://files.catbox.moe/epooev.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162141.jpeg',
+	lrc: 'https://dfine.tech/lrc/tianguo'
+    },
+    {
+        title: '心做し',
+        author: 'luz',
+        url: 'https://files.catbox.moe/7j58ss.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162141.jpeg',
+		lrc: 'https://dfine.tech/lrc/xin'
+    },
+    {
+        title: 'Lemon',
+        author: '米津玄师',
+        url: 'https://files.catbox.moe/6ppo2h.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162427.jpeg',
+		lrc: 'https://dfine.tech/lrc/lemon'
+    },
+    {
+        title: 'You',
+        author: '雪野五月',
+        url: 'https://files.catbox.moe/1ovgtt.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325161925.jpeg',
+		lrc: 'https://dfine.tech/lrc/you'
+    },
+    {
+        title: '钟无艳',
+        author: '谢安琪',
+        url: 'https://files.catbox.moe/55sxbh.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162505.jpeg',
+		lrc: 'https://dfine.tech/lrc/zhongwuyan'
+    },
+
+    {
+        title: '殿书',
+        author: '奇然',
+        url: 'https://files.catbox.moe/e9n6sz.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162601.jpeg',
+		lrc: 'https://dfine.tech/lrc/dianshu'
+    },
+    {
+        title: 'East of Eden',
+        author: 'Zella Day',
+        url: 'https://files.catbox.moe/qoanq2.mp3',
+        pic: 'https://p1.music.126.net/orDs-AZ0jJjB06uoP0pdMw==/6667438510952720.jpg',
+		lrc: 'https://dfine.tech/lrc/eastEden'
+    },
+    {
+        title: '茁',
+        author: '谭烧',
+        url: 'https://files.catbox.moe/5lepv3.mp3',
+        pic: 'https://p1.music.126.net/xphtETT9CVE-IjRzGx20YA==/7969260279094350.jpg',
+		lrc: 'https://dfine.tech/lrc/zhuo'
+    },
+    {
+        title: '僕が死のうと思ったのは',
+        author: '中岛美嘉',
+        url: 'https://files.catbox.moe/umshce.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162629.jpeg',
+		lrc: 'https://dfine.tech/lrc/yiliaobailiao'
+    },
+    {
+        title: 'PLANET',
+        author: 'ラムジ',
+        url: 'https://files.catbox.moe/6ioooc.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162655.jpeg',
+		lrc: 'https://dfine.tech/lrc/planet'
+    },
+]
+
+
+});
+ $('.aplayer-icon-menu')[0].click();   //initial height
+	$('.aplayer-icon.aplayer-icon-mode').css('display','inline-block');
+  var myflag=true;
+	$('.aplayer-list').css('height','180px');
+	$('.aplayer-icon-menu svg').click(function(){
+    var temp=$('#player1').css('height');
+		if(temp=='250px' && !myflag){
+      $('#mydivshow').velocity('stop').velocity({height: 250});
+			$('#player1').velocity('stop').velocity({height: 66});
+    }
+		else if(temp=='66px' && myflag){
+      $('#mydivshow').velocity('stop').velocity({height: 420});
+			$('#player1').velocity('stop').velocity({height: 250});
+    }
+    myflag=!myflag;
+	});
+
+
+
+</script>
+
+<script type="text/javascript" src="//ra.revolvermaps.com/0/0/8.js?i=0qun3l8xnmd&amp;m=7&amp;c=ff0000&amp;cr1=ffffff&amp;f=arial&amp;l=33" async="async"></script>
+
+
+		<!--my custom code begin-->
+		</div>
+		<!--my custom code end-->
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#关于GTK"><span class="nav-number">1.</span> <span class="nav-text">关于GTK+</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GTK-播放器示例"><span class="nav-number">2.</span> <span class="nav-text">GTK+播放器示例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码分析"><span class="nav-number">3.</span> <span class="nav-text">代码分析</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </div></main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">
+  
+  &copy;  1992 - 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-superpowers"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder"><a href="https://dfine.tech">dfine</a></span>
+	
+
+</div>
+
+<!--
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+-->
+
+        
+<div class="busuanzi-count">
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user">This site's UV:</i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye">This site's PV:</i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="https://ajax.loli.net/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/fastclick/1.0.6/fastclick.min.js"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/velocity/1.5.0/velocity.min.js"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/velocity/1.5.0/velocity.ui.min.js"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/fancybox/3.1.25/jquery.fancybox.min.js"></script>
+
+  
+  <script type="text/javascript" src="/lib/three/three.min.js"></script>
+
+  
+  <script type="text/javascript" src="/lib/three/canvas_lines.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+   <link rel="stylesheet" href="https://dfine.tech/css/gitalk.css"> 
+ 
+  
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+   <script type="text/javascript">
+		var gitalk = new Gitalk({
+		  clientID: '4a39596c869e2498ea2c',
+		  clientSecret: '09f723a7aae19b9cd7767036df092d299793bd7a',
+		  repo: 'BlogComments',
+		  owner: 'newdee',
+		  admin: ['newdee'], 
+		  id: window.location.pathname,
+		  perPage: parseInt('5'),
+		  distractionFreeMode: 'false'
+		})
+
+		gitalk.render('gitalk-container')           
+       </script>
+	
+
+
+
+
+
+  <script src="//fastly.jsdelivr.net/npm/valine@1.4.16/dist/Valine.min.js"></script>
+    
+      <script type="text/javascript">
+        var GUEST = ['nick','mail','link'];
+        var guest = 'nick,mail,link';
+        guest = guest.split(',').filter(item=>{
+          return GUEST.indexOf(item)>-1;
+        });
+        function ShowValine(){
+            button=document.getElementById("valine-display-button");
+            vstate=document.getElementsByClassName("comments v")[0];
+            gstate=document.getElementById("gitalk-container");
+            if(vstate.style.display == "none" ){
+            button.innerHTML="Git评论";
+            vstate.style.display = "block";
+            gstate.style.display = "none";
+            }
+            else{
+            button.innerHTML="匿名评论";
+            gstate.style.display = "block";
+            vstate.style.display = "none";}
+        }
+        new Valine({
+            el: '#comments' ,
+            verify: false,
+            notify: false,
+            appId: 'HfI6KhJtyoYJVElqovLTdyIe-MdYXbMMI',
+            appKey: 'SgCg3S2tCDaEkxunnlBATRCk',
+            serverURLs: 'https://hfi6khjt.api.lncldglobal.com',
+            placeholder: '言语是花，也是刀。',
+            avatar:'mm',
+            guest_info:guest,
+            pageSize:'5' || 10,
+        });
+      </script>
+      
+
+
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $('.leancloud_visitors');
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', '/classes/Counter/' + counter.objectId, JSON.stringify({ time: { '__op': 'Increment', 'amount': 1 } }))
+            
+              .done(function() {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.time + 1);
+              })
+            
+              .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+              })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1 }))
+                .done(function() {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function() {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+        .fail(function ({ responseJSON }) {
+          console.log('LeanCloud Counter Error: ' + responseJSON.code + ' ' + responseJSON.error);
+        });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + 'HfI6KhJtyoYJVElqovLTdyIe-MdYXbMMI')
+        .done(function({ api_server }) {
+          var Counter = function(method, url, data) {
+            return $.ajax({
+              method: method,
+              url: 'https://' + api_server + '/1.1' + url,
+              headers: {
+                'X-LC-Id': 'HfI6KhJtyoYJVElqovLTdyIe-MdYXbMMI',
+                'X-LC-Key': 'SgCg3S2tCDaEkxunnlBATRCk',
+                'Content-Type': 'application/json',
+              },
+              data: data
+            });
+          };
+          
+            const localhost = /http:\/\/(localhost|127.0.0.1|0.0.0.0)/;
+            if (localhost.test(document.URL)) return;
+            addCount(Counter);
+          
+        });
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+  <script src="/js/src/Aplayer-Controler.min.js"></script>
+<div id="AP-controler"></div>
+<script type="text/javascript">
+var myapc=new APlayer_Controler({
+		APC_dom:$('#AP-controler'),
+		aplayer:ap,
+		attach_right:true,
+		position:{top:'150px',bottom:''},
+		fixed:true,
+		btn_width:100,
+		btn_height:120,
+		img_src:['https://fastly.jsdelivr.net/gh/newdee/BlogImage/20191105112417.gif', 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20191105112526.gif'],
+
+		tips_content:{
+			  on_loading:{top:'LOADING',bottom:'LIFE IS SO HARD'},
+			  on_welcome:{top:'LOADED',bottom:'NOT TOO BAD'},
+			  on_timeout:{top:'PLAYER ARE IN MARS',bottom:'TIME GOES STUPID'},
+			  on_error:{top:'PLAYER BROKEN',bottom:'NOTHING IS IMPORTANT IN LIFE'},
+			  on_listend:{top:'BOTTOM SAYS NO SONG',bottom:'TO DANCE'},
+			  on_nohistory:{top:'NO HISTORY',bottom:'YOU WILL CREATE THE HISTORY'},
+			  on_historyend:{top:'NO MORE',bottom:'HISTORY IS NOT IMPORTANT'}
+			},
+		img_style:{repeat:'no-repeat',position:'center',size:'contain'},
+		ctrls_color:'rgba(86,223,177,0.7)',
+		ctrls_hover_color:'rgba(255,140,0,0.7)',
+		tips_on:true,
+		tips_width:140,
+		tips_height:25,
+		tips_color:'rgba(255,255,255,0.8)',
+	  timeout:30,
+	  showOnPhone:false,
+	  songrecord_log:false
+	});
+</script>
+
+
+  <script type="text/javascript" src="/js/src/mouse.js"></script>
+
+
+<!--崩溃欺骗
+<script type="text/javascript" src="/js/src/broken.js"></script>
+-->
+</body>
+</html>
+
+<script type="text/javascript" src="/js/src/randbg.js"></script>
+<script src="https://fastly.jsdelivr.net/gh/newdee/live2d-widget@latest/autoload.js"></script>

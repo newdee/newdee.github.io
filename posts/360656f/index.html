@@ -1,0 +1,1790 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next mist" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+  <link rel="stylesheet" media="all" href="/lib/Han/dist/han.min.css?v=3.3">
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+  <link href="https://cdnjs.loli.net/ajax/libs/fancybox/3.1.25/jquery.fancybox.min.css" rel="stylesheet" type="text/css">
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.loli.net/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+  
+
+<link href="https://cdnjs.loli.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="Linux,文件IO,多进程,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="阁子" type="application/atom+xml">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2">
+
+
+
+
+
+
+<meta name="description" content="Linux中的用户编程接口（API）遵循了UNIX中的应用编程界面标准——POSIX。这些系统调用编程接口主要是通过C库(libc)实现的。Linux中程序的运行空间主要分为内核空间和用户空间，通常用户能直接访问的是用户空间，内核空间一般通过系统调用才能访问。主要内容均来自于网络，仅作笔记之用，主要记录一下文件IO的一">
+<meta name="keywords" content="Linux,文件IO,多进程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux的文件IO和多进程">
+<meta property="og:url" content="http://dfine.tech/posts/360656f/index.html">
+<meta property="og:site_name" content="阁子">
+<meta property="og:description" content="Linux中的用户编程接口（API）遵循了UNIX中的应用编程界面标准——POSIX。这些系统调用编程接口主要是通过C库(libc)实现的。Linux中程序的运行空间主要分为内核空间和用户空间，通常用户能直接访问的是用户空间，内核空间一般通过系统调用才能访问。主要内容均来自于网络，仅作笔记之用，主要记录一下文件IO的一些基本API和多进程编程方式。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://raw.githubusercontent.com/newdee/BlogImage/master/20190906111812.png">
+<meta property="og:updated_time" content="2022-05-19T04:23:59.331Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Linux的文件IO和多进程">
+<meta name="twitter:description" content="Linux中的用户编程接口（API）遵循了UNIX中的应用编程界面标准——POSIX。这些系统调用编程接口主要是通过C库(libc)实现的。Linux中程序的运行空间主要分为内核空间和用户空间，通常用户能直接访问的是用户空间，内核空间一般通过系统调用才能访问。主要内容均来自于网络，仅作笔记之用，主要记录一下文件IO的一些基本API和多进程编程方式。">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/newdee/BlogImage/master/20190906111812.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: false,
+    duoshuo: {
+      userId: '0',
+      author: '鄙人'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    emojis: {
+      className: 'github-emoji'
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://dfine.tech/posts/360656f/">
+
+
+
+
+
+  <title>Linux的文件IO和多进程 | 阁子</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-83650950-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//tajs.qq.com/stats?sId=58292227";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">阁子</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">dfine's Blog</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-talks">
+          <a href="/talks/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-comment"></i> <br>
+            
+            闲言
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-map"></i> <br>
+            
+            友人目
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/About/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://dfine.tech/posts/360656f/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="dfine">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/favo.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="阁子">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Linux的文件IO和多进程</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-11-18T14:38:28+08:00">
+                2017-11-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/Linux/" itemprop="url" rel="index">
+                    <span itemprop="name">Linux</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+          
+          
+             <span id="/posts/360656f/" class="leancloud_visitors" data-flag-title="Linux的文件IO和多进程">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body han-init-context" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Linux中的用户编程接口（API）遵循了UNIX中的应用编程界面标准——POSIX。这些系统调用编程接口主要是通过C库(libc)实现的。<br>Linux中程序的运行空间主要分为内核空间和用户空间，通常用户能直接访问的是用户空间，内核空间一般通过系统调用才能访问。<br>主要内容均来自于网络，仅作笔记之用，主要记录一下文件IO的一些基本API和多进程编程方式。<br><a id="more"></a></p>
+<h3 id="文件IO"><a href="#文件IO" class="headerlink" title="文件IO"></a>文件IO</h3><p>文件IO中的API主要是对文件的读写操作以及属性查询。主要API包括<code>open</code>,<code>read</code>,<code>write</code>,<code>close</code>,<code>lseek</code>,<code>select</code>和属性查询的<code>stat</code>。<br>对于系统内核，所有操作的文件都是通过文件描述符引用的。文件描述符用一个非负整数表示，当程序打开或者创建文件时，内核向进程返回一个文件描述符用于继续操作；当写一个文件时，则是通过将文件描述符作为参数传递给操作文件的API用于继续处理。  </p>
+<blockquote>
+<p>在POSIX应用程序中，整数0、1、2应被代换成符号常数：<br><code>STDIN_FILENO</code>(标准输入，默认是键盘)<br><code>STDOUT_FILENO</code>(标准输出，默认是屏幕)<br><code>STDERR_FILENO</code>(标准错误输出，默认是屏幕)</p>
+</blockquote>
+<p>这些常数都定义在头文件<unistd.h>中，文件描述符的范围是0～OPEN_MAX。早期的UNIX版本采用的上限值是19（允许每个进程打开20个文件）， 现在很多系统则将其增加至256。<br>可用的文件I\O函数很多，包括：打开文件，读文件，写文件等。大多数Linux文件I\O只需要用到5个函数：open，read，write，lseek以及close。  </unistd.h></p>
+<h4 id="open"><a href="#open" class="headerlink" title="open"></a>open</h4><h5 id="功能说明"><a href="#功能说明" class="headerlink" title="功能说明"></a>功能说明</h5><p>需要包含的头文件: <code>&lt;sys/types.h&gt;, &lt;sys/stat.h&gt;, &lt;fcntl.h&gt;</code><br>函数原型:<br><figure class="highlight processing"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">int</span> <span class="built_in">open</span>(<span class="keyword">const</span> <span class="built_in">str</span> * pathname, <span class="built_in">int</span> oflag, [..., mode_t mode])</div></pre></td></tr></table></figure></p>
+<p>该函数主要用于打开文件，打开成功返回文件描述符，失败返回-1。  </p>
+<h5 id="参数说明"><a href="#参数说明" class="headerlink" title="参数说明"></a>参数说明</h5><p><code>pathname</code>: 文件的全路径名。<br><code>mode</code>: 对于<code>open</code>函数而言，仅当创建文件时才使用该参数，主要用于文件权限的设置。  </p>
+<blockquote>
+<p><code>oflag</code>: 表示打开的一些方式,主要有<code>O_RDONLY</code>(只读打开)、<code>O_WRONLY</code>(只写打开)、<code>O_RDWR</code>(读写打开)和:<br><code>O_APPEND</code>: 追加到文件尾<br><code>O_CREAT</code>: 若文件不存在则创建它。使用此选择项时，需同时说明第三个参数mode，用其说明新文件的访问权限<br><code>O_EXCL</code>: 如果同时指定<code>O_CREAT</code>，而该文件又是存在的，报错；也可以测试一个文件是否存在，不存在则创建。<br><code>O_TRUNC</code>: 如果此文件存在，而且为读写或只写成功打开，则将其长度截短为0<br><code>O_SYNC</code>: 使每次write都等到物理I\O操作完成  </p>
+</blockquote>
+<h5 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h5><p>创建文件:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="meta">#<span class="meta-keyword">define</span> FILE_PATH   <span class="meta-string">"./test.txt"</span></span></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span></div><div class="line"><span class="function"></span>&#123;</div><div class="line">    <span class="keyword">int</span> fd;</div><div class="line">    <span class="keyword">if</span> ((fd = open(FILE_PATH, O_RDWR | O_CREAT | O_EXCL, <span class="number">0666</span>)) &lt; <span class="number">0</span>) &#123;</div><div class="line">        <span class="built_in">printf</span>(<span class="string">"open error\n"</span>);</div><div class="line">        <span class="built_in">exit</span>(<span class="number">-1</span>);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="built_in">printf</span>(<span class="string">"open success\n"</span>);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h4 id="read"><a href="#read" class="headerlink" title="read"></a>read</h4><h5 id="功能说明-1"><a href="#功能说明-1" class="headerlink" title="功能说明"></a>功能说明</h5><p>主要用于读取文件数据。头文件: <code>&lt;unistd.h&gt;</code><br>函数原型:<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">ssize_t</span> read(<span class="keyword">int</span> fd, <span class="keyword">void</span> * buf, <span class="keyword">size_t</span> count)</div></pre></td></tr></table></figure></p>
+<p>返回实际读到的字节数，读到文件尾返回0，出错返回-1。其中<code>ssize_t</code>是在头文件中用<code>typedef</code>定义的，相当于<code>signed int</code>类型。</p>
+<h5 id="参数说明-1"><a href="#参数说明-1" class="headerlink" title="参数说明"></a>参数说明</h5><blockquote>
+<p><code>fd</code>：要读取的文件的描述符<br><code>buf</code>：得到的数据在内存中的位置的首地址<br><code>count</code>：期望本次能读取到的最大字节数。<code>size_t</code>是系统头文件中用<code>typedef</code>定义的数据类型，相当于<code>unsigned int</code></p>
+</blockquote>
+<h4 id="write"><a href="#write" class="headerlink" title="write"></a>write</h4><h5 id="功能说明-2"><a href="#功能说明-2" class="headerlink" title="功能说明"></a>功能说明</h5><p>和<code>read</code>对应，主要用于写入和修改文件。<br>函数原型:<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">ssize_t</span> write(<span class="keyword">int</span> fd, <span class="keyword">const</span> <span class="keyword">void</span> * buf, <span class="keyword">size_t</span> count)</div></pre></td></tr></table></figure></p>
+<p>返回实际写入的字节数，出错返回-1。  </p>
+<h5 id="参数说明-2"><a href="#参数说明-2" class="headerlink" title="参数说明"></a>参数说明</h5><blockquote>
+<p>fd：要写入文件的文件描述符<br>buf：要写入文件的数据在内存中存放位置的首地址<br>count：期望写入的数据的最大字节数</p>
+<h5 id="例子-1"><a href="#例子-1" class="headerlink" title="例子"></a>例子</h5><p>读写文件:<code>read &amp;&amp; write</code><br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span></div><div class="line"><span class="function"></span>&#123;</div><div class="line">    <span class="keyword">char</span> buf[<span class="number">100</span>];</div><div class="line">    <span class="keyword">int</span> num = <span class="number">0</span>;</div><div class="line"></div><div class="line">    <span class="comment">// 获取键盘输入</span></div><div class="line">    <span class="keyword">if</span> ((num = read(STDIN_FILENO, buf, <span class="number">10</span>)) == <span class="number">-1</span>) &#123;</div><div class="line">        <span class="built_in">printf</span> (<span class="string">"read error"</span>);</div><div class="line">        error(<span class="number">-1</span>);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">    <span class="comment">// 输出到屏幕上</span></div><div class="line">        write(STDOUT_FILENO, buf, num);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+</blockquote>
+<h4 id="close"><a href="#close" class="headerlink" title="close"></a>close</h4><h5 id="功能说明-3"><a href="#功能说明-3" class="headerlink" title="功能说明"></a>功能说明</h5><p>主要用于关闭文件，头文件是<code>unistd.h</code>。<br>函数原型:<br><figure class="highlight arduino"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">int</span> <span class="built_in">close</span>(<span class="keyword">int</span> filedes)</div></pre></td></tr></table></figure></p>
+<h5 id="参数说明-3"><a href="#参数说明-3" class="headerlink" title="参数说明"></a>参数说明</h5><p>输入参数是需要关闭的文件的描述符。  </p>
+<blockquote>
+<p>当一个进程终止的时候，它所有的打开文件都是由内核自动关闭。很多程序都使用这一功能而不显式地调用close关闭一个已打开的文件。<br>但是，作为一名优秀的程序员，应该显式的调用close来关闭已不再使用的文件。  </p>
+</blockquote>
+<h4 id="lseek"><a href="#lseek" class="headerlink" title="lseek"></a>lseek</h4><h5 id="功能说明-4"><a href="#功能说明-4" class="headerlink" title="功能说明"></a>功能说明</h5><p>主要用来设置文件内容的读写位置，是用的较多的操作。需要包含头文件<code>unistd.h</code>和<code>sys/types.h</code></p>
+<blockquote>
+<p>每个打开的文件都有一个“当前文件偏移量”，是一个非负整数，用以度量从文件开始处计算的字节数。通常，读写操作都是从当前文件偏移量处开始，并使偏移量增加所读或写的字节数。默认情况下，你打开一个文件时(<code>open</code>)，除非指定<code>O_APPEND</code>参数，不然位移量被设为0。<br>函数原型:<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">off_t</span> lseek(<span class="keyword">int</span> filesdes, <span class="keyword">off_t</span> offset, <span class="keyword">int</span> whence)</div></pre></td></tr></table></figure></p>
+</blockquote>
+<h5 id="参数说明-4"><a href="#参数说明-4" class="headerlink" title="参数说明"></a>参数说明</h5><p>返回新的文件位移，出错返回-1。同样<code>off_t</code>是系统头文件定义的数据类型，相当于<code>signed int</code>。</p>
+<blockquote>
+<p>whence是<code>SEEK_SET</code>, 那么该文件的位移量设置为据文件开始处offset个字节<br>whence是<code>SEEK_CUR</code>, 那么该文件的位移量设置为当前值加offset。offset可为正或负<br>whence是<code>SEEK_END</code>, 那么该文件的位移量设置为文件长度加offset。offset可为正或负</p>
+</blockquote>
+<h5 id="例子-2"><a href="#例子-2" class="headerlink" title="例子"></a>例子</h5><figure class="highlight arduino"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="keyword">int</span> main(<span class="keyword">int</span> argc, <span class="keyword">char</span> * argv[])</div><div class="line">&#123;</div><div class="line">    <span class="keyword">int</span> fd;</div><div class="line">    <span class="keyword">char</span> buf[<span class="number">100</span>];</div><div class="line">    <span class="built_in">if</span> ((fd = <span class="built_in">open</span>(argv[<span class="number">1</span>], O_RDONLY)) &lt; <span class="number">0</span>) &#123;</div><div class="line">        perror(<span class="string">"open"</span>);</div><div class="line">        exit(<span class="number">-1</span>);</div><div class="line">    &#125;</div><div class="line">    <span class="built_in">read</span>(fd, buf, <span class="number">1</span>);</div><div class="line">    <span class="built_in">write</span>(STDOUT_FILENO, buf, <span class="number">1</span>);</div><div class="line">    lseek(fd, <span class="number">2</span>, SEEK_CUR);</div><div class="line"></div><div class="line">    <span class="built_in">read</span>(fd, buf, <span class="number">1</span>);</div><div class="line">    <span class="built_in">write</span>(STDOUT_FILENO, buf, <span class="number">1</span>);</div><div class="line">    lseek(fd, <span class="number">-1</span>, SEEK_END);</div><div class="line"></div><div class="line">    <span class="built_in">read</span>(fd, buf, <span class="number">1</span>);</div><div class="line">    <span class="built_in">write</span>(STDOUT_FILENO, buf, <span class="number">1</span>);</div><div class="line">    lseek(fd, <span class="number">0</span>, SEEK_SET);</div><div class="line"></div><div class="line">    <span class="built_in">read</span>(fd, buf, <span class="number">1</span>);</div><div class="line">    <span class="built_in">write</span>(STDOUT_FILENO, buf, <span class="number">1</span>);</div><div class="line">    <span class="built_in">close</span>(fd);</div><div class="line">    printf(<span class="string">"\n"</span>);</div><div class="line"></div><div class="line">    <span class="built_in">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h4 id="select"><a href="#select" class="headerlink" title="select"></a>select</h4><h5 id="功能说明-5"><a href="#功能说明-5" class="headerlink" title="功能说明"></a>功能说明</h5><p>用于同时监控多个文件描述符。因为<code>read</code>一次只能监控一个，且在监控过程中处于阻塞状态，无法同时监控多个输入。需要包含头文件<code>sys/select.h</code>。<br>函数原型:<br><figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">int</span> <span class="keyword">select</span>(<span class="keyword">int</span> maxfd, fd_set \* readset, fd_set \* writeset, fd_set \* exceptset, <span class="keyword">const</span> <span class="keyword">struct</span> timeval \* timeout)</div></pre></td></tr></table></figure></p>
+<h5 id="参数说明-5"><a href="#参数说明-5" class="headerlink" title="参数说明"></a>参数说明</h5><p>返回值：失败返回-1，成功返回readset，writeset，exceptset中所有，有指定变化的文件描述符的数目(若超时返回0)</p>
+<blockquote>
+<p><code>maxfd</code>：要检测的描述符个数， 因此值应为最大描述符+1<br><code>readset</code>：被监控是否有输入的文件描述符集。不监控时，设为NULL<br><code>writeset</code>：被监控是否可以输入的文件描述符集。不监控时，设为NULL<br><code>exceptset</code>：被监控是否有错误产生的文件描述符集。不监控时，设为NULL<br><code>timeval</code>：监控超时时间。设置为NULL表示一直阻塞到有文件描述符被监控到有指定变化。</p>
+<p>Tips:<br><code>readset，writeset，exceptset</code>这三个描述符集指针均是值—结果参数，调用的时候，被监控描述符相应位需要置1；返回时，未就绪的描数字相应位会被清0，而就绪的会被置1。<br>下面的系统定义的宏，和<code>select</code>配套使用<br><code>FD_ZERO(&amp;rset)</code>：将文件描述符集<code>rset</code>的所有位清0<br><code>FD_SET(4, &amp;reset)</code>：设置文件描述符集<code>rset</code>的<code>bit 4</code><br><code>FD_CLR(fileno(stdin), &amp;rset)</code>：将文件描述符集<code>rset</code>的<code>bit 0</code>清0<br><code>FD_ISSET(socketfd, &amp;rset)</code>：若文件描述符集<code>rset</code>中的<code>socketfd</code>位置1</p>
+</blockquote>
+<h5 id="例子-3"><a href="#例子-3" class="headerlink" title="例子"></a>例子</h5><figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/select.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="meta">#<span class="meta-keyword">define</span> MAXNUM      100</span></div><div class="line"><span class="meta">#<span class="meta-keyword">define</span> OPEN_DEV    <span class="meta-string">"/dev/input/mice"</span></span></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span></div><div class="line"><span class="function"></span>&#123;</div><div class="line">    fd_set rfds;</div><div class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">timeval</span> <span class="title">tv</span>;</span></div><div class="line">    <span class="keyword">int</span> retval, fd;</div><div class="line">    <span class="keyword">char</span> buf[MAXNUM];</div><div class="line"></div><div class="line">    fd = open(OPEN_DEV, O_RDONLY);</div><div class="line">    <span class="keyword">while</span> (<span class="number">1</span>) &#123;</div><div class="line">        FD_ZERO(&amp;rfds);</div><div class="line">        FD_SET(<span class="number">0</span>, &amp;rfds);</div><div class="line">        FD_SET(fd, &amp;rfds);</div><div class="line">        tv.tv_sec = <span class="number">5</span>;</div><div class="line">        tv.tv_usec = <span class="number">0</span>;</div><div class="line"></div><div class="line">        retval = select(fd+<span class="number">1</span>, &amp;rfds, <span class="literal">NULL</span>, <span class="literal">NULL</span>, &amp;tv);</div><div class="line">        <span class="keyword">if</span> (retval &lt; <span class="number">0</span>)</div><div class="line">            <span class="built_in">printf</span> (<span class="string">"error\n"</span>);</div><div class="line">        <span class="keyword">if</span> (retval == <span class="number">0</span>)</div><div class="line">            <span class="built_in">printf</span> (<span class="string">"No data within 5 seconds\n"</span>);</div><div class="line">        <span class="keyword">if</span> (retval &gt; <span class="number">0</span>) &#123;</div><div class="line">            <span class="keyword">if</span> (FD_ISSET(<span class="number">0</span>, &amp;rfds)) &#123;</div><div class="line">                <span class="built_in">printf</span> (<span class="string">"Data is available from keyboard now\n"</span>);</div><div class="line">                read(<span class="number">0</span>, buf, MAXNUM);</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">if</span> (FD_ISSET(fd, &amp;rfds)) &#123;</div><div class="line">                <span class="built_in">printf</span> (<span class="string">"Data is available from mouse now\n"</span>);</div><div class="line">                read(fd, buf, MAXNUM);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h4 id="stat"><a href="#stat" class="headerlink" title="stat"></a>stat</h4><h5 id="基本用法"><a href="#基本用法" class="headerlink" title="基本用法"></a>基本用法</h5><p>主要功能是获取文件的属性。需要包含头文件<code>&lt;sys/types.h&gt;，&lt;sys/stat.h&gt;，&lt;unistd.h&gt;</code>。<br>函数原型:<br><figure class="highlight cs"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">stat</span>(<span class="params"><span class="keyword">const</span> <span class="keyword">char</span> \* path, <span class="keyword">struct</span> stat \* buf</span>)</span></div></pre></td></tr></table></figure></p>
+<h5 id="参数说明-6"><a href="#参数说明-6" class="headerlink" title="参数说明"></a>参数说明</h5><blockquote>
+<p><code>path</code>：要查看属性的文件或目录的全路径名称。</p>
+<p><code>buf</code>：指向用于存放属性的结构体。stat成功调用后，buf的各个字段将存放各个属性。struct stat是系统头文件中定义的结构体，定义如下：</p>
+</blockquote>
+<figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">struct stat &#123;</div><div class="line">    dev_t       st_dev<span class="comment">;</span></div><div class="line">    ino_t       st_ino<span class="comment">;</span></div><div class="line">    mode_t      st_mode<span class="comment">;</span></div><div class="line">    nlink_t     st_nlink<span class="comment">;</span></div><div class="line">    uid_t       st_uid<span class="comment">;</span></div><div class="line">    gid_t       st_gid<span class="comment">;</span></div><div class="line">    dev_t       st_rdev<span class="comment">;</span></div><div class="line">    off_t       st_size<span class="comment">;</span></div><div class="line">    <span class="keyword">blksize_t </span>  st_blksize<span class="comment">;</span></div><div class="line">    <span class="keyword">blkcnt_t </span>   st_blocks<span class="comment">;</span></div><div class="line">    time_t      st_atime<span class="comment">;</span></div><div class="line">    time_t      st_mtime<span class="comment">;</span></div><div class="line">    time_t      st_ctime<span class="comment">;</span></div><div class="line">&#125;<span class="comment">;</span></div></pre></td></tr></table></figure>
+<blockquote>
+<p><code>st_ino</code>：节点号<br><code>st_mode</code>：文件类型和文件访问权限被编码在该字段中<br><code>st_nlink</code>：硬连接数<br><code>st_uid</code>：属主的用户ID<br><code>st_gid</code>：所属组的组ID<br><code>st_rdev</code>：设备文件的主、次设备号编码在该字段中<br><code>st_size</code>：文件的大小<br><code>st_mtime</code>：文件最后被修改时间<br>成功返回0，失败返回-1。</p>
+<h5 id="例子-4"><a href="#例子-4" class="headerlink" title="例子"></a>例子</h5><figure class="highlight awk"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#include &lt;stdio.h&gt;</span></div><div class="line"><span class="comment">#include &lt;stdlib.h&gt;</span></div><div class="line"><span class="comment">#include &lt;sys/stat.h&gt;</span></div><div class="line"><span class="comment">#include &lt;sys/types.h&gt;</span></div><div class="line"><span class="comment">#include &lt;unistd.h&gt;</span></div><div class="line"></div><div class="line">int main(int argc, char **argv)</div><div class="line">&#123;</div><div class="line">    struct stat     buf;</div><div class="line">    <span class="keyword">if</span>(argc != <span class="number">2</span>) &#123; </div><div class="line">        printf(<span class="string">"Usage: stat &lt;pathname&gt;"</span>); </div><div class="line">        <span class="keyword">exit</span>(-<span class="number">1</span>); </div><div class="line">    &#125;</div><div class="line">    <span class="keyword">if</span>(stat(argv[<span class="number">1</span>], &amp;buf) != <span class="number">0</span>) &#123; </div><div class="line">        printf(<span class="string">"stat error."</span>); </div><div class="line">        <span class="keyword">exit</span>(-<span class="number">1</span>); </div><div class="line">    &#125;</div><div class="line">    printf(<span class="string">"#i-node:    %ld\n"</span>, buf.st_ino);</div><div class="line">    printf(<span class="string">"#link:      %d\n"</span>, buf.st_nlink);</div><div class="line">    printf(<span class="string">"UID:        %d\n"</span>, buf.st_uid);</div><div class="line">    printf(<span class="string">"GID:        %d\n"</span>, buf.st_gid);</div><div class="line">    printf(<span class="string">"Size        %ld\n"</span>, buf.st_size);</div><div class="line">    <span class="keyword">exit</span>(<span class="number">0</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</blockquote>
+<h5 id="文件类型的判定"><a href="#文件类型的判定" class="headerlink" title="文件类型的判定"></a>文件类型的判定</h5><p><code>struct stat</code>中有个字段为<code>st_mode</code>，可用来获取文件类型和文件访问权限，可以从该字段解码我们需要的文件信息。</p>
+<blockquote>
+<p><code>st_mode</code>中文件类型宏定义：<br><code>S_ISREG()</code>:    普通文件<br><code>S_ISDIR()</code>:    目录文件<br><code>S_ISCHR()</code>:    字符设备文件<br><code>S_ISBLK()</code>:    块设备文件<br><code>S_ISFIFO()</code>:    有名管道文件<br><code>S_ISLNK()</code>:    软连接(符号链接)文件<br><code>S_ISSOCK()</code>:    套接字文件</p>
+<h5 id="例子-5"><a href="#例子-5" class="headerlink" title="例子"></a>例子</h5><figure class="highlight awk"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#include &lt;stdlib.h&gt;</span></div><div class="line"><span class="comment">#include &lt;sys/stat.h&gt;</span></div><div class="line"><span class="comment">#include &lt;sys/types.h&gt;</span></div><div class="line"><span class="comment">#include &lt;unistd.h&gt;</span></div><div class="line"></div><div class="line">int main(int argc, char **argv)</div><div class="line">&#123;</div><div class="line">    struct stat buf;</div><div class="line">    char * file_mode;</div><div class="line">    <span class="keyword">if</span>(argc != <span class="number">2</span>) &#123;</div><div class="line">        printf(<span class="string">"Usage: stat &lt;pathname&gt;\n"</span>); </div><div class="line">        <span class="keyword">exit</span>(-<span class="number">1</span>); </div><div class="line">    &#125;</div><div class="line">    <span class="keyword">if</span>(stat(argv[<span class="number">1</span>], &amp;buf) != <span class="number">0</span>) &#123;</div><div class="line">        printf(<span class="string">"stat error.\n"</span>); </div><div class="line">        <span class="keyword">exit</span>(-<span class="number">1</span>); </div><div class="line">    &#125;</div><div class="line">    <span class="keyword">if</span> (S_ISREG(buf.st_mode))</div><div class="line">        file_mode = <span class="string">"-"</span>;</div><div class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (S_ISDIR(buf.st_mode))</div><div class="line">        file_mode = <span class="string">"d"</span>;</div><div class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (S_ISCHR(buf.st_mode))</div><div class="line">        file_mode = <span class="string">"c"</span>;</div><div class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(S_ISBLK(buf.st_mode))</div><div class="line">        file_mode = <span class="string">"b"</span>;</div><div class="line">    printf(<span class="string">"#i-node:    %ld\n"</span>, buf.st_ino);</div><div class="line">    printf(<span class="string">"#link:      %d\n"</span>, buf.st_nlink);</div><div class="line">    printf(<span class="string">"UID:        %d\n"</span>, buf.st_uid);</div><div class="line">    printf(<span class="string">"GID:        %d\n"</span>, buf.st_gid);</div><div class="line">    printf(<span class="string">"Size        %ld\n"</span>, buf.st_size);</div><div class="line">    printf(<span class="string">"mode: %s\n"</span>, file_mode);</div><div class="line">    <span class="keyword">exit</span>(<span class="number">0</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</blockquote>
+<h4 id="文件权限的判定"><a href="#文件权限的判定" class="headerlink" title="文件权限的判定"></a>文件权限的判定</h4><p>文件类型与许可设定被一起编码在<code>st_mode</code>字段中，也需要一组由系统提供的宏来完成解码。</p>
+<blockquote>
+<p><code>S_ISUID</code>:    执行时，设置用户ID<br><code>S_ISGID</code>:    执行时，设置组ID<br><code>S_ISVTX</code>:    保存正文<br><code>S_IRWXU</code>:    拥有者的读、写和执行权限<br><code>S_IRUSR</code>:    拥有者的读权限<br><code>S_IWUSR</code>:    拥有者的写权限<br><code>S_IXUSR</code>:    拥有者的执行权限<br><code>S_IRWXG</code>:    用户组的读、写和执行权限<br><code>S_IRGRP</code>:    用户组的读权限<br><code>S_IWGRP</code>:    用户组的写权限<br><code>S_IXGRP</code>:    用户组的执行权限<br><code>S_IRWXO</code>:    其它读、写、执行权限<br><code>S_IROTH</code>:    其它读权限<br><code>S_IWOTH</code>:    其它写权限<br><code>S_IXOTH</code>:    其它执行权限</p>
+</blockquote>
+<h4 id="stat的目录操作"><a href="#stat的目录操作" class="headerlink" title="stat的目录操作"></a>stat的目录操作</h4><h5 id="打开目录"><a href="#打开目录" class="headerlink" title="打开目录"></a>打开目录</h5><blockquote>
+<p>需要包含的头文件：<code>&lt;sys/types.h&gt;，&lt;dirent.h&gt;</code><br>函数原型：<code>DIR * opendir(const char * name)</code><br>功能：<code>opendir()</code>用来打开参数<code>name</code>指定的目录，并返回<code>DIR *</code>形态的目录流<br>返回值：成功返回目录流；失败返回NULL</p>
+<h5 id="读取目录"><a href="#读取目录" class="headerlink" title="读取目录"></a>读取目录</h5><p>函数原型：<code>struct dirent * readdir(DIR * dir)</code><br>功能：<code>readdir()</code>返回参数dir目录流的下一个子条目(子目录或子文件)<br>返回值： 成功返回结构体指向的指针，错误或已读完目录，返回NULL<br>函数执行成功返回的结构体原型如下：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">struct</span> <span class="title">dirent</span> &#123;</span></div><div class="line">   <span class="keyword">ino_t</span>   d_ino;</div><div class="line">   <span class="keyword">off_t</span>   d_off;</div><div class="line">   <span class="keyword">unsigned</span> <span class="keyword">short</span>  d_reclen;</div><div class="line">   <span class="keyword">unsigned</span> <span class="keyword">char</span>   d_type;</div><div class="line">   <span class="keyword">char</span>    d_name[<span class="number">256</span>];</div><div class="line">&#125;;</div></pre></td></tr></table></figure></p>
+</blockquote>
+<p>其中 <code>d_name</code>字段，是存放子条目的名称</p>
+<h5 id="关闭目录"><a href="#关闭目录" class="headerlink" title="关闭目录"></a>关闭目录</h5><blockquote>
+<p>函数原型：<code>int closedir(DIR * dir)</code><br>功能：<code>closedir()</code>关闭dir所指的目录流<br>返回值：成功返回0；失败返回-1，错误原因在<code>errno</code>中<br>例子:<br><figure class="highlight awk"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#include &lt;stdio.h&gt;</span></div><div class="line"><span class="comment">#include &lt;stdlib.h&gt;</span></div><div class="line"><span class="comment">#include &lt;dirent.h&gt;</span></div><div class="line">int main(int argc, char *argv[])</div><div class="line">&#123;</div><div class="line">    DIR *dp;</div><div class="line">    struct dirent *entp;</div><div class="line">    <span class="keyword">if</span> (argc != <span class="number">2</span>) &#123;</div><div class="line">        printf(<span class="string">"usage: showdir dirname\n"</span>);</div><div class="line">        <span class="keyword">exit</span>(<span class="number">0</span>);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">if</span> ((dp = opendir(argv[<span class="number">1</span>])) == NULL) &#123;</div><div class="line">        perror(<span class="string">"opendir"</span>);</div><div class="line">        <span class="keyword">exit</span>(-<span class="number">1</span>);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">while</span> ((entp = readdir(dp)) != NULL)</div><div class="line">        printf(<span class="string">"%s\n"</span>, entp-&gt;d_name);</div><div class="line"></div><div class="line">    closedir(dp);</div><div class="line">    return <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+</blockquote>
+<h3 id="多进程"><a href="#多进程" class="headerlink" title="多进程"></a>多进程</h3><h4 id="Linux的基本进程状态"><a href="#Linux的基本进程状态" class="headerlink" title="Linux的基本进程状态"></a>Linux的基本进程状态</h4><p>其实在使用<code>top</code>命令时候也可以看到一些标识,如<code>R/S/D/T/Z/X</code>等。  </p>
+<blockquote>
+<p><code>R (TASK_RUNNING)</code>，可执行状态。<br>只有在该状态的进程才可能在CPU上运行。而同一时刻可能有多个进程处于可执行状态，这些进程的<code>task_struct</code>结构（进程控制块）被放入对应CPU的可执行队列中（一个进程最多只能出现在一个CPU的可执行队列中）。进程调度器的任务就是从各个CPU的可执行队列中分别选择一个进程在该CPU上运行。<br>很多操作系统教科书将正在CPU上执行的进程定义为RUNNING状态、而将可执行但是尚未被调度执行的进程定义为READY状态，这两种状态在linux下统一为 <code>TASK_RUNNING</code>状态。<br><code>S (TASK_INTERRUPTIBLE)</code>，可中断的睡眠状态。<br>处于这个状态的进程因为等待某某事件的发生（比如等待socket连接、等待信号量），而被挂起。这些进程的<code>task_struct</code>结构被放入对应事件的等待队列中。当这些事件发生时（由外部中断触发、或由其他进程触发），对应的等待队列中的一个或多个进程将被唤醒。<br>通过ps命令我们会看到，一般情况下，进程列表中的绝大多数进程都处于<code>TASK_INTERRUPTIBLE</code>状态（除非机器的负载很高）。毕竟CPU就这么一两个，进程动辄几十上百个，如果不是绝大多数进程都在睡眠，CPU又怎么响应得过来。<br><code>D (TASK_UNINTERRUPTIBLE)</code>，不可中断的睡眠状态。<br>与<code>TASK_INTERRUPTIBLE</code>状态类似，进程处于睡眠状态，但是此刻进程是不可中断的。不可中断，指的并不是CPU不响应外部硬件的中断，而是指进程不响应异步信号。<br>绝大多数情况下，进程处在睡眠状态时，总是应该能够响应异步信号的。否则你将惊奇的发现，kill -9竟然杀不死一个正在睡眠的进程了！于是我们也很好理解，为什么ps命令看到的进程几乎不会出现<code>TASK_UNINTERRUPTIBLE</code>状态，而总是<code>TASK_INTERRUPTIBLEi</code>状态。<br>而<code>TASK_UNINTERRUPTIBLE</code>状态存在的意义就在于，内核的某些处理流程是不能被打断的。如果响应异步信号，程序的执行流程中就会被插入一段用于处理异步信号的流程（这个插入的流程可能只存在于内核态，也可能延伸到用户态），于是原有的流程就被中断了。（参见《linux内核异步中断浅析》）<br>在进程对某些硬件进行操作时（比如进程调用read系统调用对某个设备文件进行读操作，而read系统调用最终执行到对应设备驱动的代码，并与对应的物理设备进行交互），可能需要使用<code>TASK_UNINTERRUPTIBLE</code>状态对进程进行保护，以避免进程与设备交互的过程被打断，造成设备陷入不可控的状态。这种情况下的<code>TASK_UNINTERRUPTIBLE</code>状态总是非常短暂的，通过ps命令基本上不可能捕捉到。<br>linux系统中也存在容易捕捉的<code>TASK_UNINTERRUPTIBLE</code>状态。执行vfork系统调用后，父进程将进入<code>TASK_UNINTERRUPTIBLE</code>状态，直到子进程调用exit或exec（参见《神奇的vfork》）。<br>通过下面的代码就能得到处于<code>TASK_UNINTERRUPTIBLE</code>状态的进程：</p>
+</blockquote>
+<figure class="highlight vim"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">ps</span> -ax | <span class="keyword">grep</span> <span class="keyword">a</span>\.out</div><div class="line"><span class="number">4371</span> <span class="keyword">pts</span>/<span class="number">0</span>    D+     <span class="number">0</span>:<span class="number">00</span> ./<span class="keyword">a</span>.out</div><div class="line"><span class="number">4372</span> <span class="keyword">pts</span>/<span class="number">0</span>    S+     <span class="number">0</span>:<span class="number">00</span> ./<span class="keyword">a</span>.out</div><div class="line"><span class="number">4374</span> <span class="keyword">pts</span>/<span class="number">1</span>    S+     <span class="number">0</span>:<span class="number">00</span> <span class="keyword">grep</span> <span class="keyword">a</span>.out</div></pre></td></tr></table></figure>
+<blockquote>
+<p>然后我们可以试验一下<code>TASK_UNINTERRUPTIBLE</code>状态的威力。不管kill还是kill -9，这个<code>TASK_UNINTERRUPTIBLE</code>状态的父进程依然屹立不倒。<br><code>T (TASK_STOPPED or TASK_TRACED)</code>，暂停状态或跟踪状态。<br>向进程发送一个SIGSTOP信号，它就会因响应该信号而进入<code>TASK_STOPPED</code>状态（除非该进程本身处于<code>TASK_UNINTERRUPTIBLE</code>状态而不响应信号）。（SIGSTOP与SIGKILL信号一样，是非常强制的。不允许用户进程通过signal系列的系统调用重新设置对应的信号处理函数。）<br>向进程发送一个SIGCONT信号，可以让其从<code>TASK_STOPPED</code>状态恢复到<code>TASK_RUNNING</code>状态。<br>当进程正在被跟踪时，它处于<code>TASK_TRACED</code>这个特殊的状态。“正在被跟踪”指的是进程暂停下来，等待跟踪它的进程对它进行操作。比如在gdb中对被跟踪的进程下一个断点，进程在断点处停下来的时候就处于<code>TASK_TRACED</code>状态。而在其他时候，被跟踪的进程还是处于前面提到的那些状态。<br>对于进程本身来说，<code>TASK_STOPPED</code>和<code>TASK_TRACED</code>状态很类似，都是表示进程暂停下来。<br>而<code>TASK_TRACED</code>状态相当于在<code>TASK_STOPPED</code>之上多了一层保护，处于<code>TASK_TRACED</code>状态的进程不能响应SIGCONT信号而被唤醒。只能等到调试进程通过ptrace系统调用执行<code>PTRACE_CONT、PTRACE_DETACH</code>等操作（通过ptrace系统调用的参数指定操作），或调试进程退出，被调试的进程才能恢复<code>TASK_RUNNING</code>状态。<br><code>Z (TASK_DEAD – EXIT_ZOMBIE)</code>，退出状态，进程成为僵尸进程。</p>
+<p>进程在退出的过程中，处于<code>TASK_DEAD</code>状态。</p>
+<p>在这个退出过程中，进程占有的所有资源将被回收，除了<code>task_struct</code>结构（以及少数资源）以外。于是进程就只剩下<code>task_struct</code>这么个空壳，故称为僵尸。</p>
+<p>之所以保留<code>task_struct</code>，是因为<code>task_struct</code>里面保存了进程的退出码、以及一些统计信息。而其父进程很可能会关心这些信息。比如在shell中，$?变量就保存了最后一个退出的前台进程的退出码，而这个退出码往往被作为if语句的判断条件。</p>
+<p>当然，内核也可以将这些信息保存在别的地方，而将<code>task_struct</code>结构释放掉，以节省一些空间。但是使用<code>task_struct</code>结构更为方便，因为在内核中已经建立了从pid到<code>task_struct</code>查找关系，还有进程间的父子关系。释放掉<code>task_struct</code>，则需要建立一些新的数据结构，以便让父进程找到它的子进程的退出信息。<br>父进程可以通过wait系列的系统调用（如wait4、waitid）来等待某个或某些子进程的退出，并获取它的退出信息。然后wait系列的系统调用会顺便将子进程的尸体（<code>task_struct</code>）也释放掉。<br>子进程在退出的过程中，内核会给其父进程发送一个信号，通知父进程来“收尸”。这个信号默认是SIGCHLD，但是在通过clone系统调用创建子进程时，可以设置这个信号。</p>
+</blockquote>
+<figure class="highlight vim"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">ps</span> -ax | <span class="keyword">grep</span> <span class="keyword">a</span>\.out</div><div class="line"><span class="number">10410</span> <span class="keyword">pts</span>/<span class="number">0</span>    S+     <span class="number">0</span>:<span class="number">00</span> ./<span class="keyword">a</span>.out</div><div class="line"><span class="number">10411</span> <span class="keyword">pts</span>/<span class="number">0</span>    Z+     <span class="number">0</span>:<span class="number">00</span> [<span class="keyword">a</span>.out]</div><div class="line"><span class="number">0413</span> <span class="keyword">pts</span>/<span class="number">1</span>    S+     <span class="number">0</span>:<span class="number">00</span> <span class="keyword">grep</span> <span class="keyword">a</span>.out</div></pre></td></tr></table></figure>
+<blockquote>
+<p>只要父进程不退出，这个僵尸状态的子进程就一直存在。那么如果父进程退出了呢，谁又来给子进程“收尸”？<br>当进程退出的时候，会将它的所有子进程都托管给别的进程（使之成为别的进程的子进程）。托管给谁呢？可能是退出进程所在进程组的下一个进程（如果存在的话），或者是1号进程。所以每个进程、每时每刻都有父进程存在。除非它是1号进程。<br>1号进程，pid为1的进程，又称init进程。<br>linux系统启动后，第一个被创建的用户态进程就是init进程。它有两项使命：<br>1、执行系统初始化脚本，创建一系列的进程（它们都是init进程的子孙）；<br>2、在一个死循环中等待其子进程的退出事件，并调用waitid系统调用来完成“收尸”工作；<br>init进程不会被暂停、也不会被杀死（这是由内核来保证的）。它在等待子进程退出的过程中处于<code>TASK_INTERRUPTIBLE</code>状态，“收尸”过程中则处于<code>TASK_RUNNING</code>状态。<br>X (<code>TASK_DEAD – EXIT_DEAD</code>)，退出状态，进程即将被销毁。<br>而进程在退出过程中也可能不会保留它的<code>task_struct</code>。比如这个进程是多线程程序中被detach过的进程（进程、线程参见《linux线程浅析》）。或者父进程通过设置SIGCHLD信号的handler为<code>SIG_IGN</code>，显式的忽略了SIGCHLD信号。（这是posix的规定，尽管子进程的退出信号可以被设置为SIGCHLD以外的其他信号。）<br>此时，进程将被置于<code>EXIT_DEAD</code>退出状态，这意味着接下来的代码立即就会将该进程彻底释放。所以<code>EXIT_DEAD</code>状态是非常短暂的，几乎不可能通过ps命令捕捉到。</p>
+</blockquote>
+<h6 id="获取进程标识号"><a href="#获取进程标识号" class="headerlink" title="获取进程标识号"></a>获取进程标识号</h6><p>主要有两个函数:<code>getpid和getppid</code>。<br>前者是获取进程号，后者是获取父进程号。<br>需要包含的头文件：<code>&lt;sys/types.h&gt;, &lt;unistd.h&gt;</code></p>
+<blockquote>
+<p>函数原型：<code>pid_t getpid(void)</code><br>功能：获取当前进程ID<br>返回值：调用进程的进程ID<br>函数原型：<code>pid_t getppid(void)</code><br>功能：获取父进程ID<br>返回值：调用进程的父进程ID<br>例子:<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span></div><div class="line"><span class="function"></span>&#123;</div><div class="line">    <span class="keyword">pid_t</span> pid = getpid();</div><div class="line">    <span class="keyword">pid_t</span> ppid = getppid();</div><div class="line"></div><div class="line">    <span class="built_in">printf</span> (<span class="string">"pid = %d\n"</span>, pid);</div><div class="line">    <span class="built_in">printf</span> (<span class="string">"ppid = %d\n"</span>, ppid);</div><div class="line"></div><div class="line">    <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+</blockquote>
+<h4 id="Linux下C进程内存布局"><a href="#Linux下C进程内存布局" class="headerlink" title="Linux下C进程内存布局"></a>Linux下C进程内存布局</h4><h5 id="C进程内存布局说明"><a href="#C进程内存布局说明" class="headerlink" title="C进程内存布局说明"></a>C进程内存布局说明</h5><p>text：代码段。存放的是程序的全部代码（指令），来源于二进制可执行文件中的代码部分<br>initialized data（简称data段）和uninitialized data（简称bss段）组成了数据段。</p>
+<blockquote>
+<p>其中data段存放的是已初始化全局变量和已初始化static局部变量，来源于二进制可执行文件中的数据部分；bss段存放的是未初始化全局变量和未初始化static局部变量，其内容不来源于二进制可执行文件中的数据部分（也就是说：二进制可执行文件中的数据部分没有未初始化全局变量和未初始化static局部变量）。根据C语言标准规定，他们的初始值必须为0，因此bss段存放的是全0。将bss段清0的工作是由系统在加载二进制文件后，开始执行程序前完成的，系统执行这个清0操作是由内核的一段代码完成的，这段代码就是即将介绍的exec系统调用。至于exec从内存什么地方开始清0以及要清0多少空间，则是由记录在二进制可执行文件中的信息决定的（即：二进制文件中记录了text、data、bss段的大小）<br>malloc是从heap（堆）中分配空间的<br>stack（栈）存放的是动态局部变量。<br>当子函数被调用时，系统会从栈中分配空间给该子函数的动态局部变量（注意：此时栈向内存低地址延伸）；当子函数返回时，系统的栈会向内存高地址延伸，这相当于释放子函数的动态局部变量的内存空间。我们假设一下，main函数在调用子函数A后立即调用子函数B，那么子函数B的动态局部变量会覆盖原来子函数A的动态局部变量的存储空间，这就是子函数不能互相访问对方动态局部变量的根本物理原因。<br>内存的最高端存放的是命令行参数和环境变量，将命令行参数和环境变量放到指定位置这个操作是由OS的一段代码（exec系统调用）在加载二进制文件到内存后，开始运行程序前完成的。<br>Linux下C进程内存布局可以由下面的程序的运行结果来获得验证：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="keyword">int</span> global_init_val = <span class="number">100</span>;</div><div class="line"><span class="keyword">int</span> global_noninit_val;</div><div class="line"><span class="keyword">extern</span> <span class="keyword">char</span> **environ;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[], <span class="keyword">char</span> *envp[])</span></span></div><div class="line"><span class="function"></span>&#123;</div><div class="line">        <span class="keyword">static</span> <span class="keyword">int</span> localstaticval = <span class="number">10</span>;</div><div class="line">        <span class="keyword">char</span> *localval;</div><div class="line">        localval = <span class="built_in">malloc</span>(<span class="number">10</span>);</div><div class="line">        <span class="built_in">printf</span>(<span class="string">"address of text  is : %p\n"</span>, main);</div><div class="line">        <span class="built_in">printf</span>(<span class="string">"address of data  is : %p, %p\n"</span>, &amp;global_init_val, &amp;localstaticval);</div><div class="line">        <span class="built_in">printf</span>(<span class="string">"address of bss   is : %p\n"</span>, &amp;global_noninit_val);</div><div class="line">        <span class="built_in">printf</span>(<span class="string">"address of heap  is : %p\n"</span>, localval);</div><div class="line">        <span class="built_in">printf</span>(<span class="string">"address of stack is : %p\n"</span>, &amp;localval);</div><div class="line">        <span class="built_in">free</span>(localval);</div><div class="line"></div><div class="line">        <span class="built_in">printf</span>(<span class="string">"&amp;environ = %p, environ = %p\n"</span>, &amp;envp, envp);</div><div class="line">        <span class="built_in">printf</span>(<span class="string">"&amp;argv = %p, argv = %p\n"</span>, &amp;argv, argv);</div><div class="line">        <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line"> &#125;</div></pre></td></tr></table></figure></p>
+</blockquote>
+<p>运行结果，如下：<br><figure class="highlight basic"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="symbol">1 </span>address of text  is : <span class="number">0</span>x8048454</div><div class="line"><span class="symbol">2 </span>address of <span class="keyword">data</span>  is : <span class="number">0</span>x804a01c, <span class="number">0</span>x804a020</div><div class="line"><span class="symbol">3 </span>address of bss   is : <span class="number">0</span>x804a02c</div><div class="line"><span class="symbol">4 </span>address of heap  is : <span class="number">0</span>x96e1008</div><div class="line"><span class="symbol">5 </span>address of stack is : <span class="number">0</span>xbffca8bc</div><div class="line"><span class="symbol">6 </span>&amp;<span class="keyword">environ</span> = <span class="number">0</span>xbffca8d8, <span class="keyword">environ</span> = <span class="number">0</span>xbffca97c</div><div class="line"><span class="symbol">7 </span>&amp;argv = <span class="number">0</span>xbffca8d4, argv = <span class="number">0</span>xbffca974</div></pre></td></tr></table></figure></p>
+<p>运行结果的第1（2、3、4、5、6、7）行是由程序的第13（14、15、16、17、20、21）行打印的。<br>由运行结果的第1、2、3、4行可知，存放的是程序代码的text段位于进程地址空间的最低端；往上是存放已初始化全局变量和已初始化static局部变量的data段；往上是存放未初始化全局变量的bss段；往上是堆区（heap）。<br>由运行结果的第7、6、5行可知，命令行参数和环境变量存放在进程地址空间的最高端；往下是存放动态局部变量的栈区（stack）。</p>
+<h5 id="环境变量的获取与设置"><a href="#环境变量的获取与设置" class="headerlink" title="环境变量的获取与设置"></a>环境变量的获取与设置</h5><p>坏境变量在内存中通常是一字符串环境变量名=环境变量值的形式存放。我们的程序可能会调用Linux系统的环境变量，甚至修改环境变量，所以，Linux向我们提供了这种API。需要包含头文件<code>&lt;stdlib.h&gt;</code>。<br>函数原型：<br><code>char * getenv(const char * name)</code><br>返回字符指针，该指针指向变量名为name的环境变量的值字符串。<br><code>int putenv(const char * str)</code><br>将“环境变量=环境变量值”形式的字符创增加到环境变量列表中；如果该环境变量已存在，则更新已有的值。<br><code>int setenv(const char * name, const char * value, int rewrite)</code><br>设置名字为name的环境变量的值为value；如果该环境变量已存在，且rewrite不为0，用新值替换旧值；rewrite为0，就不做任何事。<br>例子:<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[], <span class="keyword">char</span> *envp[])</span></span></div><div class="line"><span class="function"></span>&#123;</div><div class="line">        <span class="keyword">char</span> **ptr;</div><div class="line">        <span class="keyword">for</span> (ptr = envp; *ptr != <span class="number">0</span>; ptr++)   <span class="comment">/* and all env strings */</span></div><div class="line">                <span class="built_in">printf</span> (<span class="string">"%s\n"</span>, *ptr);</div><div class="line"></div><div class="line">        <span class="built_in">printf</span> (<span class="string">"\n\n--------My environment variable-------\n\n"</span>);</div><div class="line">        <span class="built_in">printf</span> (<span class="string">"USERNAME is %s\n"</span>, getenv(<span class="string">"USERNAME"</span>));</div><div class="line">        putenv (<span class="string">"USERNAME=shiyanlou"</span>);</div><div class="line"></div><div class="line">        <span class="built_in">printf</span> (<span class="string">"USERNAME is %s\n"</span>, getenv(<span class="string">"USERNAME"</span>));</div><div class="line">        setenv (<span class="string">"USERNAME"</span>, <span class="string">"shiyanlou-2"</span>, <span class="number">0</span>);</div><div class="line"></div><div class="line">        <span class="built_in">printf</span> (<span class="string">"USERNAME is %s\n"</span>, getenv(<span class="string">"USERNAME"</span>));</div><div class="line">        setenv (<span class="string">"USERNAME"</span>, <span class="string">"shiyanlou-2"</span>, <span class="number">1</span>);</div><div class="line"></div><div class="line">        <span class="built_in">printf</span> (<span class="string">"USERNAME is %s\n"</span>, getenv(<span class="string">"USERNAME"</span>));</div><div class="line"></div><div class="line">        <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h4 id="fork进程控制"><a href="#fork进程控制" class="headerlink" title="fork进程控制"></a>fork进程控制</h4><p>fork被称为进程控制天字第1号系统调用，可以看出其使用广泛性。</p>
+<h5 id="fork的机制与特性"><a href="#fork的机制与特性" class="headerlink" title="fork的机制与特性"></a>fork的机制与特性</h5><figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span></div><div class="line"><span class="function"></span>&#123;</div><div class="line">    <span class="keyword">pid_t</span> pid;</div><div class="line">    <span class="keyword">if</span> ((pid = fork()) == <span class="number">0</span>) &#123;</div><div class="line">        getchar();</div><div class="line">        <span class="built_in">exit</span>(<span class="number">0</span>);</div><div class="line">    &#125;</div><div class="line">    getchar();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>父进程调用fork将会产生一个子进程。此时会有2个问题：</p>
+<ol>
+<li>子进程的代码从哪里来？</li>
+<li>子进程首次被OS调度时，执行的第1条代码是哪条代码？<blockquote>
+<p>子进程的代码是父进程代码的一个完全相同拷贝。事实上不仅仅是text段，子进程的全部进程空间（包括：text/data/bss/heap/stack/command line/environment variables）都是父进程空间的一个完全拷贝。<br>下一个问题是：谁为子进程分配了内存空间？谁拷贝了父进程空间的内容到子进程的内存空间？fork当仁不让！事实上，查看fork实现的源代码，由4部分工作组成：首先，为子进程分配内存空间；然后，将父进程空间的全部内容拷贝到分配给子进程的内存空间；然后在内核数据结构中创建并正确初始化子进程的PCB（包括2个重要信息：子进程pid，PC的值=善后代码的第1条指令地址）；最后是一段善后代码。<br>由于子进程的PCB已经产生，所以子进程已经出生，因此子进程就可以被OS调度到来运行。子进程首次被OS调度时，执行的第1条代码在fork内部，不过从应用程序的角度来看，子进程首次被OS调度时，执行的第1条代码是从fork返回。这就导致了fork被调用1次，却返回2次：父、子进程中各返回1次。对于应用程序员而言，最重要的是fork的2次返回值不一样，父进程返回值是子进程的pid，子进程的返回值是0。<br>至于子进程产生后，父、子进程谁先运行，取决于OS调度策略，应用程序员无法控制。<br>以上分析了fork的内部实现以及对应用程序的影响。如果应用程序员觉得难以理解的话，可以暂时抛开，只要记住3个结论即可：<br>fork函数被调用1次（在父进程中被调用），但返回2次（父、子进程中各返回一次）。两次返回的区别是子进程的返回值是0，而父进程的返回值则是子进程的进程ID。<br>父、子进程完全一样（代码、数据），子进程从fork内部开始执行；父、子进程从fork返回后，接着执行下一条语句。<br>一般来说，在fork之后是父进程先执行还是子进程先执行是不确定的，应用程序员无法控制。</p>
+<h5 id="fork实例分析"><a href="#fork实例分析" class="headerlink" title="fork实例分析"></a>fork实例分析</h5><figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="meta">#<span class="meta-keyword">define</span> err_sys(info)    \     </span></div><div class="line">   &#123;                      \   </div><div class="line">        <span class="built_in">printf</span> (<span class="string">"%s\n"</span>, info);\  </div><div class="line">        <span class="built_in">exit</span>(<span class="number">0</span>); \               </div><div class="line">   &#125;</div><div class="line"></div><div class="line"><span class="keyword">int</span> glob = <span class="number">6</span>;  <span class="comment">/* external variable in initialized data */</span></div><div class="line"><span class="keyword">char</span> buf[ ] = <span class="string">"a write to stdout\n"</span>;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span></div><div class="line"><span class="function"></span>&#123;</div><div class="line">    <span class="keyword">int</span> var;  <span class="comment">/* automatic variable on the stack */</span></div><div class="line">    <span class="keyword">pid_t</span> pid;</div><div class="line">    var = <span class="number">88</span>;</div><div class="line"></div><div class="line">    <span class="keyword">if</span> ((write(STDOUT_FILENO, buf, <span class="keyword">sizeof</span>(buf)<span class="number">-1</span>) != <span class="keyword">sizeof</span>(buf)<span class="number">-1</span>))</div><div class="line">        err_sys(<span class="string">"write error"</span>);</div><div class="line"></div><div class="line">    <span class="built_in">printf</span>(<span class="string">"before fork\n"</span>);  <span class="comment">/* we don't flush stdout */</span></div><div class="line"></div><div class="line">    <span class="keyword">if</span> ( (pid = fork()) &lt; <span class="number">0</span>) &#123;</div><div class="line">        err_sys(<span class="string">"fork error"</span>);</div><div class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (pid == <span class="number">0</span>) &#123;   <span class="comment">/* child */</span></div><div class="line">       glob++;      <span class="comment">/* modify variables */</span></div><div class="line">       var++;</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        sleep(<span class="number">2</span>);   <span class="comment">/* parent */</span></div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="built_in">printf</span>(<span class="string">"pid = %d, ppid = %d, glob = %d, var = %d\n"</span>, getpid(),getppid(), glob, var);</div><div class="line">    <span class="built_in">exit</span>(<span class="number">0</span>);</div><div class="line"> &#125;</div></pre></td></tr></table></figure>
+</blockquote>
+</li>
+</ol>
+<p>运行结果:<br><figure class="highlight lsl"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">a write to stdout</div><div class="line">before fork</div><div class="line">pid = <span class="number">9009</span>, ppid = <span class="number">9008</span>, glob = <span class="number">7</span>, var = <span class="number">89</span></div><div class="line">pid = <span class="number">9008</span>, ppid = <span class="number">8979</span>, glob = <span class="number">6</span>, var = <span class="number">88</span></div></pre></td></tr></table></figure></p>
+<blockquote>
+<p>运行结果分析：<br>结果的第1行是由父进程的21行打印；<br>结果的第2行是由父进程的24行打印；<br>由于父进程在24行睡眠了2秒，因此fork返回后，子进程先于父进程运行是大概率事件，所以子进程运行到25行打印出结果中的第3行。由于子进程会拷贝父进程的整个进程空间（这其中包括数据），因此当子进程26行从fork返回后，子进程中的glob=6，var=88（拷贝自父进程的数据）。此时子进程中pid=0，因此子进程会执行29、30行，当子进程到达35行时，将打印glob=7，var=89。<br>虽然，子进程改变了glob和var的值，但它仅仅是改变了子进程中的glob和var，而影响不了父进程中的glob和var。在子进程出生后，父、子进程的进程空间（代码、数据等）就是独立，互不干扰的。因此当父进程运行到35行，将会打印父进程中的glob和var的值，他们分别是6和88，这就是运行结果的第4行。</p>
+</blockquote>
+<h4 id="exec进程控制"><a href="#exec进程控制" class="headerlink" title="exec进程控制"></a>exec进程控制</h4><p>与fork相对应，exec被成为进程控制的地字一号系统调用。</p>
+<h5 id="文件描述符详解"><a href="#文件描述符详解" class="headerlink" title="文件描述符详解"></a>文件描述符详解</h5><p>文件描述符本质是数组下表，如下图所示:</p>
+<p><center><br><img src="https://raw.githubusercontent.com/newdee/BlogImage/master/20190906111812.png" alt=""><br></center></p>
+<blockquote>
+<p>右侧的表称为i节点表，在整个系统中只有1张。该表可以视为结构体数组，该数组的一个元素对应于一个物理文件。<br>中间的表称为文件表，在整个系统中只有1张。该表可以视为结构体数组，一个结构体中有很多字段，其中有3个字段比较重要：</p>
+<blockquote>
+<p>file status flags：用于记录文件被打开来读的，还是写的。其实记录的就是open调用中用户指定的第2个参数<br>current file offset：用于记录文件的当前读写位置（指针）。正是由于此字段的存在，使得一个文件被打开并读取后，下一次读取将从上一次读取的字符后开始读取<br>v-node ptr：该字段是指针，指向右侧表的一个元素，从而关联了物理文件。<br>左侧的表称为文件描述符表，每个进程有且仅有1张。该表可以视为指针数组，数组的元素指向文件表的一个元素。最重要的是：数组元素的下标就是大名鼎鼎的文件描述符。<br>open系统调用执行的操作：新建一个i节点表元素，让其对应打开的物理文件（如果对应于该物理文件的i节点元素已经建立，就不做任何操作）；新建一个文件表的元素，根据open的第2个参数设置file status flags字段，将current file offset字段置0，将v-node ptr指向刚建立的i节点表元素；在文件描述符表中，寻找1个尚未使用的元素，在该元素中填入一个指针值，让其指向刚建立的文件表元素。最重要的是：将该元素的下标作为open的返回值返回。<br>这样一来，当调用read（write）时，根据传入的文件描述符，OS就可以找到对应的文件描述符表元素，进而找到文件表的元素，进而找到i节点表元素，从而完成对物理文件的读写。</p>
+</blockquote>
+</blockquote>
+<h5 id="fork对文件描述符的影响"><a href="#fork对文件描述符的影响" class="headerlink" title="fork对文件描述符的影响"></a>fork对文件描述符的影响</h5><p>fork会导致子进程继承父进程打开的文件描述符，其本质是将父进程的整个文件描述符表复制一份，放到子进程的PCB中。因此父、子进程中相同文件描述符（文件描述符为整数）指向的是同一个文件表元素，所以父（子）进程读取文件后，子（父）进程将读取同一文件的后续内容。</p>
+<figure class="highlight arduino"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="keyword">int</span> main(<span class="keyword">void</span>)</div><div class="line">&#123;</div><div class="line">        <span class="keyword">int</span> fd, pid, status;</div><div class="line">        <span class="keyword">char</span> buf[<span class="number">10</span>];</div><div class="line">        <span class="built_in">if</span> ((fd = <span class="built_in">open</span>(<span class="string">"./test.txt"</span>, O_RDONLY)) &lt; <span class="number">0</span>) &#123;</div><div class="line">                perror(<span class="string">"open"</span>);  exit(<span class="number">-1</span>);</div><div class="line">        &#125;</div><div class="line">        <span class="built_in">if</span> ((pid = fork()) &lt; <span class="number">0</span>) &#123;</div><div class="line">                perror(<span class="string">"fork"</span>);  exit(<span class="number">-1</span>);</div><div class="line">        &#125; <span class="built_in">else</span> <span class="built_in">if</span> (pid == <span class="number">0</span>) &#123;  <span class="comment">//child</span></div><div class="line">                <span class="built_in">read</span>(fd, buf, <span class="number">2</span>);</div><div class="line">                <span class="built_in">write</span>(STDOUT_FILENO, buf, <span class="number">2</span>);</div><div class="line">        &#125; <span class="built_in">else</span> &#123;  <span class="comment">//parent</span></div><div class="line">                sleep(<span class="number">2</span>);</div><div class="line">                lseek(fd, <span class="number">1</span>, SEEK_CUR);</div><div class="line">                <span class="built_in">read</span>(fd, buf, <span class="number">3</span>);</div><div class="line">                <span class="built_in">write</span>(STDOUT_FILENO, buf, <span class="number">3</span>);</div><div class="line">                <span class="built_in">write</span>(STDOUT_FILENO, <span class="string">"\n"</span>, <span class="number">1</span>);</div><div class="line">        &#125;</div><div class="line">        <span class="built_in">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>假设，./test.txt的内容是abcdefg。那么子进程的18行将读到字符ab；由于，父、子进程的文件描述符fd都指向同一个文件表元素，因此当父进程执行23行时，fd对应的文件的读写指针将移动到字符d，而不是字符b，从而24行读到的是字符def，而不是字符bcd。程序运行的最终结果是打印abdef，而不是abbcd。<br>相对应的，如果是两个进程独立调用open去打开同一个物理文件，就会有2个文件表元素被创建，并且他们都指向同一个i节点表元素。两个文件表元素都有自己独立的current file offset字段，这将导致2个进程独立的对同一个物理文件进行读写，因此第1个进程读取到文件的第1个字符后，第2个进程再去读取该文件时，仍然是读到的是文件的第1个字符，而不是第1个字符的后续字符。<br>对应用程序员而言，最重要结论是：<br>如果子进程不打算使用父进程打开的文件，那么应该在fork返回后立即调用close关闭该文件。</p>
+<h5 id="wait同步"><a href="#wait同步" class="headerlink" title="wait同步"></a>wait同步</h5><h6 id="wait作用"><a href="#wait作用" class="headerlink" title="wait作用"></a>wait作用</h6><p>在forkbase.c中，fork出子进程后，为了保证子进程先于父进程运行，在父进程中使用了sleep（2）的方式让父进程睡眠2秒。但实际上这样做，并不能100%保证子进程先于父进程运行，因为在负荷非常重的系统中，有可能在父进程睡眠2秒期间，OS并没有调度到子进程运行，并且当父进程睡醒后，首先调度到父进程运行。系统调用wait可以100%保证父、子进程完全按程序员的安排来进行同步。<br>需要包含的头文件： <code>wait.h</code><br>函数原型：<code>pid_t wait(int * status)</code><br>功能：等待进程结束。<br>返回值：若成功则为子进程ID号，若出错则为-1。<br>参数说明：</p>
+<blockquote>
+<p>status：用于存放进程结束状态。<br>wait函数用于使父进程阻塞，直到一个子进程结束。父进程调用wait，该父进程可能会:</p>
+<blockquote>
+<p>阻塞(如果其所有子进程都还在运行)。<br>带子进程的终止状态立即返回(如果一个子进程已终止，正等待父进程存取其终止状态)。<br>出错立即返回(如果它没有任何子进程)。</p>
+<h6 id="wait调用"><a href="#wait调用" class="headerlink" title="wait调用"></a>wait调用</h6></blockquote>
+</blockquote>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;wait.h&gt;</span></span></div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">pr_exit</span><span class="params">(intstatus)</span></span>;</div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span></div><div class="line"><span class="function"></span>&#123;</div><div class="line">        <span class="keyword">pid_t</span> pid;</div><div class="line">        <span class="keyword">int</span>  status;</div><div class="line">        <span class="keyword">if</span> ( (pid = fork()) &lt; <span class="number">0</span>)</div><div class="line">            &#123; perror(<span class="string">"fork"</span>);<span class="built_in">exit</span>(<span class="number">-1</span>); &#125;</div><div class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (pid == <span class="number">0</span>) &#123;            <span class="comment">/* child */</span></div><div class="line">            sleep(<span class="number">1</span>);</div><div class="line">            <span class="built_in">printf</span>(<span class="string">"inchild\n"</span>);</div><div class="line">            <span class="built_in">exit</span>(<span class="number">101</span>);</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">if</span> (wait(&amp;status) != pid)    <span class="comment">/* wait for child */</span></div><div class="line">            &#123; perror(<span class="string">"wait"</span>);<span class="built_in">exit</span>(<span class="number">-2</span>); &#125;</div><div class="line">        <span class="built_in">printf</span>(<span class="string">"in parent\n"</span>);</div><div class="line">        pr_exit(status);               <span class="comment">/* and print itsstatus */</span></div><div class="line">        <span class="keyword">if</span> ( (pid = fork()) &lt; <span class="number">0</span>)</div><div class="line">            &#123; perror(<span class="string">"fork"</span>);<span class="built_in">exit</span>(<span class="number">-1</span>); &#125;</div><div class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (pid == <span class="number">0</span>)              <span class="comment">/*child */</span></div><div class="line">            <span class="built_in">abort</span>();                    <span class="comment">/* generates SIGABRT */</span></div><div class="line">        <span class="keyword">if</span> (wait(&amp;status) != pid)               <span class="comment">/* wait for child */</span></div><div class="line">            &#123; perror(<span class="string">"wait"</span>);<span class="built_in">exit</span>(<span class="number">-2</span>); &#125;</div><div class="line">        pr_exit(status);                      <span class="comment">/* and printits status */</span></div><div class="line">        <span class="keyword">if</span> ( (pid = fork()) &lt; <span class="number">0</span>)</div><div class="line">            &#123; perror(<span class="string">"fork"</span>);<span class="built_in">exit</span>(<span class="number">-1</span>); &#125;</div><div class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (pid == <span class="number">0</span>)              <span class="comment">/*child */</span></div><div class="line">            status /= <span class="number">0</span>;            <span class="comment">/* divide by 0 generates SIGFPE */</span></div><div class="line">        <span class="keyword">if</span> (wait(&amp;status) != pid)               <span class="comment">/* wait for child */</span></div><div class="line">            &#123; perror(<span class="string">"wait"</span>);<span class="built_in">exit</span>(<span class="number">-1</span>); &#125;</div><div class="line">        pr_exit(status);       <span class="comment">/* and printits status */</span></div><div class="line">        <span class="built_in">exit</span>(<span class="number">0</span>);</div><div class="line"> &#125;</div><div class="line"> <span class="function"><span class="keyword">void</span> <span class="title">pr_exit</span><span class="params">(<span class="keyword">int</span> status)</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span> (WIFEXITED(status))</div><div class="line">            <span class="built_in">printf</span>(<span class="string">"normallytermination, low-order 8 bit of exit status = %d\n"</span>, WEXITSTATUS(status));</div><div class="line">        <span class="keyword">else</span> <span class="keyword">if</span>(WIFSIGNALED(status))</div><div class="line">            <span class="built_in">printf</span>(<span class="string">"abnormallytermination, singal number = %d\n"</span>, WTERMSIG(status));</div><div class="line"> &#125;</div></pre></td></tr></table></figure>
+<p>其中，11行创建了一个子进程，13行根据fork的返回值区分父、子进程。</p>
+<p>我们先看父进程，父进程从18行运行，这里调用了<code>wait</code>函数等待子进程结束，并将子进程结束的状态保存在<code>status</code>中。这时，父进程就阻塞在<code>wait</code>这里了，这样就保证了子进程先运行。子进程从13行开始运行，然后<code>sleep</code> 1秒，打印出“in child”后，调用<code>exit</code>函数退出进程。这里<code>exit</code>中有个参数101，表示退出的值是101。.子进程退出后，父进程<code>wait</code>到了子进程的状态，并把状态保存到了<code>status</code>中。后面的<code>pr_exit</code>函数是用来对进程的退出状态进行打印。接下来，父进程又创建一个子进程，然后又一次调用<code>wait</code>函数等待子进程结束，父进程这时候阻塞在了wait这里。子进程开始执行，子进程里面只有一句话：abort（），abort会结束子进程并发送一个SIGABORT信号，唤醒父进程。所以父进程会接受到一个SIGABRT信号，并将子进程的退出状态保存到status中。然后调用<code>pr_exit</code>函数打印出子进程结束的状态。然后父进程再次创建了一个子进程，依然用<code>wait</code>函数等待子进程结束并获取子进程退出时的状态。子进程里面就一句<code>status/= 0</code>，这里用0做了除数，所以子进程会终止，并发送一个SIGFPE信号，这个信号是用来表示浮点运算异常，比如运算溢出，除数不能为0等。这时候父进程<code>wait</code>函数会捕捉到子进程的退出状态，然后调用<code>pr_exit</code>处理。</p>
+<blockquote>
+<p><code>pr_exit</code>函数将status状态传入，然后判断该状态是不是正常退出，如果是正常退出会打印出退出值；不是正常退出会打印出退出时的异常信号。这里用到了几个宏，简单解释如下：</p>
+<blockquote>
+<p><code>WIFEXITED</code>： 这个宏是用来判断子进程的返回状态是不是为正常，如果是正常退出，这个宏返回真。<br><code>WEXITSTATUS</code>： 用来返回子进程正常退出的状态值。<br><code>WIFSIGNALED</code>： 用来判断子进程的退出状态是否是非正常退出，若非正常退出时发送信号，则该宏返回真。<br><code>WTERMSIG</code>： 用来返回非正常退出状态的信号number。<br>所以这段代码的结果是分别打印出了三个子进程的退出状态和异常结束的信号编号</p>
+<h5 id="exec详解"><a href="#exec详解" class="headerlink" title="exec详解"></a>exec详解</h5><p>当一个程序调用fork产生子进程，通常是为了让子进程去完成不同于父进程的某项任务，因此含有fork的程序，通常的编程模板如下：<br><figure class="highlight awk"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">if</span> ((pid = fork()) == <span class="number">0</span>) &#123;</div><div class="line">       dosomething <span class="keyword">in</span> child process;</div><div class="line">       <span class="keyword">exit</span>(<span class="number">0</span>);</div><div class="line">&#125;</div><div class="line"><span class="keyword">do</span> something <span class="keyword">in</span> parent process;</div></pre></td></tr></table></figure></p>
+</blockquote>
+<p>这样的编程模板使得父、子进程各自执行同一个二进制文件中的不同代码段，完成不同的任务。这样的编程模板在大多数情况下都能胜任，但仔细观察这种编程模板，你会发现它要求程序员在编写源代码的时候，就要预先知道子进程要完成的任务是什么。这本不是什么过分的要求，但在某些情况下，这样的前提要求却得不到满足，最典型的例子就是Linux的基础应用程序 —— shell。你想一想，在编写shell的源代码期间，程序员是不可能知道当shell运行时，用户输入的命令是ls还是cp，难道你要在shell的源代码中使用if–elseif–else if–else if ……结构，并拷贝 ls、cp等等外部命令的源代码到shell源代码中吗？退一万步讲，即使这种弱智的处理方式被接受的话，你仍然会遇到无法解决的难题。想一想，如果用户自己编写了一个源程序，并将其编译为二进制程序test，然后再在shell命令提示符下输入./test，对于采用前述弱智方法编写的shell，它将情何以堪？<br>因此需要exec予以协作。</p>
+<h6 id="exec机制"><a href="#exec机制" class="headerlink" title="exec机制"></a>exec机制</h6><p>在用fork函数创建子进程后，子进程往往要调用exec函数以执行另一个程序。<br>当子进程调用exec函数时，会将一个二进制可执行程序的全路径名作为参数传给exec，exec会用新程序代换子进程原来全部进程空间的内容，而新程序则从其main函数开始执行，这样子进程要完成的任务就变成了新程序要完成的任务了。<br>因为调用exec并不创建新进程，所以前后的进程ID并未改变。exec只是用另一个新程序替换了当前进程的正文、数据、堆和栈段。进程还是那个进程，但实质内容已经完全改变。呵呵，这是不是和中国A股的借壳上市有异曲同工之妙？<br>顺便说一下，新程序的bss段清0这个操作，以及命令行参数和环境变量的指定，也是由exec完成的。</p>
+<h6 id="exec用法"><a href="#exec用法" class="headerlink" title="exec用法"></a>exec用法</h6><p>函数原型：<br><code>int execle(const char * pathname,const char * arg0, ... (char *)0, char * const envp [] )</code><br>返回值：<br>exec执行失败返回-1，成功将永不返回（想想为什么？）。哎，牛人就是有脾气，天字1号是调用1次，返回2次；地字1号，干脆就不返回了，你能奈我何？<br>参数：<br><code>pathname</code>：新程序的二进制文件的全路径名<br><code>arg0</code>：新程序的第1个命令行参数<code>argv[0]</code>，之后是新程序的第2、3、4……个命令行参数，以<code>(char*)0</code>表示命令行参数的结束<br><code>envp</code>：新程序的环境变量</p>
+</blockquote>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>*argv[])</span></span></div><div class="line"><span class="function"></span>&#123;</div><div class="line">       <span class="keyword">int</span>  i;</div><div class="line">       <span class="keyword">char</span> **ptr;</div><div class="line">       <span class="keyword">extern</span> <span class="keyword">char</span>  **environ;</div><div class="line">        <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; argc; i++)   <span class="comment">/* echo all command-line args */</span></div><div class="line">            <span class="built_in">printf</span>(<span class="string">"argv[%d]:%s\n"</span>, i, argv[i]);</div><div class="line">        <span class="keyword">for</span> (ptr = environ; *ptr != <span class="number">0</span>;ptr++)  <span class="comment">/* and all env strings */</span></div><div class="line">            <span class="built_in">printf</span>(<span class="string">"%s\n"</span>,*ptr);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>将此程序进行编译，生成二进制文件命名为echoall，放在当前目录下。很容易看出，此程序运行将打印进程的所有命令行参数和环境变量。<br>运行结果分析：</p>
+<blockquote>
+<p>1-5行是第1个子进程14行运行新程序echoall的结果，其中：1-3行打印的是命令行参数；4、5行打印的是环境变量。<br>6行之后是第2个子进程23行运行新程序echoall的结果，其中：6、7行打印的是命令行参数；8行之后打印的是环境变量。之所以第2个子进程的环境变量那么多，是因为程序23行调用execlp时，没有给出环境变量参数，因此子进程就会继承父进程的全部环境变量。</p>
+</blockquote>
+<h4 id="进程的消亡"><a href="#进程的消亡" class="headerlink" title="进程的消亡"></a>进程的消亡</h4><h5 id="gdb调试多进程技巧"><a href="#gdb调试多进程技巧" class="headerlink" title="gdb调试多进程技巧"></a>gdb调试多进程技巧</h5><p>对多进程程序进行调试，存在一个较大的难题，那就是当程序调用fork产生子进程后，gdb跟踪的是父进程，无法进入到子进程里去单步调试子进程。这样一来，如果子进程中的代码运行出错的话，将无法进行调试。<br>因此想调试子进程的话，需要一点技巧：</p>
+<blockquote>
+<p>在子进程的入口处加入sleep(20)函数，以使子进程在被创建后能暂时停止。<br>用ps查看子进程的pid，假定pid为222，则输入命令：gdb程序名称222。从而再运行一个调试程序，使得gdb attach到子进程。<br>用gdb的break命令在子进程中设定断点。<br>用gdb的continue，恢复子进程的运行。<br>等待sleep的睡眠时间到达，从而子进程将在断点处停下来。</p>
+</blockquote>
+<h5 id="启动例程与main函数"><a href="#启动例程与main函数" class="headerlink" title="启动例程与main函数"></a>启动例程与main函数</h5><p>从程序员的角度看，C应用程序从main函数开始运行。但事实上，当C应用程序被内核通过exec启动时，一个启动例程会先于main函数运行，它会为main函数的运行准备好环境后，调用main函数。而main函数正常结束后return语句将使得main函数返回到启动例程，启动例程在完成必要的善后处理后将最终调用<code>_exit</code>结束进程。<br>有5种方式结束进程：</p>
+<h6 id="正常结束："><a href="#正常结束：" class="headerlink" title="正常结束："></a>正常结束：</h6><p>1.从main函数返回<br>2.调用exit<br>3.调用<code>_exit</code></p>
+<h6 id="非正常结束："><a href="#非正常结束：" class="headerlink" title="非正常结束："></a>非正常结束：</h6><p>4.调用abort<br>5.被信号中止</p>
+<h5 id="exit函数与-exit函数"><a href="#exit函数与-exit函数" class="headerlink" title="exit函数与_exit函数"></a><code>exit</code>函数与<code>_exit</code>函数</h5><p>需要包含的头文件：<code>&lt;stdlib.h&gt;、&lt;unistd.h&gt;</code><br>函数原型：</p>
+<blockquote>
+<p><code>void exit(int status)、 void _exit(int status)</code><br>这两个函数的功能都是使进程正常结束。<br><code>_exit</code>：立即返回内核，它是一个系统调用<br><code>exit</code>：在返回内核前会执行一些清理操作，这些清理操作包括调用exit handler，以及彻底关闭标准I/O流(这回使得I/O流的buffer中的数据被刷新，即被提交给内核)，它是标准C库中的一个函数。</p>
+</blockquote>
+<h4 id="I-O流和I-O库缓存"><a href="#I-O流和I-O库缓存" class="headerlink" title="I/O流和I/O库缓存"></a>I/O流和I/O库缓存</h4><p>关于IO流的buffer:<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span></div><div class="line"><span class="function"></span>&#123;</div><div class="line">    <span class="built_in">printf</span>(<span class="string">"hello"</span>);</div><div class="line">    <span class="comment">//printf("hello\n");</span></div><div class="line">    <span class="comment">//write(1, "hello", 5);</span></div><div class="line">    sleep(<span class="number">100</span>);</div><div class="line">    <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line"> &#125;</div></pre></td></tr></table></figure></p>
+<p>其结果没有任何输出。</p>
+<blockquote>
+<p>当应用程序调用printf时，将字符串”hello”提交给了标准I/O库的I/O库缓存。I/O库缓存大致可以认为是printf实现中定义的全局字符数组，因此它位于用户空间，可见”hello”并没有被提交给内核(所以也不可能出现内核将”hello”打印到屏幕的操作)，所以没有打印出任何东西。只有当某些条件满足时，标准I/O库才会刷新I/O库缓存，这些条件包括：</p>
+<blockquote>
+<p>用户空间的I/O库缓存已被填满<br>I/O库缓存遇到了换行符(‘\n’)，并且输出目标是行缓冲设备(屏幕就是这种设备)。因此将上面的代码第6行注释掉，并取消第7行的注释，就可以看到打印出了hello<br>I/O流被关闭，上节中的exit函数就会关闭I/O流<br>Tips:<br>当标准I/O库缓存时，会调用以前的我们学过的系统调用，例如：write，将I/O库缓存中的内容提交给内核。<br>so，上述代码也可以这样：第6行注释，第7行注释，第8行取消注释。也可以在屏幕上看见”hello”</p>
+</blockquote>
+</blockquote>
+<h4 id="Exit-handler"><a href="#Exit-handler" class="headerlink" title="Exit handler"></a>Exit handler</h4><p>Exit handler 是程序员编写的函数，进程正常结束时，它们会被系统调回。这使程序员具备了在进程正常结束时，控制进程执行某些善后操作的能力。<br>使用Exit handler，需要程序员完成两件事情：编写Exit handler函数；调用<code>atexit</code>或<code>on_exit</code>向系统注册Exit handler(即告知系统需要回调的Exit handler函数是谁)<br>需要包含头的文件：<stdlib.h><br>函数原型：<br><figure class="highlight delphi"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">int atexit(void <span class="comment">(* func)(void))</span></div><div class="line"><span class="comment">int on_exit(void (* func)(int, void *)</span>,)</div></pre></td></tr></table></figure></stdlib.h></p>
+<p>功能：<br><code>atexit</code>注册的函数func没有参数；<code>on_exit</code>注册的函数func有一个int型参数，系统调用回调func时将向该参数传入进程的退出值，func的另一个<code>void *</code>类型参数将会是arg。<br>ANSI C中，进程最多可以注册32个Exit handler函数，这些函数按照注册时的顺序被逆序调用。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></div><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">my_exit0</span><span class="params">(<span class="keyword">int</span>, <span class="keyword">void</span> *)</span></span>;</div><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">my_exit1</span><span class="params">(<span class="keyword">void</span>)</span></span>;</div><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">my_exit2</span><span class="params">(<span class="keyword">void</span>)</span></span>;</div><div class="line"><span class="keyword">char</span> str[<span class="number">9</span>]=<span class="string">"for test"</span>;</div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span> </span>&#123;</div><div class="line">        <span class="comment">//char str[9]="for test";</span></div><div class="line">    <span class="keyword">if</span> (atexit(my_exit2) != <span class="number">0</span>) &#123;</div><div class="line">        perror(<span class="string">"can't register my_exit2"</span>); </div><div class="line">        <span class="built_in">exit</span>(<span class="number">-1</span>); </div><div class="line">    &#125;</div><div class="line">    <span class="keyword">if</span> (atexit(my_exit1) != <span class="number">0</span>) &#123; </div><div class="line">        perror(<span class="string">"can't register my_exit1"</span>); </div><div class="line">        <span class="built_in">exit</span>(<span class="number">-1</span>); </div><div class="line">    &#125;</div><div class="line">    <span class="keyword">if</span> (on_exit(my_exit0,(<span class="keyword">void</span> *)str) !=<span class="number">0</span>) &#123;</div><div class="line">        perror(<span class="string">"can't register my_exit0"</span>); </div><div class="line">        <span class="built_in">exit</span>(<span class="number">-1</span>); </div><div class="line">    &#125;</div><div class="line">    <span class="built_in">printf</span>(<span class="string">"main is done\n"</span>);</div><div class="line">    <span class="built_in">printf</span>(<span class="string">"abc"</span>);</div><div class="line">    <span class="comment">//_exit(1234);</span></div><div class="line">    <span class="built_in">exit</span>(<span class="number">1234</span>);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">my_exit0</span><span class="params">(<span class="keyword">int</span> status, <span class="keyword">void</span> *arg)</span> </span>&#123;</div><div class="line">    <span class="built_in">printf</span>(<span class="string">"zero exit handler\n"</span>);</div><div class="line">    <span class="built_in">printf</span>(<span class="string">"exit %d\n"</span>, status);</div><div class="line">    <span class="built_in">printf</span>(<span class="string">"arg=%s\n"</span>,(<span class="keyword">char</span> *)arg);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">my_exit1</span><span class="params">(<span class="keyword">void</span>)</span> </span>&#123;</div><div class="line">    <span class="built_in">printf</span>(<span class="string">"first exit handler\n"</span>);</div><div class="line">&#125;</div><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">my_exit2</span><span class="params">(<span class="keyword">void</span>)</span>  </span>&#123;</div><div class="line">    <span class="built_in">printf</span>(<span class="string">"second exit handler\n"</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>进程中止处理函数执行顺序按照设置顺序的相反顺序执行。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        
+
+      </div>
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    dfine
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://dfine.tech/posts/360656f/" title="Linux的文件IO和多进程">http://dfine.tech/posts/360656f/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow noopener noreferrer" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag"><i class="fa fa-leaf" aria-hidden="true"></i>
+Linux</a>
+          
+            <a href="/tags/文件IO/" rel="tag"><i class="fa fa-leaf" aria-hidden="true"></i>
+文件IO</a>
+          
+            <a href="/tags/多进程/" rel="tag"><i class="fa fa-leaf" aria-hidden="true"></i>
+多进程</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/ad27c4df/" rel="next" title="网易18校招题">
+                <i class="fa fa-chevron-left"></i> 网易18校招题
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/413bb42a/" rel="prev" title="多媒体框架GStreamer">
+                多媒体框架GStreamer <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+		<script src="/js/src/yiyan.js"></script>
+<div>   
+    <font size="4" face="Heiti" color="gray" class="hitokoto"></font>
+</div>
+<!--MOB SHARE BEGIN-->
+<div class="-mob-share-ui-button -mob-share-open">分享</div>
+<div class="-mob-share-ui" -mob-share-ui-theme="" -mob-share-ui-theme-slide-bottom="" style="display: none">
+    <ul class="-mob-share-list">
+        <li class="-mob-share-weixin"><p>微信</p></li>
+        <li class="-mob-share-qzone"><p>QQ空间</p></li>
+        <li class="-mob-share-weibo"><p>新浪微博</p></li>
+        <li class="-mob-share-facebook"><p>Facebook</p></li>
+        <li class="-mob-share-twitter"><p>Twitter</p></li>
+        <li class="-mob-share-pocket"><p>Pocket</p></li>
+        <li class="-mob-share-tumblr"><p>Tumblr</p></li>
+        <li class="-mob-share-google"><p>Google+</p></li>
+        <li class="-mob-share-linkedin"><p>Linkedin</p></li>
+        <li class="-mob-share-qq"><p>QQ好友</p></li>
+        <li class="-mob-share-tencentweibo"><p>腾讯微博</p></li>
+        <li class="-mob-share-renren"><p>人人网</p></li>
+        <li class="-mob-share-douban"><p>豆瓣</p></li>
+        <li class="-mob-share-youdao"><p>有道云笔记</p></li>
+        <li class="-mob-share-instapaper"><p>Instapaper</p></li>
+    </ul>
+    <div class="-mob-share-close">取消</div>
+</div>
+<div class="-mob-share-ui-bg"></div>
+<script id="-mob-share" src="https://f1.webshare.mob.com/code/mob-share.js?appkey=1fc60caf613fe"></script>
+<!--MOB SHARE END-->
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+  
+       
+            <div onclick="ShowValine()" id="valine-display-button">匿名评论</div>
+            <div class="comments" id="comments" style="display:none">
+       
+    </div>
+
+    
+	 <div id="gitalk-container"></div>
+	
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image" src="/images/favo.jpg" alt="dfine">
+          <p class="site-author-name" itemprop="name">dfine</p>
+           
+              <p class="site-description motion-element" itemprop="description">多可喜，亦多可悲</p>
+          
+        </div>
+
+		<!--my custom code begin-->
+		<script src="https://cdnjs.loli.net/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+		<script src="https://cdnjs.loli.net/ajax/libs/velocity/1.5.0/velocity.min.js"></script>
+		<script type="text/javascript">
+		  $("#sidebar").hover(function(){
+			$("#mydivshow").velocity('stop').velocity({opacity: 1});
+		  },function(){
+			$("#mydivshow").velocity('stop').velocity({opacity: 0});
+		  });
+		</script>
+		<div id="mydivshow" class="mydivshow">
+		<!--my custom code end-->
+
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/">
+                <span class="site-state-item-count">82</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/categories/index.html">
+                <span class="site-state-item-count">15</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">111</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://newdee.gitbook.io/leetcode/" target="_blank" title="Leetcode" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-code"></i>
+                  
+                    
+                      Leetcode
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/newdee" target="_blank" title="GayHub" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                    
+                      GayHub
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://t.me/roomrss" target="_blank" title="TelegramRss" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-telegram"></i>
+                  
+                    
+                      TelegramRss
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/stebest?refer_flag=1001030101_&is_all=1" target="_blank" title="Weibo" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                    
+                      Weibo
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="mailto:stebest1992@gmail.com" target="_blank" title="E-Mail" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-at"></i>
+                  
+                    
+                      E-Mail
+                    
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://gitter.im/Newdee/newdee" target="_blank" title="Gitter" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-comments"></i>
+                  
+                    
+                      Gitter
+                    
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        <script>
+
+try{
+ if(window.console&&window.console.log)
+  {
+    console.log("%c控制台这么好玩嘛","background-color:rgba(255,255,255,0.1);font-size:1.5em");
+     console.log("%c ","padding:200px 260px;background:url('https://i.loli.net/2020/04/27/GrdC34HINPowfXE.gif')");
+     console.info("%c互链请邮  --支持ACG及Coding","background-color:rgba(255,255,255,0.5);font-size:1.3em");
+}  }
+catch(e){
+};
+</script>
+
+<div id="player1" class="aplayer"></div>
+<script src="/js/src/APlayer.min.js"></script>
+<script type="text/javascript">
+var ap = new APlayer({
+    element: document.getElementById('player1'),                       // Optional, player element
+    narrow: false,                                                     // Optional, narrow style
+    autoplay: false,                                                    // Optional, autoplay song(s), not supported by mobile browsers
+    showlrc: 3,                                                        // Optional, show lrc, can be 0, 1, 2, see: ###With lrc
+    mutex: true,                                                       // Optional, pause other players when this player playing
+    theme: '#e6d0b2',                                                  // Optional, theme color, default: #b7daff
+    mode: 'random',                                                    // Optional, play mode, can be `random` `single` `circulation`(loop) `order`(no loop), default: `circulation`
+    preload: 'metadata',                                               // Optional, the way to load music, can be 'none' 'metadata' 'auto', default: 'auto'
+    listmaxheight: '513px',                                             // Optional, max height of play list
+	music: [
+    {
+        title: '空空如也',
+        author: '任然',
+        url: 'https://files.catbox.moe/g27m5f.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162023.jpeg',
+		lrc: 'https://dfine.tech/lrc/kongkongruye'
+    },
+    {
+        title: '美しきもの',
+        author: 'Sound Horizon',
+        url: 'https://files.catbox.moe/1oevtg.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162103.jpeg',
+		lrc: 'https://dfine.tech/lrc/SoundHorizon'
+    },
+
+    {
+        title: '天国うまれ',
+        author: '甲本ヒロト',
+        url: 'https://files.catbox.moe/epooev.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162141.jpeg',
+	lrc: 'https://dfine.tech/lrc/tianguo'
+    },
+    {
+        title: '心做し',
+        author: 'luz',
+        url: 'https://files.catbox.moe/7j58ss.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162141.jpeg',
+		lrc: 'https://dfine.tech/lrc/xin'
+    },
+    {
+        title: 'Lemon',
+        author: '米津玄师',
+        url: 'https://files.catbox.moe/6ppo2h.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162427.jpeg',
+		lrc: 'https://dfine.tech/lrc/lemon'
+    },
+    {
+        title: 'You',
+        author: '雪野五月',
+        url: 'https://files.catbox.moe/1ovgtt.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325161925.jpeg',
+		lrc: 'https://dfine.tech/lrc/you'
+    },
+    {
+        title: '钟无艳',
+        author: '谢安琪',
+        url: 'https://files.catbox.moe/55sxbh.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162505.jpeg',
+		lrc: 'https://dfine.tech/lrc/zhongwuyan'
+    },
+
+    {
+        title: '殿书',
+        author: '奇然',
+        url: 'https://files.catbox.moe/e9n6sz.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162601.jpeg',
+		lrc: 'https://dfine.tech/lrc/dianshu'
+    },
+    {
+        title: 'East of Eden',
+        author: 'Zella Day',
+        url: 'https://files.catbox.moe/qoanq2.mp3',
+        pic: 'https://p1.music.126.net/orDs-AZ0jJjB06uoP0pdMw==/6667438510952720.jpg',
+		lrc: 'https://dfine.tech/lrc/eastEden'
+    },
+    {
+        title: '茁',
+        author: '谭烧',
+        url: 'https://files.catbox.moe/5lepv3.mp3',
+        pic: 'https://p1.music.126.net/xphtETT9CVE-IjRzGx20YA==/7969260279094350.jpg',
+		lrc: 'https://dfine.tech/lrc/zhuo'
+    },
+    {
+        title: '僕が死のうと思ったのは',
+        author: '中岛美嘉',
+        url: 'https://files.catbox.moe/umshce.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162629.jpeg',
+		lrc: 'https://dfine.tech/lrc/yiliaobailiao'
+    },
+    {
+        title: 'PLANET',
+        author: 'ラムジ',
+        url: 'https://files.catbox.moe/6ioooc.mp3',
+        pic: 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20190325162655.jpeg',
+		lrc: 'https://dfine.tech/lrc/planet'
+    },
+]
+
+
+});
+ $('.aplayer-icon-menu')[0].click();   //initial height
+	$('.aplayer-icon.aplayer-icon-mode').css('display','inline-block');
+  var myflag=true;
+	$('.aplayer-list').css('height','180px');
+	$('.aplayer-icon-menu svg').click(function(){
+    var temp=$('#player1').css('height');
+		if(temp=='250px' && !myflag){
+      $('#mydivshow').velocity('stop').velocity({height: 250});
+			$('#player1').velocity('stop').velocity({height: 66});
+    }
+		else if(temp=='66px' && myflag){
+      $('#mydivshow').velocity('stop').velocity({height: 420});
+			$('#player1').velocity('stop').velocity({height: 250});
+    }
+    myflag=!myflag;
+	});
+
+
+
+</script>
+
+<script type="text/javascript" src="//ra.revolvermaps.com/0/0/8.js?i=0qun3l8xnmd&amp;m=7&amp;c=ff0000&amp;cr1=ffffff&amp;f=arial&amp;l=33" async="async"></script>
+
+
+		<!--my custom code begin-->
+		</div>
+		<!--my custom code end-->
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#文件IO"><span class="nav-number">1.</span> <span class="nav-text">文件IO</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#open"><span class="nav-number">1.1.</span> <span class="nav-text">open</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#功能说明"><span class="nav-number">1.1.1.</span> <span class="nav-text">功能说明</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#参数说明"><span class="nav-number">1.1.2.</span> <span class="nav-text">参数说明</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#例子"><span class="nav-number">1.1.3.</span> <span class="nav-text">例子</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#read"><span class="nav-number">1.2.</span> <span class="nav-text">read</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#功能说明-1"><span class="nav-number">1.2.1.</span> <span class="nav-text">功能说明</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#参数说明-1"><span class="nav-number">1.2.2.</span> <span class="nav-text">参数说明</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#write"><span class="nav-number">1.3.</span> <span class="nav-text">write</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#功能说明-2"><span class="nav-number">1.3.1.</span> <span class="nav-text">功能说明</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#参数说明-2"><span class="nav-number">1.3.2.</span> <span class="nav-text">参数说明</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#例子-1"><span class="nav-number">1.3.3.</span> <span class="nav-text">例子</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#close"><span class="nav-number">1.4.</span> <span class="nav-text">close</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#功能说明-3"><span class="nav-number">1.4.1.</span> <span class="nav-text">功能说明</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#参数说明-3"><span class="nav-number">1.4.2.</span> <span class="nav-text">参数说明</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#lseek"><span class="nav-number">1.5.</span> <span class="nav-text">lseek</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#功能说明-4"><span class="nav-number">1.5.1.</span> <span class="nav-text">功能说明</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#参数说明-4"><span class="nav-number">1.5.2.</span> <span class="nav-text">参数说明</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#例子-2"><span class="nav-number">1.5.3.</span> <span class="nav-text">例子</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#select"><span class="nav-number">1.6.</span> <span class="nav-text">select</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#功能说明-5"><span class="nav-number">1.6.1.</span> <span class="nav-text">功能说明</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#参数说明-5"><span class="nav-number">1.6.2.</span> <span class="nav-text">参数说明</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#例子-3"><span class="nav-number">1.6.3.</span> <span class="nav-text">例子</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#stat"><span class="nav-number">1.7.</span> <span class="nav-text">stat</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#基本用法"><span class="nav-number">1.7.1.</span> <span class="nav-text">基本用法</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#参数说明-6"><span class="nav-number">1.7.2.</span> <span class="nav-text">参数说明</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#例子-4"><span class="nav-number">1.7.3.</span> <span class="nav-text">例子</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#文件类型的判定"><span class="nav-number">1.7.4.</span> <span class="nav-text">文件类型的判定</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#例子-5"><span class="nav-number">1.7.5.</span> <span class="nav-text">例子</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#文件权限的判定"><span class="nav-number">1.8.</span> <span class="nav-text">文件权限的判定</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#stat的目录操作"><span class="nav-number">1.9.</span> <span class="nav-text">stat的目录操作</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#打开目录"><span class="nav-number">1.9.1.</span> <span class="nav-text">打开目录</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#读取目录"><span class="nav-number">1.9.2.</span> <span class="nav-text">读取目录</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#关闭目录"><span class="nav-number">1.9.3.</span> <span class="nav-text">关闭目录</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#多进程"><span class="nav-number">2.</span> <span class="nav-text">多进程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Linux的基本进程状态"><span class="nav-number">2.1.</span> <span class="nav-text">Linux的基本进程状态</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#获取进程标识号"><span class="nav-number">2.1.0.1.</span> <span class="nav-text">获取进程标识号</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Linux下C进程内存布局"><span class="nav-number">2.2.</span> <span class="nav-text">Linux下C进程内存布局</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#C进程内存布局说明"><span class="nav-number">2.2.1.</span> <span class="nav-text">C进程内存布局说明</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#环境变量的获取与设置"><span class="nav-number">2.2.2.</span> <span class="nav-text">环境变量的获取与设置</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#fork进程控制"><span class="nav-number">2.3.</span> <span class="nav-text">fork进程控制</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#fork的机制与特性"><span class="nav-number">2.3.1.</span> <span class="nav-text">fork的机制与特性</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#fork实例分析"><span class="nav-number">2.3.2.</span> <span class="nav-text">fork实例分析</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#exec进程控制"><span class="nav-number">2.4.</span> <span class="nav-text">exec进程控制</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#文件描述符详解"><span class="nav-number">2.4.1.</span> <span class="nav-text">文件描述符详解</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#fork对文件描述符的影响"><span class="nav-number">2.4.2.</span> <span class="nav-text">fork对文件描述符的影响</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#wait同步"><span class="nav-number">2.4.3.</span> <span class="nav-text">wait同步</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#wait作用"><span class="nav-number">2.4.3.1.</span> <span class="nav-text">wait作用</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#wait调用"><span class="nav-number">2.4.3.2.</span> <span class="nav-text">wait调用</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#exec详解"><span class="nav-number">2.4.4.</span> <span class="nav-text">exec详解</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#exec机制"><span class="nav-number">2.4.4.1.</span> <span class="nav-text">exec机制</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#exec用法"><span class="nav-number">2.4.4.2.</span> <span class="nav-text">exec用法</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#进程的消亡"><span class="nav-number">2.5.</span> <span class="nav-text">进程的消亡</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#gdb调试多进程技巧"><span class="nav-number">2.5.1.</span> <span class="nav-text">gdb调试多进程技巧</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#启动例程与main函数"><span class="nav-number">2.5.2.</span> <span class="nav-text">启动例程与main函数</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#正常结束："><span class="nav-number">2.5.2.1.</span> <span class="nav-text">正常结束：</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#非正常结束："><span class="nav-number">2.5.2.2.</span> <span class="nav-text">非正常结束：</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#exit函数与-exit函数"><span class="nav-number">2.5.3.</span> <span class="nav-text">exit函数与_exit函数</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#I-O流和I-O库缓存"><span class="nav-number">2.6.</span> <span class="nav-text">I/O流和I/O库缓存</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Exit-handler"><span class="nav-number">2.7.</span> <span class="nav-text">Exit handler</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </div></main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">
+  
+  &copy;  1992 - 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-superpowers"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder"><a href="https://dfine.tech">dfine</a></span>
+	
+
+</div>
+
+<!--
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+-->
+
+        
+<div class="busuanzi-count">
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user">This site's UV:</i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye">This site's PV:</i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="https://ajax.loli.net/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/fastclick/1.0.6/fastclick.min.js"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/velocity/1.5.0/velocity.min.js"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/velocity/1.5.0/velocity.ui.min.js"></script>
+
+  
+  <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/fancybox/3.1.25/jquery.fancybox.min.js"></script>
+
+  
+  <script type="text/javascript" src="/lib/three/three.min.js"></script>
+
+  
+  <script type="text/javascript" src="/lib/three/canvas_lines.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+   <link rel="stylesheet" href="https://dfine.tech/css/gitalk.css"> 
+ 
+  
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+   <script type="text/javascript">
+		var gitalk = new Gitalk({
+		  clientID: '4a39596c869e2498ea2c',
+		  clientSecret: '09f723a7aae19b9cd7767036df092d299793bd7a',
+		  repo: 'BlogComments',
+		  owner: 'newdee',
+		  admin: ['newdee'], 
+		  id: window.location.pathname,
+		  perPage: parseInt('5'),
+		  distractionFreeMode: 'false'
+		})
+
+		gitalk.render('gitalk-container')           
+       </script>
+	
+
+
+
+
+
+  <script src="//fastly.jsdelivr.net/npm/valine@1.4.16/dist/Valine.min.js"></script>
+    
+      <script type="text/javascript">
+        var GUEST = ['nick','mail','link'];
+        var guest = 'nick,mail,link';
+        guest = guest.split(',').filter(item=>{
+          return GUEST.indexOf(item)>-1;
+        });
+        function ShowValine(){
+            button=document.getElementById("valine-display-button");
+            vstate=document.getElementsByClassName("comments v")[0];
+            gstate=document.getElementById("gitalk-container");
+            if(vstate.style.display == "none" ){
+            button.innerHTML="Git评论";
+            vstate.style.display = "block";
+            gstate.style.display = "none";
+            }
+            else{
+            button.innerHTML="匿名评论";
+            gstate.style.display = "block";
+            vstate.style.display = "none";}
+        }
+        new Valine({
+            el: '#comments' ,
+            verify: false,
+            notify: false,
+            appId: 'HfI6KhJtyoYJVElqovLTdyIe-MdYXbMMI',
+            appKey: 'SgCg3S2tCDaEkxunnlBATRCk',
+            serverURLs: 'https://hfi6khjt.api.lncldglobal.com',
+            placeholder: '言语是花，也是刀。',
+            avatar:'mm',
+            guest_info:guest,
+            pageSize:'5' || 10,
+        });
+      </script>
+      
+
+
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $('.leancloud_visitors');
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', '/classes/Counter/' + counter.objectId, JSON.stringify({ time: { '__op': 'Increment', 'amount': 1 } }))
+            
+              .done(function() {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.time + 1);
+              })
+            
+              .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+              })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1 }))
+                .done(function() {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function() {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+        .fail(function ({ responseJSON }) {
+          console.log('LeanCloud Counter Error: ' + responseJSON.code + ' ' + responseJSON.error);
+        });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + 'HfI6KhJtyoYJVElqovLTdyIe-MdYXbMMI')
+        .done(function({ api_server }) {
+          var Counter = function(method, url, data) {
+            return $.ajax({
+              method: method,
+              url: 'https://' + api_server + '/1.1' + url,
+              headers: {
+                'X-LC-Id': 'HfI6KhJtyoYJVElqovLTdyIe-MdYXbMMI',
+                'X-LC-Key': 'SgCg3S2tCDaEkxunnlBATRCk',
+                'Content-Type': 'application/json',
+              },
+              data: data
+            });
+          };
+          
+            const localhost = /http:\/\/(localhost|127.0.0.1|0.0.0.0)/;
+            if (localhost.test(document.URL)) return;
+            addCount(Counter);
+          
+        });
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+  <script src="/js/src/Aplayer-Controler.min.js"></script>
+<div id="AP-controler"></div>
+<script type="text/javascript">
+var myapc=new APlayer_Controler({
+		APC_dom:$('#AP-controler'),
+		aplayer:ap,
+		attach_right:true,
+		position:{top:'150px',bottom:''},
+		fixed:true,
+		btn_width:100,
+		btn_height:120,
+		img_src:['https://fastly.jsdelivr.net/gh/newdee/BlogImage/20191105112417.gif', 'https://fastly.jsdelivr.net/gh/newdee/BlogImage/20191105112526.gif'],
+
+		tips_content:{
+			  on_loading:{top:'LOADING',bottom:'LIFE IS SO HARD'},
+			  on_welcome:{top:'LOADED',bottom:'NOT TOO BAD'},
+			  on_timeout:{top:'PLAYER ARE IN MARS',bottom:'TIME GOES STUPID'},
+			  on_error:{top:'PLAYER BROKEN',bottom:'NOTHING IS IMPORTANT IN LIFE'},
+			  on_listend:{top:'BOTTOM SAYS NO SONG',bottom:'TO DANCE'},
+			  on_nohistory:{top:'NO HISTORY',bottom:'YOU WILL CREATE THE HISTORY'},
+			  on_historyend:{top:'NO MORE',bottom:'HISTORY IS NOT IMPORTANT'}
+			},
+		img_style:{repeat:'no-repeat',position:'center',size:'contain'},
+		ctrls_color:'rgba(86,223,177,0.7)',
+		ctrls_hover_color:'rgba(255,140,0,0.7)',
+		tips_on:true,
+		tips_width:140,
+		tips_height:25,
+		tips_color:'rgba(255,255,255,0.8)',
+	  timeout:30,
+	  showOnPhone:false,
+	  songrecord_log:false
+	});
+</script>
+
+
+  <script type="text/javascript" src="/js/src/mouse.js"></script>
+
+
+<!--崩溃欺骗
+<script type="text/javascript" src="/js/src/broken.js"></script>
+-->
+</body>
+</html>
+
+<script type="text/javascript" src="/js/src/randbg.js"></script>
+<script src="https://fastly.jsdelivr.net/gh/newdee/live2d-widget@latest/autoload.js"></script>
