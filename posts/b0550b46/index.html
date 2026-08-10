@@ -1,0 +1,68 @@
+<!doctype html><html lang="zh-Hans"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hashcat密码破解 · 阁子</title><meta name="description" content="拿到了一个被加密的Excel，要求输入密码才能打开，于是尝试了下密码破解方法。"><link rel="canonical" href="https://dfine.tech/posts/b0550b46/"><meta property="og:title" content="Hashcat密码破解 · 阁子"><meta property="og:type" content="article"><meta property="og:url" content="https://dfine.tech/posts/b0550b46/"><meta property="og:site_name" content="阁子"><meta property="og:description" content="拿到了一个被加密的Excel，要求输入密码才能打开，于是尝试了下密码破解方法。"><link rel="icon" href="/favicon.ico"><link rel="alternate" type="application/atom+xml" title="阁子" href="/atom.xml"><script>(()=>{try{const t=localStorage.getItem('theme');if(t==='dark'||t==='light')document.documentElement.dataset.theme=t}catch{}})()</script><style>@font-face{font-family:"阁子宋";src:url("/assets/fonts/serif-400-f65ab20b.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}@font-face{font-family:"阁子宋";src:url("/assets/fonts/serif-700-376a125f.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}</style><link rel="stylesheet" href="/assets/main-IJUXDFMC.css"><script type="module" src="/assets/main-W5DPG247.js"></script></head><body data-page="post"><header class="site-head"><a class="brand" href="/" aria-label="回到首页"><svg class="seal brand-seal" viewBox="0 0 48 48" aria-hidden="true"><rect x="3" y="3" width="42" height="42" rx="6" fill="none" stroke="currentColor" stroke-width="3"/><text x="24" y="25" text-anchor="middle" dominant-baseline="central" font-size="28" fill="currentColor" font-family="阁子宋, 'Noto Serif SC', serif">阁</text></svg><span class="brand-name">阁子</span></a><nav class="site-nav" aria-label="站内导航"><a href="/archives/">文章</a><a href="/talks/">闲言</a><a href="/links/">友人</a><a href="/About/">关于</a></nav><div class="head-actions"><button class="icon-btn" id="search-btn" aria-label="搜索（Ctrl+K）" title="搜索 Ctrl+K"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button> <button class="icon-btn" id="theme-btn" aria-label="切换深浅主题"><svg class="ico-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.5 4.5l2 2M17.5 17.5l2 2M19.5 4.5l-2 2M6.5 17.5l-2 2"/></g></svg><svg class="ico-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5Z" fill="currentColor"/></svg></button></div></header><main class="site-main" id="main"><div class="post-wrap"><article class="post" id="post-article" data-title="Hashcat密码破解"><header class="post-head"><h1 class="post-title">Hashcat密码破解</h1><div class="post-meta"><time datetime="2019-03-14T19:25:21+08:00">2019-03-14</time> <span class="pm-sep">·</span><a href="/categories/Linux/">Linux</a> <span class="pm-sep">·</span><span>1457 字</span> <span class="pm-sep">·</span><span>约 4 分钟</span> <span id="busuanzi_container_page_pv" hidden><span class="pm-sep">·</span>阅读 <span id="busuanzi_value_page_pv"></span> 次</span></div><span class="chips"><a class="chip" href="/tags/Hashcat/">Hashcat</a><a class="chip" href="/tags/Linux/">Linux</a><a class="chip" href="/tags/Git/">Git</a></span></header><div class="post-content"><p>拿到了一个被加密的Excel，要求输入密码才能打开，于是尝试了下密码破解方法。</p><h3 id="arop破解">AROP破解</h3><p>AROP(ADVANCED OFFICEPASSWORD RECOVERY)好像是比较主流的Office的破解工具，有收费版和免费版，区别在于密码长度是否超过4字节。<br>用了一个虚拟机跑了一下，字典查询没有，于是暴力破解，嗯，破解速度比较令人绝望，毕竟是CPU在跑。<br>将该Excel文件解压之后，可以发现里面包含<code>DataSpace</code>、<code>EncryptedPackage</code>以及<code>EncryptionInfo</code>等文件，打开<code>EncryptionInfo</code>文件，可以看到里面加密的一些信息:</p><figure class="code code-plain"><pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;yes&quot;?&gt;
+&lt;encryption xmlns=&quot;http://schemas.microsoft.com/office/2006/encryption&quot; xmlns:p=&quot;http://schemas.microsoft.com/office/2006/keyEncryptor/password&quot; xmlns:c=&quot;http://schemas.microsoft.com/office/2006/keyEncryptor/certificate&quot;&gt;&lt;keyData saltSize=&quot;16&quot; blockSize=&quot;16&quot; keyBits=&quot;256&quot; hashSize=&quot;64&quot; cipherAlgorithm=&quot;AES&quot; cipherChaining=&quot;ChainingModeCBC&quot; hashAlgorithm=&quot;SHA512&quot; saltValue=&quot;tLnK9YHGccHAgMyj9Nuwmg==&quot;/&gt;&lt;dataIntegrity encryptedHmacKey=&quot;wF7fTyyf/qhB8Vg+8fvQcspTyuR7cc2+yjIyuEAF0O8avnv0LxYhw+DaVmikzCbFDjLgFCAj6+C6m6iJdhuknA==&quot; encryptedHmacValue=&quot;IK7Xc7/e0AVLERogsLvFl912xsbhw+oRKd/ABUwE5vw5iQtcAkM0K0rjz+gB8UlDDJlGbQx0HOKWypF3EDbqcA==&quot;/&gt;&lt;keyEncryptors&gt;&lt;keyEncryptor uri=&quot;http://schemas.microsoft.com/office/2006/keyEncryptor/password&quot;&gt;&lt;p:encryptedKey spinCount=&quot;100000&quot; saltSize=&quot;16&quot; blockSize=&quot;16&quot; keyBits=&quot;256&quot; hashSize=&quot;64&quot; cipherAlgorithm=&quot;AES&quot; cipherChaining=&quot;ChainingModeCBC&quot; hashAlgorithm=&quot;SHA512&quot; saltValue=&quot;wisEIaAFG08tJoh3tD0Bqw==&quot; encryptedVerifierHashInput=&quot;ZMMqH6NC6xpnsH8zBXtfyA==&quot; encryptedVerifierHashValue=&quot;mEcTV0662f/U1+nndKsBiv+L/CsAusbw+So+pA4g8TBKq70rNYy7nkZk+tYB6M/fFZdBfRH4363GRI4m8WPk6Q==&quot; encryptedKeyValue=&quot;xUZ5hE+Tzhim5YcUf7KOA5Z1jAG+cTaOGRd859sCkPA=&quot;/&gt;&lt;/keyEncryptor&gt;&lt;/keyEncryptors&gt;&lt;/encryption&gt;</code></pre></figure><p>其中，采用的是AES算法，有盐(salt,指随机的数据，加入到哈希的过程中，加大破解难度)，hash算法是SHA512,<code>spinCount=100000</code>经过了100000次的迭代操作，想直接逆向破解，实在太难。字典尝试无效，只能暴力破解，但是随着密码长度增加，以及字母数字、特殊字符的引入，破解难度指数增长。对于纯小写字母的6位密码，复杂度为$26^6 = 308915776$次，七位则超过了80亿次，指望这个靠CPU计算的软件，实际希望不大，跑了半天后放弃了。</p><h3 id="hashcat破解">Hashcat破解</h3><blockquote><p>Hashcat号称世界上最快的密码破解，世界上第一个和唯一的基于GPGPU规则引擎，免费多GPU（高达128个GPU），多哈希，多操作系统（Linux和Windows本地二进制文件），多平台（OpenCL和CUDA支持），多算法，资源利用率低，基于字典攻击，支持分布式破解等等。</p></blockquote><p>嗯，暴力破解的话，只能考虑使用GPU跑，这时，开源的<a href="https://hashcat.net/hashcat/" target="_blank" rel="noopener external nofollow">hashcat</a>就是一个不错的选择。</p><h4 id="获取文件hash值">获取文件hash值</h4><p>使用hashcat破解office，先需要获取文件的hash值，网上有现成的工具<code>office2join.py</code>，然后用python运行，参数加上该office文件即可。</p><figure class="code code-plain"><pre><code>python office2john.py ../test.xlsx 
+
+test.xlsx:$office$*2013*100000*256*16*c22b0421a0051b4f2d268877b43d01ab*64c32a1fa342eb1a67b07f33057b5fc8*984713574ebad9ffd4d7e9e774ab018aff8bfc2b00bac6f0f92a3ea40e20f130</code></pre></figure><p>可以看到，加密方式为office2013，将第一个冒号后面的字串复制到一个新文件中保存即可。</p><h4 id="hashcat破解-1">hashcat破解</h4><p>知道加密方式后，需要找到对应的破解模式，首先使用<code>--help</code>看一下帮助:</p><figure class="code code-plain"><pre><code>./hashcat64.bin --help</code></pre></figure><p>可以看到office的加密模式有以下几种:</p><figure class="code code-plain"><pre><code>   9700 | MS Office &lt;= 2003 $0/$1, MD5 + RC4               | Documents
+   9710 | MS Office &lt;= 2003 $0/$1, MD5 + RC4, collider #1  | Documents
+   9720 | MS Office &lt;= 2003 $0/$1, MD5 + RC4, collider #2  | Documents
+   9800 | MS Office &lt;= 2003 $3/$4, SHA1 + RC4              | Documents
+   9810 | MS Office &lt;= 2003 $3, SHA1 + RC4, collider #1    | Documents
+   9820 | MS Office &lt;= 2003 $3, SHA1 + RC4, collider #2    | Documents
+   9400 | MS Office 2007                                   | Documents
+   9500 | MS Office 2010                                   | Documents
+   9600 | MS Office 2013                                   | Documents
+</code></pre></figure><p>所以，office2013选择<code>-m 9600</code>，然后开始破解：</p><figure class="code code-plain"><pre><code>./hashcat64.bin -a 3  -m 9600 --session test -o found.txt hash.txt ?l?l?l?l?l?l?l</code></pre></figure><p>其中，<code>-a</code>表示破解模式，<code>3</code>是暴力破解，<code>--session test</code>是将该次破解进程命名，可有可无，但之后如果要中断再恢复，则可以使用进程名恢复。<code>-o found.txt</code>是将找到的结果输出到指定文件中，<code>hash.txt</code>是之前保存hash码的文件，最后是一串正则表达式，有<code>?l?u?d?s</code>，分别表示小写字母、大写字母、数字、和特殊字符。该例子表示暴力破解七位小写字母的密码。</p><p>但由于不确定位数，先从简单的开始，破解从1到8位的小写字母：</p><figure class="code code-plain"><pre><code>./hashcat64.bin -a 3 -m 9600  -o found.txt hash.txt  --increment --increment-min 1 --increment-max 8 ?l?l?l?l?l?l?l?l</code></pre></figure><p>其中，<code>--increment-min 1 --increment-max 8</code>即如本身含义。<br>然后查看一下显卡运行情况：</p><figure class="code code-plain"><pre><code>Tue Mar 12 14:57:13 2019
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 410.78       Driver Version: 410.78       CUDA Version: 10.0     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|===============================+======================+======================|
+|   0  GeForce RTX 208...  Off  | 00000000:18:00.0 Off |                  N/A |
+| 90%   80C    P2   247W / 250W |   2341MiB / 10989MiB |     94%      Default |
++-------------------------------+----------------------+----------------------+
+|   1  GeForce RTX 208...  Off  | 00000000:3B:00.0 Off |                  N/A |
+| 90%   80C    P2   248W / 250W |   2341MiB / 10989MiB |     95%      Default |
++-------------------------------+----------------------+----------------------+
+|   2  GeForce RTX 208...  Off  | 00000000:86:00.0 Off |                  N/A |
+| 91%   81C    P2   247W / 250W |   2341MiB / 10989MiB |     95%      Default |
++-------------------------------+----------------------+----------------------+
+
++-----------------------------------------------------------------------------+
+| Processes:                                                       GPU Memory |
+|  GPU       PID   Type   Process name                             Usage      |
+|=============================================================================|
+|    0      1852      C   ./hashcat64.bin                             2331MiB |
+|    1      1852      C   ./hashcat64.bin                             2331MiB |
+|    2      1852      C   ./hashcat64.bin                             2331MiB |
++-----------------------------------------------------------------------------+
+</code></pre></figure><p>如果中途有事，可以先暂停一下，然后跑完后再过来继续破解：</p><figure class="code code-plain"><pre><code>./hashcat64.bin --restore
+
+Session..........: test
+Status...........: Cracked
+Hash.Type........: MS Office 2013
+Hash.Target......: $office$*2013*100000*256*16*c22b0421a0051b4f2d26887...20f130
+Time.Started.....: Wed Mar 13 14:28:19 2019 (9 hours, 37 mins)
+Time.Estimated...: Thu Mar 14 00:05:48 2019 (0 secs)
+Guess.Mask.......: ?l?l?l?l?l?l?l [7]
+Guess.Queue......: 1/1 (100.00%)
+Speed.#1.........:    19777 H/s (8.49ms) @ Accel:64 Loops:16 Thr:256 Vec:1
+Speed.#2.........:    19260 H/s (8.66ms) @ Accel:64 Loops:16 Thr:256 Vec:1
+Speed.#3.........:    19438 H/s (8.60ms) @ Accel:64 Loops:16 Thr:256 Vec:1
+Speed.#*.........:    58475 H/s
+Recovered........: 1/1 (100.00%) Digests, 1/1 (100.00%) Salts
+Progress.........: 2025455616/8031810176 (25.22%)
+Rejected.........: 0/2025455616 (0.00%)
+Restore.Point....: 74645504/308915776 (24.16%)
+Restore.Sub.#1...: Salt:0 Amplifier:17-18 Iteration:7520-7536
+Restore.Sub.#2...: Salt:0 Amplifier:0-1 Iteration:99984-100000
+Restore.Sub.#3...: Salt:0 Amplifier:6-7 Iteration:53776-53792
+Candidates.#1....: efmfogr -&gt; ehdaznt
+Candidates.#2....: svtdyyl -&gt; srhqbks
+Candidates.#3....: lnkkjnt -&gt; ljnzibl
+Hardware.Mon.#1..: Temp: 77c Fan: 87% Util: 94% Core:1635MHz Mem:6800MHz Bus:16
+Hardware.Mon.#2..: Temp: 77c Fan: 87% Util: 93% Core:1695MHz Mem:6800MHz Bus:16
+Hardware.Mon.#3..: Temp: 77c Fan: 87% Util: 94% Core:1725MHz Mem:6800MHz Bus:16
+
+Started: Wed Mar 13 14:27:42 2019
+Stopped: Thu Mar 14 00:05:50 2019
+</code></pre></figure><p>最后大概半天吧，跑出来结果如下:</p><figure class="code code-plain"><pre><code>$office$*2013*100000*256*16*c22b0421a0051b4f2d268877b43d01ab*64c32a1fa342eb1a67b07f33057b5fc8*984713574ebad9ffd4d7e9e774ab018aff8bfc2b00bac6f0f92a3ea40e20f130:semicjj</code></pre></figure><p>冒号后面的就是密码。</p></div><footer class="post-foot"><nav class="post-siblings" aria-label="相邻文章"><a class="sib sib-prev" href="/posts/b03b049f/"><span class="sib-label">较新一篇</span>Telegram接管聊天消息</a> <a class="sib sib-next" href="/posts/6b278ddb/"><span class="sib-label">较旧一篇</span>Docker博客环境封装及自动化部署</a></nav></footer></article><nav class="toc" id="toc" aria-label="目录"><p class="toc-title">目录</p><ul><li class="toc-l3"><a href="#arop破解">AROP破解</a></li><li class="toc-l3"><a href="#hashcat破解">Hashcat破解</a></li></ul></nav></div></main><footer class="site-foot"><p class="foot-motto">多可喜，亦多可悲</p><p class="foot-line">© 1992–2026 dfine <span class="foot-sep">·</span> <span id="busuanzi_container_site_uv" hidden>访客 <span id="busuanzi_value_site_uv"></span></span> <span id="busuanzi_container_site_pv" hidden><span class="foot-sep">·</span> 浏览 <span id="busuanzi_value_site_pv"></span></span> <span class="foot-sep">·</span> <a href="/atom.xml">RSS</a></p></footer></body></html>

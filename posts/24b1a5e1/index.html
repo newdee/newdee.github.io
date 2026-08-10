@@ -1,0 +1,190 @@
+<!doctype html><html lang="zh-Hans"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GStreamer笔记二: Dynamic Pipeline · 阁子</title><meta name="description" content="主要也是关于建立Pipeline的，不过主要目的是建立动态的Pipeline，即在信息可用时随时创建Pipeline，而不是在应用程序开始时候定义单一Pipeline。"><link rel="canonical" href="https://dfine.tech/posts/24b1a5e1/"><meta property="og:title" content="GStreamer笔记二: Dynamic Pipeline · 阁子"><meta property="og:type" content="article"><meta property="og:url" content="https://dfine.tech/posts/24b1a5e1/"><meta property="og:site_name" content="阁子"><meta property="og:description" content="主要也是关于建立Pipeline的，不过主要目的是建立动态的Pipeline，即在信息可用时随时创建Pipeline，而不是在应用程序开始时候定义单一Pipeline。"><link rel="icon" href="/favicon.ico"><link rel="alternate" type="application/atom+xml" title="阁子" href="/atom.xml"><script>(()=>{try{const t=localStorage.getItem('theme');if(t==='dark'||t==='light')document.documentElement.dataset.theme=t}catch{}})()</script><style>@font-face{font-family:"阁子宋";src:url("/assets/fonts/serif-400-f65ab20b.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}@font-face{font-family:"阁子宋";src:url("/assets/fonts/serif-700-376a125f.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}</style><link rel="stylesheet" href="/assets/main-IJUXDFMC.css"><script type="module" src="/assets/main-W5DPG247.js"></script></head><body data-page="post"><header class="site-head"><a class="brand" href="/" aria-label="回到首页"><svg class="seal brand-seal" viewBox="0 0 48 48" aria-hidden="true"><rect x="3" y="3" width="42" height="42" rx="6" fill="none" stroke="currentColor" stroke-width="3"/><text x="24" y="25" text-anchor="middle" dominant-baseline="central" font-size="28" fill="currentColor" font-family="阁子宋, 'Noto Serif SC', serif">阁</text></svg><span class="brand-name">阁子</span></a><nav class="site-nav" aria-label="站内导航"><a href="/archives/">文章</a><a href="/talks/">闲言</a><a href="/links/">友人</a><a href="/About/">关于</a></nav><div class="head-actions"><button class="icon-btn" id="search-btn" aria-label="搜索（Ctrl+K）" title="搜索 Ctrl+K"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button> <button class="icon-btn" id="theme-btn" aria-label="切换深浅主题"><svg class="ico-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.5 4.5l2 2M17.5 17.5l2 2M19.5 4.5l-2 2M6.5 17.5l-2 2"/></g></svg><svg class="ico-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5Z" fill="currentColor"/></svg></button></div></header><main class="site-main" id="main"><div class="post-wrap"><article class="post" id="post-article" data-title="GStreamer笔记二: Dynamic Pipeline"><header class="post-head"><h1 class="post-title">GStreamer笔记二: Dynamic Pipeline</h1><div class="post-meta"><time datetime="2017-12-01T15:52:43+08:00">2017-12-01</time> <span class="pm-sep">·</span><a href="/categories/TX1%E5%85%A5%E5%9D%91/">TX1入坑</a> <span class="pm-sep">·</span><span>3236 字</span> <span class="pm-sep">·</span><span>约 8 分钟</span> <span id="busuanzi_container_page_pv" hidden><span class="pm-sep">·</span>阅读 <span id="busuanzi_value_page_pv"></span> 次</span></div><span class="chips"><a class="chip" href="/tags/GStreamer/">GStreamer</a><a class="chip" href="/tags/TX1/">TX1</a><a class="chip" href="/tags/Linux/">Linux</a></span></header><div class="post-content"><p>主要也是关于建立Pipeline的，不过主要目的是建立动态的Pipeline，即在信息可用时随时创建Pipeline，而不是在应用程序开始时候定义单一Pipeline。</p><h3 id="一些基本概念的重申">一些基本概念的重申</h3><p>本次尝试: 将Pipeline在其未完全建立起来时设置为Playing状态。虽然这并没有什么问题，如果不做任何动作，当数据到达Pipeline末端时将会由Pipeline产生一个error并停止，所以尝试会采取进一步的操作。尝试打开一个多路复用(muxed)的文件，即视频和音频存在一个容器文件中。负责打开该容器的元素称之为分离器(demuxers)。容器格式例如: MKV(Matroska), QT/MOV(Quick Time), Ogg或高级系统格式如ASF, WMV, WMA等。</p><h4 id="pad">pad</h4><p>如前<a href="/posts/8755e75b/">所述</a>，pad就是Gstreamer元素间互相通信的一个接口，也有人翻译为衬垫。数据通过sink pad流入，通过source pad流出。只包含source pad的称之为source元素，只包含sink pad的元素称为sink元素，两者兼有则称之为filter元素。如图所示:</p><center><p><img src="https://raw.githubusercontent.com/newdee/BlogImage/master/20190906113023.png" alt="" loading="lazy" decoding="async"></p></center><h4 id="分离器">分离器</h4><p>如果一个容器嵌入多个流（例如一个视频和两个音频轨道），则分离器将分离它们并将其展示于不同的输出端口。通过这种方式，可以在流水线中创建不同的分支，处理不同类型的数据。 一个含有两个source pad和一个sink pad的分离器的例子如图所示:</p><center><p><img src="https://raw.githubusercontent.com/newdee/BlogImage/master/20190906135930.png" alt="" loading="lazy" decoding="async"></p></center><p>使用分离器的一个Pipeline例子如下:</p><center><p><img src="https://raw.githubusercontent.com/newdee/BlogImage/master/20190906140002.png" alt="" loading="lazy" decoding="async"></p></center><p>该例是一个基本的Ogg播放器的Gstreamer Pipeline。<br>处理分离器的主要复杂性在于，只有在接收到一些数据且有机会查看容器并看到其内部信息之后，才能产生信息。即分离器开始时，没有任何其他元素能连接的source pad，因此Pipeline必须终止它们。<br>解决方法是建立一个从source向下到分离器的一个Pipeline，并将其设置为运行(Play)。当分离器了解了关于容器中数据流的数目和种类的足够信息之后，其会开始创建source pads。此时即是完成Pipeline创建并将其添加到新的分离器pads上的最佳时机。<br>简单起见，所用例子仅连接到audio pad，忽略video pad。</p><h3 id="动态建立示例">动态建立示例</h3><p>一个动态的HelloWorld示例代码如下:</p><figure class="code code-plain"><pre><code>#include &lt;gst/gst.h&gt;
+
+/* Structure to contain all our information, so we can pass it to callbacks */
+typedef struct _CustomData {
+  GstElement *pipeline;
+  GstElement *source;
+  GstElement *convert;
+  GstElement *sink;
+} CustomData;
+
+/* Handler for the pad-added signal */
+static void pad_added_handler (GstElement *src, GstPad *pad, CustomData *data);
+
+int main(int argc, char *argv[]) {
+  CustomData data;
+  GstBus *bus;
+  GstMessage *msg;
+  GstStateChangeReturn ret;
+  gboolean terminate = FALSE;
+
+  /* Initialize GStreamer */
+  gst_init (&amp;argc, &amp;argv);
+
+  /* Create the elements */
+  data.source = gst_element_factory_make (&quot;uridecodebin&quot;, &quot;source&quot;);
+  data.convert = gst_element_factory_make (&quot;audioconvert&quot;, &quot;convert&quot;);
+  data.sink = gst_element_factory_make (&quot;autoaudiosink&quot;, &quot;sink&quot;);
+
+  /* Create the empty pipeline */
+  data.pipeline = gst_pipeline_new (&quot;test-pipeline&quot;);
+
+  if (!data.pipeline || !data.source || !data.convert || !data.sink) {
+    g_printerr (&quot;Not all elements could be created.\n&quot;);
+    return -1;
+  }
+
+  /* Build the pipeline. Note that we are NOT linking the source at this
+   * point. We will do it later. */
+  gst_bin_add_many (GST_BIN (data.pipeline), data.source, data.convert , data.sink, NULL);
+  if (!gst_element_link (data.convert, data.sink)) {
+    g_printerr (&quot;Elements could not be linked.\n&quot;);
+    gst_object_unref (data.pipeline);
+    return -1;
+  }
+
+  /* Set the URI to play */
+  g_object_set (data.source, &quot;uri&quot;, &quot;https://www.freedesktop.org/software/gstreamer-sdk/data/media/sintel_trailer-480p.webm&quot;, NULL);
+
+  /* Connect to the pad-added signal */
+  g_signal_connect (data.source, &quot;pad-added&quot;, G_CALLBACK (pad_added_handler), &amp;data);
+
+  /* Start playing */
+  ret = gst_element_set_state (data.pipeline, GST_STATE_PLAYING);
+  if (ret == GST_STATE_CHANGE_FAILURE) {
+    g_printerr (&quot;Unable to set the pipeline to the playing state.\n&quot;);
+    gst_object_unref (data.pipeline);
+    return -1;
+  }
+
+  /* Listen to the bus */
+  bus = gst_element_get_bus (data.pipeline);
+  do {
+    msg = gst_bus_timed_pop_filtered (bus, GST_CLOCK_TIME_NONE,
+        GST_MESSAGE_STATE_CHANGED | GST_MESSAGE_ERROR | GST_MESSAGE_EOS);
+
+    /* Parse message */
+    if (msg != NULL) {
+      GError *err;
+      gchar *debug_info;
+
+      switch (GST_MESSAGE_TYPE (msg)) {
+        case GST_MESSAGE_ERROR:
+          gst_message_parse_error (msg, &amp;err, &amp;debug_info);
+          g_printerr (&quot;Error received from element %s: %s\n&quot;, GST_OBJECT_NAME (msg-&gt;src), err-&gt;message);
+          g_printerr (&quot;Debugging information: %s\n&quot;, debug_info ? debug_info : &quot;none&quot;);
+          g_clear_error (&amp;err);
+          g_free (debug_info);
+          terminate = TRUE;
+          break;
+        case GST_MESSAGE_EOS:
+          g_print (&quot;End-Of-Stream reached.\n&quot;);
+          terminate = TRUE;
+          break;
+        case GST_MESSAGE_STATE_CHANGED:
+          /* We are only interested in state-changed messages from the pipeline */
+          if (GST_MESSAGE_SRC (msg) == GST_OBJECT (data.pipeline)) {
+            GstState old_state, new_state, pending_state;
+            gst_message_parse_state_changed (msg, &amp;old_state, &amp;new_state, &amp;pending_state);
+            g_print (&quot;Pipeline state changed from %s to %s:\n&quot;,
+                gst_element_state_get_name (old_state), gst_element_state_get_name (new_state));
+          }
+          break;
+        default:
+          /* We should not reach here */
+          g_printerr (&quot;Unexpected message received.\n&quot;);
+          break;
+      }
+      gst_message_unref (msg);
+    }
+  } while (!terminate);
+
+  /* Free resources */
+  gst_object_unref (bus);
+  gst_element_set_state (data.pipeline, GST_STATE_NULL);
+  gst_object_unref (data.pipeline);
+  return 0;
+}
+
+/* This function will be called by the pad-added signal */
+static void pad_added_handler (GstElement *src, GstPad *new_pad, CustomData *data) {
+  GstPad *sink_pad = gst_element_get_static_pad (data-&gt;convert, &quot;sink&quot;);
+  GstPadLinkReturn ret;
+  GstCaps *new_pad_caps = NULL;
+  GstStructure *new_pad_struct = NULL;
+  const gchar *new_pad_type = NULL;
+
+  g_print (&quot;Received new pad &#39;%s&#39; from &#39;%s&#39;:\n&quot;, GST_PAD_NAME (new_pad), GST_ELEMENT_NAME (src));
+
+  /* If our converter is already linked, we have nothing to do here */
+  if (gst_pad_is_linked (sink_pad)) {
+    g_print (&quot;  We are already linked. Ignoring.\n&quot;);
+    goto exit;
+  }
+
+  /* Check the new pad&#39;s type */
+  new_pad_caps = gst_pad_query_caps (new_pad, NULL);
+  new_pad_struct = gst_caps_get_structure (new_pad_caps, 0);
+  new_pad_type = gst_structure_get_name (new_pad_struct);
+  if (!g_str_has_prefix (new_pad_type, &quot;audio/x-raw&quot;)) {
+    g_print (&quot;  It has type &#39;%s&#39; which is not raw audio. Ignoring.\n&quot;, new_pad_type);
+    goto exit;
+  }
+
+  /* Attempt the link */
+  ret = gst_pad_link (new_pad, sink_pad);
+  if (GST_PAD_LINK_FAILED (ret)) {
+    g_print (&quot;  Type is &#39;%s&#39; but link failed.\n&quot;, new_pad_type);
+  } else {
+    g_print (&quot;  Link succeeded (type &#39;%s&#39;).\n&quot;, new_pad_type);
+  }
+
+exit:
+  /* Unreference the new pad&#39;s caps, if we got them */
+  if (new_pad_caps != NULL)
+    gst_caps_unref (new_pad_caps);
+
+  /* Unreference the sink pad */
+  gst_object_unref (sink_pad);
+}</code></pre></figure><p>该示例代码仅播放音频，由于是在线媒体，所以连接速度会与网速有关。</p><h3 id="代码分析">代码分析</h3><p>首先定义了一个结构体:</p><figure class="code code-plain"><pre><code>/* Structure to contain all our information, so we can pass it to callbacks */
+typedef struct _CustomData {
+  GstElement *pipeline;
+  GstElement *source;
+  GstElement *convert;
+  GstElement *sink;
+} CustomData;</code></pre></figure><p>简单情况下，通常可以使用一个局部变量(一个GstElement类型的基本指针)来表示所需要的信息。但大多数情况下（包括该例）是涉及到回调的，所以将其放在一个结构体中以便处理。</p><figure class="code code-plain"><pre><code>/* Handler for the pad-added signal */
+static void pad_added_handler (GstElement *src, GstPad *pad, CustomData *data);</code></pre></figure><p>此处是一个添加pad的前置函数声明。</p><figure class="code code-plain"><pre><code>/* Create the elements */
+data.source = gst_element_factory_make (&quot;uridecodebin&quot;, &quot;source&quot;);
+data.convert = gst_element_factory_make (&quot;audioconvert&quot;, &quot;convert&quot;);
+data.sink = gst_element_factory_make (&quot;autoaudiosink&quot;, &quot;sink&quot;);</code></pre></figure><p>该段是创建Element的代码。其中:<br><code>uridecodebin</code>通过将uri转化为原始音频或视频流来实例化所有的必要Element(source, 分离器，解码器)，其所做的是playbin的一半。由于含有分离器，其source pads最初并不可用，而且我们需要随时将其连接起来。<br><code>audioconvert</code>对于转换不同格式的音频很实用，由于解码器生成的格式可能和audio sink期望的不一样，所以为了确保其可以在任何平台上工作，使用<code>audioconvert</code>进行转换。<br><code>autoaudiosink</code>在音频中类似于视频中的<code>autovideosink</code>，其将会把音频流送给声卡。</p><figure class="code code-plain"><pre><code>if (!gst_element_link (data.convert, data.sink)) {
+  g_printerr (&quot;Elements could not be linked.\n&quot;);
+  gst_object_unref (data.pipeline);
+  return -1;
+}</code></pre></figure><p>此处主要作用是将转换元素连接到sink，但是由于其不含source pads，所以没有将其连接到source上，仅仅是保持该分支(转换器+sink)为未连接状态，待后续处理。</p><figure class="code code-plain"><pre><code>/* Set the URI to play */
+g_object_set (data.source, &quot;uri&quot;, &quot;https://www.freedesktop.org/software/gstreamer-sdk/data/media/sintel_trailer-480p.webm&quot;, NULL);</code></pre></figure><p>这里通过设置文件uri属性方法来播放它们。</p><h4 id="信号">信号</h4><p>GSignals是GStreamer中的一个关键部分。当一些你感兴趣的事发生时，它允许你通过回调的方式获得通知。信号(Signals)由名称标识，且每个GObject都有自己的signals。</p><figure class="code code-plain"><pre><code>/* Connect to the pad-added signal */
+g_signal_connect (data.source, &quot;pad-added&quot;, G_CALLBACK (pad_added_handler), &amp;data);</code></pre></figure><p>该行代码将一个&quot;pad added&quot;信号附加到我们的source(一个uridecoderbin元素)上。为此使用了<code>g_signal_connect</code>函数，并提供要使用的回调函数<code>pad_add_handler</code>和一个数据指针。GStreamer并未对数据指针做任何事，仅仅将它转发给回调函数，因此可以与其共享信息。在这种情况下，我们传递一个指向我们专门为此建立的一个结构体CustomData的指针。<br>GStreamer产生的信号可以通过其文档或者使用<code>gst-inspect-1.0</code>工具查询。<br>至此已经准备好了，只需要将Pipeline设置为PLAYING状态并开始监听总线(bus)上感兴趣的Message(如ERROR或EOS)。</p><h4 id="回调函数">回调函数</h4><p>当source element有了足够的信息开始产生数据时，将会创建source pads，并触发“pad-added”信号。此时，回调函数就会被调用:</p><figure class="code code-plain"><pre><code>static void pad_added_handler (GstElement *src, GstPad *new_pad, CustomData *data) {</code></pre></figure><p>其中，<br>信号处理的第一个参数始终是触发它的对象。src是触发这个信号的GstElement。此例中，它只能是<code>uridecodebin</code>，因为它是我们唯一附加的信号。<br>new_pad是刚刚添加到src element的GstPad, 通常是我们想要连接的pad。<br>data是我们附加到信号时提供的指针，例中用其传递CustomData指针。</p><figure class="code code-plain"><pre><code>GstPad *sink_pad = gst_element_get_static_pad (data-&gt;convert, &quot;sink&quot;);</code></pre></figure><p>从CustomData中提取转换元素，然后使用<code>gst_element_get_static_pad</code>函数取回其sink pad。这是我们希望连接到new_pad的pad。之前涉及的简单例子中直接将元素连接到元素，并由GStreamer选择合适的pad。现在我们直接将这些pad连接起来。</p><figure class="code code-plain"><pre><code>/* If our converter is already linked, we have nothing to do here */
+if (gst_pad_is_linked (sink_pad)) {
+  g_print (&quot;  We are already linked. Ignoring.\n&quot;);
+  goto exit;
+}</code></pre></figure><p><code>uridecodebin</code>可以创建尽可能多的pad，而且每个pad都会调用这个回调函数。该行代码主要作用是阻止我们尝试连接到已经连接了的pad上。</p><figure class="code code-plain"><pre><code>/* Check the new pad&#39;s type */
+new_pad_caps = gst_pad_query_caps (new_pad, NULL);
+new_pad_struct = gst_caps_get_structure (new_pad_caps, 0);
+new_pad_type = gst_structure_get_name (new_pad_struct);
+if (!g_str_has_prefix (new_pad_type, &quot;audio/x-raw&quot;)) {
+  g_print (&quot;  It has type &#39;%s&#39; which is not raw audio. Ignoring.\n&quot;, new_pad_type);
+  goto exit;
+}</code></pre></figure><p>现在将会检查这个新pad要输出的数据类型，因为我们仅对产生音频的pad有兴趣。之前已经创建了一个处理音频的Pipeline(一个<code>autoaudioconver</code>连接到一个<code>autoaudiosink</code>)，例中我们将不能将其连接到产生视频的pad上。<br><code>gst_pad_query_caps</code>函数查询或检索pad的功能(这是一种它所支持的数据，封装在GstCaps结构体中)，一个pad可以提供许多功能(cap)，因此GstCap可能包含多个GstStructure，且每个表示不同的功能。<br>由于此例中我们知道我们想要的pad只有一个能力(audio)，所以使用<code>gst_caps_get_structure</code>函数获取第一个GstStructure。<br>最后使用<code>gst_structure_get_name</code>函数获取包含格式(实际是媒体类型)的主要描述的结构体名称。如果名称不是<code>audio/x-raw</code>，这就不是解码的音频pad，也不是我们所感兴趣的。否则，尝试连接:</p><figure class="code code-plain"><pre><code>/* Attempt the link */
+ret = gst_pad_link (new_pad, sink_pad);
+if (GST_PAD_LINK_FAILED (ret)) {
+  g_print (&quot;  Type is &#39;%s&#39; but link failed.\n&quot;, new_pad_type);
+} else {
+  g_print (&quot;  Link succeeded (type &#39;%s&#39;).\n&quot;, new_pad_type);
+}</code></pre></figure><p>其中，<code>gst_pad_link</code>函数尝试连接这两个pad。和<code>gst_element_link</code>函数一样，连接必须指定有source到sink，且这两个pad必须属于同一个bin(或Pipeline)中的元素。<br>至此已经基本完成，当出现一个正确类型的pad时，它将会被连接到音频处理Pipeline的其余部分，并执行且继续直到遇到ERROR或者EOS。但关于GStreamer的状态还是需要重申一下。</p><h4 id="关于gstreamer-states">关于GStreamer States</h4><p><a href="/posts/413bb42a/">之前</a>，已经解释过GStreamer的状态了，一共四种，如下所示:</p><table><thead><tr><th>State</th><th>Description</th></tr></thead><tbody><tr><td><code>NULL</code></td><td>the NULL state or initial state of an element.</td></tr><tr><td><code>READY</code></td><td>the element is ready to go to PAUSED.</td></tr><tr><td><code>PAUSED</code></td><td>the element is PAUSED, it is ready to accept and process data. Sink elements however only accept one buffer and then block.</td></tr><tr><td><code>PLAYING</code></td><td>the element is PLAYING, the clock is running and the data is flowing.</td></tr></tbody></table><p>四种状态只能在相邻状态之间移动，不能直接从<code>NULL</code>跳到<code>PLAYING</code>，必须经过中间的<code>READY</code>和<code>PAUSED</code>状态。但是如果将管道设置为<code>PLAYIING</code>状态，GStreamer将会为你进行中间转换。</p><figure class="code code-plain"><pre><code>case GST_MESSAGE_STATE_CHANGED:
+  /* We are only interested in state-changed messages from the pipeline */
+  if (GST_MESSAGE_SRC (msg) == GST_OBJECT (data.pipeline)) {
+    GstState old_state, new_state, pending_state;
+    gst_message_parse_state_changed (msg, &amp;old_state, &amp;new_state, &amp;pending_state);
+    g_print (&quot;Pipeline state changed from %s to %s:\n&quot;,
+        gst_element_state_get_name (old_state), gst_element_state_get_name (new_state));
+  }
+  break;</code></pre></figure><p>此段代码的添加主要用于监听关于状态更改的总线消息(bus message)，并将其打印在屏幕上以帮助了解这个转换。每个元素都将关于其当前状态的信息放在总线上，因此我们将其过滤出来，并只收听来自Pipeline的信息。<br>大多数应用程序只需要关心去<code>PLAYING</code>来开始播放，然后<code>PAUSED</code>来暂停，然后在程序退出时返回<code>NULL</code>来释放所有资源。</p></div><footer class="post-foot"><nav class="post-siblings" aria-label="相邻文章"><a class="sib sib-prev" href="/posts/58b8a847/"><span class="sib-label">较新一篇</span>GStreamer笔记三: Time Management</a> <a class="sib sib-next" href="/posts/8755e75b/"><span class="sib-label">较旧一篇</span>GStreamer笔记一: GStreamer Concepts</a></nav></footer></article><nav class="toc" id="toc" aria-label="目录"><p class="toc-title">目录</p><ul><li class="toc-l3"><a href="#一些基本概念的重申">一些基本概念的重申</a></li><li class="toc-l3"><a href="#动态建立示例">动态建立示例</a></li><li class="toc-l3"><a href="#代码分析">代码分析</a></li></ul></nav></div></main><footer class="site-foot"><p class="foot-motto">多可喜，亦多可悲</p><p class="foot-line">© 1992–2026 dfine <span class="foot-sep">·</span> <span id="busuanzi_container_site_uv" hidden>访客 <span id="busuanzi_value_site_uv"></span></span> <span id="busuanzi_container_site_pv" hidden><span class="foot-sep">·</span> 浏览 <span id="busuanzi_value_site_pv"></span></span> <span class="foot-sep">·</span> <a href="/atom.xml">RSS</a></p></footer></body></html>

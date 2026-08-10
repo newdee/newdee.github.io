@@ -1,0 +1,100 @@
+<!doctype html><html lang="zh-Hans"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>多媒体框架GStreamer · 阁子</title><meta name="description" content="GStreamer is a library for constructing graphs of media-handling components. The applications it supports range from si…"><link rel="canonical" href="https://dfine.tech/posts/413bb42a/"><meta property="og:title" content="多媒体框架GStreamer · 阁子"><meta property="og:type" content="article"><meta property="og:url" content="https://dfine.tech/posts/413bb42a/"><meta property="og:site_name" content="阁子"><meta property="og:description" content="GStreamer is a library for constructing graphs of media-handling components. The applications it supports range from si…"><link rel="icon" href="/favicon.ico"><link rel="alternate" type="application/atom+xml" title="阁子" href="/atom.xml"><script>(()=>{try{const t=localStorage.getItem('theme');if(t==='dark'||t==='light')document.documentElement.dataset.theme=t}catch{}})()</script><style>@font-face{font-family:"阁子宋";src:url("/assets/fonts/serif-400-f65ab20b.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}@font-face{font-family:"阁子宋";src:url("/assets/fonts/serif-700-376a125f.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}</style><link rel="stylesheet" href="/assets/main-IJUXDFMC.css"><script type="module" src="/assets/main-W5DPG247.js"></script></head><body data-page="post"><header class="site-head"><a class="brand" href="/" aria-label="回到首页"><svg class="seal brand-seal" viewBox="0 0 48 48" aria-hidden="true"><rect x="3" y="3" width="42" height="42" rx="6" fill="none" stroke="currentColor" stroke-width="3"/><text x="24" y="25" text-anchor="middle" dominant-baseline="central" font-size="28" fill="currentColor" font-family="阁子宋, 'Noto Serif SC', serif">阁</text></svg><span class="brand-name">阁子</span></a><nav class="site-nav" aria-label="站内导航"><a href="/archives/">文章</a><a href="/talks/">闲言</a><a href="/links/">友人</a><a href="/About/">关于</a></nav><div class="head-actions"><button class="icon-btn" id="search-btn" aria-label="搜索（Ctrl+K）" title="搜索 Ctrl+K"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button> <button class="icon-btn" id="theme-btn" aria-label="切换深浅主题"><svg class="ico-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.5 4.5l2 2M17.5 17.5l2 2M19.5 4.5l-2 2M6.5 17.5l-2 2"/></g></svg><svg class="ico-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5Z" fill="currentColor"/></svg></button></div></header><main class="site-main" id="main"><div class="post-wrap"><article class="post" id="post-article" data-title="多媒体框架GStreamer"><header class="post-head"><h1 class="post-title">多媒体框架GStreamer</h1><div class="post-meta"><time datetime="2017-11-23T09:54:51+08:00">2017-11-23</time> <span class="pm-sep">·</span><a href="/categories/TX1%E5%85%A5%E5%9D%91/">TX1入坑</a> <span class="pm-sep">·</span><span>4143 字</span> <span class="pm-sep">·</span><span>约 10 分钟</span> <span id="busuanzi_container_page_pv" hidden><span class="pm-sep">·</span>阅读 <span id="busuanzi_value_page_pv"></span> 次</span></div><span class="chips"><a class="chip" href="/tags/GStreamer/">GStreamer</a><a class="chip" href="/tags/TX1/">TX1</a><a class="chip" href="/tags/%E8%A7%86%E9%A2%91%E5%A4%84%E7%90%86/">视频处理</a><a class="chip" href="/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%BC%80%E5%8F%91/">嵌入式开发</a></span></header><div class="post-content"><blockquote><p>GStreamer is a library for constructing graphs of media-handling components. The applications it supports range from simple Ogg/Vorbis playback, audio/video streaming to complex audio (mixing) and video (non-linear editing) processing.</p></blockquote><p>GStreamer是一个轻便的多媒体框架，在TX1上默认并未提供V4L2驱动，需要手动安装，而且这个驱动是基于GStreamer的。此外，在TX1上支持的H.264和H.265硬解码也是通过GStreamer的。</p><h3 id="基本概念">基本概念</h3><h4 id="pipeline">Pipeline</h4><p>GStreamer是通过管道和插件实现各种功能或构建各种流媒体应用的。 管道的概念在shell中已经很常见了，不过GStreamer中的管道符号不是<code>|</code>而是<code>!</code>。GStreamer中将很多元素串联起来，类似管道的命令，将前者输出作为后者输入。<br>如:</p><figure class="code code-plain"><pre><code>gst-launch-1.0 filesrc location=a.mp3 ! decodebin ! audioconvert ! alsasink</code></pre></figure><p>其中,每个元素说明如下:</p><ul><li><code>filesrc</code>: 从本地磁盘加载了一个文件，使用该元素时你设置了<code>location</code> 属性指向该文件。</li><li><code>decodebin</code>: 使用该元素从<code>filesrc</code>解码。会自动检测文件的类型并在后台构造一些<code>GStreamer</code>元素来解码。</li><li><code>audioconvert</code>: 音频转换元素。</li><li><code>alsasink</code>: 将音频使用ALSA传递给声卡。</li></ul><h4 id="element">Element</h4><p>元素是GStreamer内置可使用在管道上的命令，GStreamer通过各种元素完成任务。可以使用<code>gst-inspect-1.0</code>命令来查看可使用的元素。当创建Pipeline时，需要为各个Element设置各种属性。 GStreamer将GstElement细分成如下几类：</p><ul><li>Source Element: 数据源元素。只有输出端，它仅能用来产生供管道消费的数据，而不能对数据做任何处理。一个典型的数据源元素的例子是音频捕获单元，它负责从声卡读取原始的音频数据，然后作为数据源提供给其它模块使用。</li><li>Filter Element: 过滤器元素。既有输入端又有输出端，它从输入端获得相应的数据，并在经过特殊处理之后传递给输出端。一个典型的过滤器元素的例子是音频编码单元，它首先从外界获得音频数据，然后根据特定的压缩算法对其进行编码，最后再将编码后的结果提供给其它模块使用。</li><li>Sink Element: 接收器元素。只有输入端，它仅具有消费数据的能力，是整条媒体管道的终端。一个典型的接收器元素的例子是音频回放单元，它负责将接收到的数据写到声卡上，通常这也是音频处理过程中的最后一个环节。</li></ul><h4 id="pad">Pad</h4><p>一般元素都有输入输出接口，即pad。可将各个元素视作黑盒，则一般元素都有一个输入pad和输出pad，即过滤器元素。输入pad称为sink，输出pad称为src。管道命令模型基本如下:</p><figure class="code code-plain"><pre><code>[src] ! [sink src] ! [sink src] ! [sink]</code></pre></figure><p>最左边的元素只有一个src pad用来提供信息（如filesrc）。接下来的几个元素接收信息并做一些处理，因此他们有sink和src pad（例如decodebin和audiocovert），最后一个元素只接收信息（例如alsasink）。使用gst-inspect-1.0命令查看一个元素的详细信息时，就可以看到该元素的pad信息。</p><blockquote><p>注意可能与平时大家认为的概念有些不同的是，src pad是用来发送数据的端点，即数据的 输出端；而sink pad是用来接收数据的端点，即数据的输入端。</p></blockquote><p>一般来说，src pad只能连接到sink pad。但ghost pad两端就要连接相同类型的pad。</p><h4 id="cap">Cap</h4><p>每个元素的cap表示该元素可以接收什么样的信息，类似于V4L2中的cap。</p><h4 id="bin">Bin</h4><p>GStreamer中的bin类似于c中的结构体，是可以存放多个元素的容器。例如管道是<code>a ! b ! c ! d</code>，可以把他们放进mybin，这样当使用mybin时其实是引用了<code>a ! b ! c ! d</code>。</p><h4 id="ghost-pad">Ghost pad</h4><p>从名字上来看，ghost pad即特殊的pad。</p><blockquote><p>当你创建了一个bin并在里面放置了很多元素时，该bin变成了你自定义的元素，该元素按顺序调用里面的元素。要做到这样，bin很自然地需要它自己的pad，它自己的pad会挂接到bin里面元素的pad上，这就是 ghost pad了。当你创建一个bin时，你创建了ghost pad并告诉他们要去挂接里面哪一个元素。</p></blockquote><h4 id="message">Message</h4><p>Message是Pipeline用向外来主动报告自己的运行状态。Message会被发送到一个消息队列，即Pipeline的Bus。应用程序则是从Bus中获取message，并进行处理。</p><h4 id="event">Event</h4><p>Event是Pipeline用来通信的机制，分为上行、下行和双向Event。在定义了某个事件的响应后，也可以由应用程序直接向该插件(bin)发送事件。通过Event可以控制整个Pipeline的运行状态。</p><ul><li>上行事件: 由sink插件向source插件方向传输。包括:</li></ul><figure class="code code-plain"><pre><code>GST_EVENT_QOS
+GST_EVENT_SEEK</code></pre></figure><ul><li>下行事件: 由source插件向sink插件方向传输。包括:</li></ul><figure class="code code-plain"><pre><code>GST_EVENT_EOS
+GST_EVENT_NEWSEGMENT</code></pre></figure><ul><li>双行事件:包括:</li></ul><figure class="code code-plain"><pre><code>GST_EVENT_FLUSH_START
+GST_EVENT_FLUSH_STOP  </code></pre></figure><h4 id="signal">Signal</h4><p>Signal是应用控制某一插件的运行状态，可以看做Glib对象的一个属性，属于同步操作，和Linux中的系统信号有差别。通过Signal可以让某个插件做一些对插件本身变量的操作，比如增加或删除一些维护信息等。</p><h3 id="gstreamer程序处理">GStreamer程序处理</h3><p>可以使用c或Python，Python中需要<code>import gi</code>，c中使用<code>include &lt;gst/gst.h&gt;</code>等头文件。 TX1中的GStreamer头文件可以在<code>/usr/include/GStreamer-1.0</code>目录下找到。</p><h4 id="元素处理">元素处理</h4><p>Elements是具有一定功能的基本单元，主要组成如下:</p><figure class="code code-plain"><pre><code>udpsrc: 接受UDP数据(source产生数据)
+rtph264depay: H264的RTP拆包(filter)。(rtp+h264包)-&gt;(h264包)
+mpegtsmux: 打ts包(filter)。(h264包)-&gt;(ts包)
+filesink: 将数据存入文件(sink消耗数据)</code></pre></figure><p>在应用程序中创建GstElement对象的方法是借助于工厂对象GstElementFactory。由于GStreamer框架提供了多种类型的GstElement对象，因此对应地提供了多种类型的GstElementFactory对象，它们是通过特定的工厂名称来进行区分的。 如:</p><figure class="code code-plain"><pre><code>GstElementFactory *factory;
+factory = gst_element_factory_find (&quot;mad&quot;);
+</code></pre></figure><p>该代码通过<code>gst_element_factory_find()</code>函数创建了一个名为<code>mad</code>的工厂对象。之后就可以通过<code>gst_element_factory_create()</code>函数来创建特定的GstElement对象了。</p><figure class="code code-plain"><pre><code>GstElement *element;
+element = gst_element_factory_create (factory, &quot;decoder&quot;);</code></pre></figure><p>函数<code>gst_element_factory_create()</code>在调用时有两个参数，分别是需要用到的工厂对象，以及即将创建的元素名。元素名可以用查询的办法获得，也可以通过传入空指针（NULL）来生成工厂对象的默认元素。</p><blockquote><p>GStreamer使用了与GObject相同的机制来对属性（property）进行管理，包括查询（query）、设置（set）和读取（get）等。所有的GstElement对象都需要从其父对象GstObject那里继承名称（name）这一最基本的属性，这是因为像<code>gst_element_factory_make()</code>和<code>gst_element_factory_create()</code>这样的函数在创建工厂对象和元素对象时都会用到名称属性，通过调用<code>gst_object_set_name()</code>和<code>gst_object_get_name()</code>函数可以设置和读取GstElement对象的名称属性。</p></blockquote><h4 id="pad处理">Pad处理</h4><p>成功创建GstElement对象之后，可以通过<code>gst_element_get_pad()</code>获得该元素的指定pad。例如，下面的代码将返回element元素中名为src的pad：</p><figure class="code code-plain"><pre><code>GstPad *srcpad;
+srcpad = gst_element_get_pad (element, &quot;src&quot;);</code></pre></figure><p>需要的话也可以通过<code>gst_element_get_pad_list()</code>函数来查询指定元素中的所有pad。例如，下面的代码将输出elemen元素中所有pad的名称：</p><figure class="code code-plain"><pre><code>GList *pads;
+pads = gst_element_get_pad_list (element);
+while (pads) {
+  GstPad *pad = GST_PAD (pads-&gt;data);
+  g_print (&quot;pad name is: %s\n&quot;, gst_pad_get_name (pad));
+  pads = g_list_next (pads);
+}</code></pre></figure><p>与元素一样，pad的名称也能够动态设置或者读取，这是通过调用<code>gst_pad_get_name()</code>和<code>gst_pad_set_name()</code>函数来完成的。所有元素的pad都可以细分成输入pad和输出pad两种，其中输入pad只能接收数据但不能产生数据，而输出pad则正好相反。函数<code>gst_pad_get_direction()</code>可以获得指定pad的类型。GStreamer框架中的所有pad都必然依附于某个元素之上，调用<code>gst_pad_get_parent()</code>可以获得指定pad所属的元素，该函数的返回值是一个指向GstElement的指针。 Pad从某种程度上可以看成是元素的代言人，因为它要负责向外界描述该元素所具有的能力。GStreamer框架提供了统一的机制来让pad描述元素所具有的能力（capability），这是借助结构体<code>_GstCaps</code>来实现的：</p><figure class="code code-plain"><pre><code>struct _GstCaps {
+  gchar *name; /* the name of this caps */
+  guint16 id; /* type id (major type) */
+  guint refcount; /* caps are refcounted */
+  GstProps *properties; /* properties for this capability */
+  GstCaps *next; /* caps can be chained together */ };</code></pre></figure><p>GStreamer框架中的每个pad都可能对应于多个能力描述，它们能够通过函数<code>gst_pad_get_caps()</code>来获得。例如，下面的代码将输出pad中所有能力描述的名称及其MIME类型：</p><figure class="code code-plain"><pre><code>GstCaps *caps;
+caps = gst_pad_get_caps (pad);
+g_print (&quot;pad name is: %s\n&quot;, gst_pad_get_name (pad));
+while (caps) {
+  g_print (&quot; Capability name is %s, MIME type is %s\n&quot;,
+  gst_caps_get_name (cap),
+  gst_caps_get_mime (cap));
+  caps = caps-&gt;next;
+}</code></pre></figure><h4 id="bin处理">Bin处理</h4><p>在GStreamer应用程序中使用的bin主要有两种类型：</p><ul><li>GstPipeline 管道是最常用到的容器，对于一个GStreamer应用程序来讲，其顶层bin必须是一条管道。</li><li>GstThread 线程的作用在于能够提供同步处理能力，如果GStreamer应用程序需要进行严格的音视频同步，一般都需要用到这种类型的bin。</li></ul><p>GStreamer框架提供了两种方法来创建bin：一种是借助工厂方法，另一种则是使用特定的函数。下面的代码示范了如何使用工厂方法创建线程对象，以及如何使用特定函数来创建管道对象：</p><figure class="code code-plain"><pre><code>GstElement *thread, *pipeline;
+// 创建线程对象，同时为其指定唯一的名称。
+thread = gst_element_factory_make (&quot;thread&quot;, NULL);
+// 根据给出的名称，创建一个特定的管道对象。
+pipeline = gst_pipeline_new (&quot;pipeline_name&quot;);</code></pre></figure><p>Bin成功创建之后，就可以调用<code>gst_bin_add()</code>函数将已经存在的元素添加到其中来了：</p><figure class="code code-plain"><pre><code>GstElement *element;
+GstElement *bin;
+bin = gst_bin_new (&quot;bin_name&quot;);
+element = gst_element_factory_make (&quot;mpg123&quot;, &quot;decoder&quot;);
+gst_bin_add (GST_BIN (bin), element);</code></pre></figure><p>从bin中找到特定的元素可以借助<code>gst_bin_get_by_name()</code>函数实现：</p><figure class="code code-plain"><pre><code>GstElement *element;
+element = gst_bin_get_by_name (GST_BIN (bin), &quot;decoder&quot;);</code></pre></figure><p>由于GStreamer框架中的一个bin能够添加到另一个bin中，因此有可能会出现嵌套bin的情况，<code>gst_bin_get_by_name()</code>函数在查找元素时会对嵌套的bin作递归查找。元素有添加到bin中后，在需要的时候还可以从中移出，通过调用<code>gst_bin_remove()</code>函数来完成：</p><figure class="code code-plain"><pre><code>GstElement *element;
+gst_bin_remove (GST_BIN (bin), element);</code></pre></figure><h4 id="ghost-pad-1">Ghost pad</h4><p>具有ghost pad的bin在行为上与元素是完全相同的，所有元素具有的属性它都具有，所有针对元素能够进行的操作也同样能够针对bin进行，因此在GStreamer应用程序中能够像使用元素一样使用这类bin。通常通过以下方式为bin添加一个ghost pad:</p><figure class="code code-plain"><pre><code>GstElement *bin;
+GstElement *element;
+element = gst_element_factory_create (&quot;mad&quot;, &quot;decoder&quot;);
+bin = gst_bin_new (&quot;bin_name&quot;);
+gst_bin_add (GST_BIN (bin), element);
+gst_element_add_ghost_pad (bin, gst_element_get_pad (element, &quot;sink&quot;), &quot;sink&quot;);</code></pre></figure><h4 id="元素连接">元素连接</h4><p>GStreamer框架中的元素是通过各自的pad连接起来的，如下所示:</p><figure class="code code-plain"><pre><code>GstPad *srcpad, *sinkpad;
+srcpad = gst_element_get_pad (element1, &quot;src&quot;);
+sinpad = gst_element_get_pad (element2, &quot;sink&quot;);
+// 连接
+gst_pad_link (srcpad, sinkpad);
+// 断开
+gst_pad_unlink (srcpad, sinkpad);</code></pre></figure><p>如果需要建立起连接的元素都只有一个输入pad和一个输出pad，那么更简单的做法是调用<code>gst_element_link()</code>函数直接在它们之间建立起连接，或者调用<code>gst_element_unlink()</code>函数断开它们之间的连接：</p><figure class="code code-plain"><pre><code>// 连接
+gst_element_link (element1, element2);
+// 断开
+gst_element_unlink (element1, element2);</code></pre></figure><h4 id="元素状态">元素状态</h4><p>每个元素一般会有四种状态:</p><table><thead><tr><th>标识</th><th>状态</th></tr></thead><tbody><tr><td>NULL</td><td>这是所有元素的默认状态，表明它刚刚创建，还没有开始做任何事情。</td></tr><tr><td>READY</td><td>表明元素已经做好准备，随时可以开始处理流程。</td></tr><tr><td>PAUSED</td><td>表明元素因某种原因暂时停止处理数据。</td></tr><tr><td>PLAYING</td><td>表明元素正在进行数据处理。</td></tr></tbody></table><p>所有的元素都从NULL状态开始，依次经历NULL、READY、PAUSED、PLAYING等状态间的转换。元素当前所处的状态可以通过调用<code>gst_element_set_state()</code>函数进行切换：</p><figure class="code code-plain"><pre><code>GstElement *bin;
+/* 创建元素，并将其连接成bin */
+gst_element_set_state (bin, GST_STATE_PLAYING);</code></pre></figure><blockquote><p>默认情况下，管道及其包含的所有元素在创建之后将处于NULL状态，此时它们不会进行任何操作。当管道使用完毕之后，不要忘记重新将管道的状态切换回NULL状态，让其中包含的所有元素能够有机会释放它们正在占用的资源。 管道真正的处理流程是从第一次将其切换到READY状态时开始的，此时管道及其包含的所有元素将做好相应的初始化工作，来为即将执行的数据处理过程做好准备。对于一个典型的元素来讲，处于READY状态时需要执行的操作包括打开媒体文件和音频设备等，或者试图与位于远端的媒体服务器建立起连接。 处于READY状态的管道一旦切换到PLAYING状态，需要处理的多媒体数据就开始在整个管道中流动，并依次被管道中包含的各个元素进行处理，从而最终实现管道预先定义好的某种多媒体功能。GStreamer框架也允许将管道直接从NULL状态切换到PLAYING状态，而不必经过中间的READY状态。 正处于播放状态的管道能够随时切换到PAUSED状态，暂时停止管道中所有数据的流动，并能够在需要的时候再次切换回PLAYING状态。如果需要插入或者更改管道中的某个元素，必须先将其切换到PAUSED或者NULL状态，元素在处于PAUSED状态时并不会释放其占用的资源。</p></blockquote><h4 id="probe">Probe</h4><p>应用程序可以通过探针(Probe)来探测某个插件的pad中流过的数据，如:</p><figure class="code code-plain"><pre><code>/*******Callback handler when probe date received***********/
+static gboolean 
+callback_have_data(GstPad *padsrc, GstBuffer *buffer, gpointer data){
+    gint    iBufSize = 0;
+    gchar*     pBuffer = NULL;
+        
+    iBufSize = GST_BUFFER_SIZE(buffer);
+    pBuffer = (gchar*)GST_BUFFER_DATA(buffer);
+    
+    static gint numBuf = 0;
+    g_print(&quot;\rBUF %d  Size=%d   &quot;, numBuf++, iBufSize);
+
+    return TRUE;
+}
+
+GstPad *m_pad_concert_src = gst_element_get_static_pad(m_gst_convert, &quot;src&quot;);   
+gst_pad_add_buffer_probe(m_pad_concert_src, G_CALLBACK(callback_have_data), NULL);
+gst_object_unref(m_pad_concert_src);</code></pre></figure><p>该代码在<code>m_pad_concert</code>插件的src pad加一个探针，每当有buf到达时，就调用<code>callback_have_data()</code>,这里这个函数只是打印一下buf的大小，统计一下buf流过的个数。</p><h4 id="例子">例子</h4><p>一个简单的程序:</p><figure class="code code-plain"><pre><code>#include &lt;gst/gst.h&gt;
+
+int main(int argc, char *argv[]) {
+  GstElement *pipeline;
+  GstBus *bus;
+  GstMessage *msg;
+
+  /* Initialize GStreamer */
+  gst_init (&amp;argc, &amp;argv);
+
+  /* Build the pipeline */
+  pipeline = gst_parse_launch (&quot;playbin uri=https://www.freedesktop.org/software/gstreamer-sdk/data/media/sintel_trailer-480p.webm&quot;, NULL);
+
+  /* Start playing */
+  gst_element_set_state (pipeline, GST_STATE_PLAYING);
+
+  /* Wait until error or EOS */
+  bus = gst_element_get_bus (pipeline);
+  msg = gst_bus_timed_pop_filtered (bus, GST_CLOCK_TIME_NONE, GST_MESSAGE_ERROR | GST_MESSAGE_EOS);
+
+  /* Free resources */
+  if (msg != NULL)
+    gst_message_unref (msg);
+  gst_object_unref (bus);
+  gst_element_set_state (pipeline, GST_STATE_NULL);
+  gst_object_unref (pipeline);
+  return 0;
+}</code></pre></figure><p>然后使用gcc进行编译，编译时需加上参数<code>pkg-config --cflags --libs gstreamer-0.10</code>。 其中，<code>gst_init (&amp;argc, &amp;argv)</code>用于初始化所有内部结构，检查插件是否可用，以及执行用于GStreamer的命令参数。<code>pipeline = gst_parse_launch (&quot;playbin2 uri=http://docs.GStreamer.com/media/sintel_trailer-480p.webm&quot;, NULL)</code>中，<code>gst_parse_launch</code>函数接受一个管道的文本表示并把它变成一个实际的管道。<code>playbin2</code>是充当source和sink一个特殊的元素（element），并且能够实现整个管道。<code>gst_element_set_state (pipeline, GST_STATE_PLAYING)</code>函数设置Pipeline状态为播放状态。<code>gst_element_get_bus (pipeline);</code>函数获取管道的总线，<code>gst_bus_timed_pop_filtered</code>函数将阻塞，直到收到错误或EOS(End-Of-Stream)。</p></div><footer class="post-foot"><nav class="post-siblings" aria-label="相邻文章"><a class="sib sib-prev" href="/posts/aad6181/"><span class="sib-label">较新一篇</span>查询工具pkg-config</a> <a class="sib sib-next" href="/posts/360656f/"><span class="sib-label">较旧一篇</span>Linux的文件IO和多进程</a></nav></footer></article><nav class="toc" id="toc" aria-label="目录"><p class="toc-title">目录</p><ul><li class="toc-l3"><a href="#基本概念">基本概念</a></li><li class="toc-l3"><a href="#gstreamer程序处理">GStreamer程序处理</a></li></ul></nav></div></main><footer class="site-foot"><p class="foot-motto">多可喜，亦多可悲</p><p class="foot-line">© 1992–2026 dfine <span class="foot-sep">·</span> <span id="busuanzi_container_site_uv" hidden>访客 <span id="busuanzi_value_site_uv"></span></span> <span id="busuanzi_container_site_pv" hidden><span class="foot-sep">·</span> 浏览 <span id="busuanzi_value_site_pv"></span></span> <span class="foot-sep">·</span> <a href="/atom.xml">RSS</a></p></footer></body></html>

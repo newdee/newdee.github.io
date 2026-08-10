@@ -1,0 +1,271 @@
+<!doctype html><html lang="zh-Hans"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GStreamer笔记五: Media Formats and Pad Capabilities · 阁子</title><meta name="description" content="此次所述有关pad功能。关于pad， 前面 已有简单介绍，pad功能是GStreamer的一个基本元素，由于框架会自动处理他们，所以大多数时候它们是不可见的。本次主要了解的是关于pad功能的检索。"><link rel="canonical" href="https://dfine.tech/posts/79fb69ed/"><meta property="og:title" content="GStreamer笔记五: Media Formats and Pad Capabilities · 阁子"><meta property="og:type" content="article"><meta property="og:url" content="https://dfine.tech/posts/79fb69ed/"><meta property="og:site_name" content="阁子"><meta property="og:description" content="此次所述有关pad功能。关于pad， 前面 已有简单介绍，pad功能是GStreamer的一个基本元素，由于框架会自动处理他们，所以大多数时候它们是不可见的。本次主要了解的是关于pad功能的检索。"><link rel="icon" href="/favicon.ico"><link rel="alternate" type="application/atom+xml" title="阁子" href="/atom.xml"><script>(()=>{try{const t=localStorage.getItem('theme');if(t==='dark'||t==='light')document.documentElement.dataset.theme=t}catch{}})()</script><style>@font-face{font-family:"阁子宋";src:url("/assets/fonts/serif-400-f65ab20b.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}@font-face{font-family:"阁子宋";src:url("/assets/fonts/serif-700-376a125f.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}</style><link rel="stylesheet" href="/assets/main-IJUXDFMC.css"><script type="module" src="/assets/main-W5DPG247.js"></script></head><body data-page="post"><header class="site-head"><a class="brand" href="/" aria-label="回到首页"><svg class="seal brand-seal" viewBox="0 0 48 48" aria-hidden="true"><rect x="3" y="3" width="42" height="42" rx="6" fill="none" stroke="currentColor" stroke-width="3"/><text x="24" y="25" text-anchor="middle" dominant-baseline="central" font-size="28" fill="currentColor" font-family="阁子宋, 'Noto Serif SC', serif">阁</text></svg><span class="brand-name">阁子</span></a><nav class="site-nav" aria-label="站内导航"><a href="/archives/">文章</a><a href="/talks/">闲言</a><a href="/links/">友人</a><a href="/About/">关于</a></nav><div class="head-actions"><button class="icon-btn" id="search-btn" aria-label="搜索（Ctrl+K）" title="搜索 Ctrl+K"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button> <button class="icon-btn" id="theme-btn" aria-label="切换深浅主题"><svg class="ico-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.5 4.5l2 2M17.5 17.5l2 2M19.5 4.5l-2 2M6.5 17.5l-2 2"/></g></svg><svg class="ico-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5Z" fill="currentColor"/></svg></button></div></header><main class="site-main" id="main"><div class="post-wrap"><article class="post" id="post-article" data-title="GStreamer笔记五: Media Formats and Pad Capabilities"><header class="post-head"><h1 class="post-title">GStreamer笔记五: Media Formats and Pad Capabilities</h1><div class="post-meta"><time datetime="2017-12-06T15:26:11+08:00">2017-12-06</time> <span class="pm-sep">·</span><a href="/categories/TX1%E5%85%A5%E5%9D%91/">TX1入坑</a> <span class="pm-sep">·</span><span>2657 字</span> <span class="pm-sep">·</span><span>约 7 分钟</span> <span id="busuanzi_container_page_pv" hidden><span class="pm-sep">·</span>阅读 <span id="busuanzi_value_page_pv"></span> 次</span></div><span class="chips"><a class="chip" href="/tags/GStreamer/">GStreamer</a><a class="chip" href="/tags/TX1/">TX1</a><a class="chip" href="/tags/Linux/">Linux</a></span></header><div class="post-content"><p>此次所述有关pad功能。关于pad，<a href="/posts/413bb42a/">前面</a>已有简单介绍，pad功能是GStreamer的一个基本元素，由于框架会自动处理他们，所以大多数时候它们是不可见的。本次主要了解的是关于pad功能的检索。</p><h3 id="基本概念">基本概念</h3><h4 id="pads">Pads</h4><p>之前已经说过，pad相当于一个接口，允许信息通过或者离开一个元素。Pad的功能(Capabilities或者简写为Cap)指定哪种信息可以通过pad。例如“分辨率为320x200像素，每秒30帧的RGB视频”，或“每采样音频16位，每秒44100采样率的5.1声道”，甚至压缩格式如mp3或h264等。 Pad可以支持多种功能(如一个video sink可以支持不同类型的RGB或者YUV格式的视频)，而且功能也可以指定范围(如一个audio sink可以支持每秒1-48000个采样的采样率)。但从pad到pad的实际信息必须仅有一个明确指定的类型。两个相连的pad通过一个协商过程达到一个共同的类型，从而使其pad功能变得固定(仅有一种类型，不包含范围)。<br>要让两个元素连接在一起，他们的能力必须有一个公共子集，否则不可能相互理解。这也是能力的主要目标。<br>应用程序开发人员通常会通过将元素连接到一起来构建管道（如果使用playbin之类的全部元素，则程度较低）。在这种情况下需要知道元素的Pad Caps，或者至少知道当GStreamer拒绝连接两个协商错误的元素时它们的Caps是什么。</p><h4 id="pad-templates">Pad templates</h4><p>Pad是从pad模板创建的，pad模板表示了pad可能具有的所有功能。模板可用于创建一些相似的pad，并且允许早期拒绝元素之间的连接：如果其pad模板的功能没有公共子集（相交为空），则无需进一步协商。<br>pad模板可视为协商过程第一步。随着过程的演变，实际的Pads被实例化并且其能力被提炼，直到它们被固定（或者协商失败）。</p><h4 id="capabilities-examples">Capabilities examples</h4><p>一个能力的例子如下:</p><figure class="code code-plain"><pre><code>SINK template: &#39;sink&#39;
+  Availability: Always
+  Capabilities:
+    audio/x-raw
+               format: S16LE
+                 rate: [ 1, 2147483647 ]
+             channels: [ 1, 2 ]
+    audio/x-raw
+               format: U8
+                 rate: [ 1, 2147483647 ]
+             channels: [ 1, 2 ]</code></pre></figure><p>如代码中所示，该pad是一个接收端(sink)，且一直可用。它支持两种媒体，包括整数格式的原始音频（audio/x-raw）：带符号的16位小端 <sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup>和无符号8位。 方括号表示一个范围：例如，通道数从1到2不等。</p><figure class="code code-plain"><pre><code>SRC template: &#39;src&#39;
+  Availability: Always
+  Capabilities:
+    video/x-raw
+                width: [ 1, 2147483647 ]
+               height: [ 1, 2147483647 ]
+            framerate: [ 0/1, 2147483647/1 ]
+               format: { I420, NV12, NV21, YV12, YUY2, Y42B, Y444, YUV9, YVU9, Y41B, Y800, Y8, GREY, Y16 , UYVY, YVYU, IYU1, v308, AYUV, A420 }</code></pre></figure><p>video/x-raw表示这个信号源输出原始视频。它支持多种尺寸和帧率，以及一组YUV格式（大括号列表表示）。所有这些格式都表示图像平面的不同的填充和下采样。</p><h4 id="last-remarks">Last remarks</h4><p>可以使用<code>gst-inspect-1.0</code>工具了解所有GStreamer元素的Caps。<br>一些元素查询底层硬件支持的格式，并相应地提供他们的pad功能（通常进入READY或更高状态时在这样做）。 因此，显示的能力可能因平台而异，也可能从一次执行到下一次执行就变了（即使这种情况很少）。<br>本次将会实例化两个元素（这次通过其工厂函数），显示其pad模板，连接它们并设置管道播放。 在每次状态改变时，sink元素的Pad的功能会被显示，所以可以观察到协商如何进行直到Pad Caps固定。</p><h3 id="pad功能实例">Pad功能实例</h3><p>一个普通的有关pad caps的例子如下:</p><figure class="code code-plain"><pre><code>#include &lt;gst/gst.h&gt;
+
+/* Functions below print the Capabilities in a human-friendly format */
+static gboolean print_field (GQuark field, const GValue * value, gpointer pfx) {
+  gchar *str = gst_value_serialize (value);
+
+  g_print (&quot;%s  %15s: %s\n&quot;, (gchar *) pfx, g_quark_to_string (field), str);
+  g_free (str);
+  return TRUE;
+}
+
+static void print_caps (const GstCaps * caps, const gchar * pfx) {
+  guint i;
+
+  g_return_if_fail (caps != NULL);
+
+  if (gst_caps_is_any (caps)) {
+    g_print (&quot;%sANY\n&quot;, pfx);
+    return;
+  }
+  if (gst_caps_is_empty (caps)) {
+    g_print (&quot;%sEMPTY\n&quot;, pfx);
+    return;
+  }
+
+  for (i = 0; i &lt; gst_caps_get_size (caps); i++) {
+    GstStructure *structure = gst_caps_get_structure (caps, i);
+
+    g_print (&quot;%s%s\n&quot;, pfx, gst_structure_get_name (structure));
+    gst_structure_foreach (structure, print_field, (gpointer) pfx);
+  }
+}
+
+/* Prints information about a Pad Template, including its Capabilities */
+static void print_pad_templates_information (GstElementFactory * factory) {
+  const GList *pads;
+  GstStaticPadTemplate *padtemplate;
+
+  g_print (&quot;Pad Templates for %s:\n&quot;, gst_element_factory_get_longname (factory));
+  if (!gst_element_factory_get_num_pad_templates (factory)) {
+    g_print (&quot;  none\n&quot;);
+    return;
+  }
+
+  pads = gst_element_factory_get_static_pad_templates (factory);
+  while (pads) {
+    padtemplate = pads-&gt;data;
+    pads = g_list_next (pads);
+
+    if (padtemplate-&gt;direction == GST_PAD_SRC)
+      g_print (&quot;  SRC template: &#39;%s&#39;\n&quot;, padtemplate-&gt;name_template);
+    else if (padtemplate-&gt;direction == GST_PAD_SINK)
+      g_print (&quot;  SINK template: &#39;%s&#39;\n&quot;, padtemplate-&gt;name_template);
+    else
+      g_print (&quot;  UNKNOWN!!! template: &#39;%s&#39;\n&quot;, padtemplate-&gt;name_template);
+
+    if (padtemplate-&gt;presence == GST_PAD_ALWAYS)
+      g_print (&quot;    Availability: Always\n&quot;);
+    else if (padtemplate-&gt;presence == GST_PAD_SOMETIMES)
+      g_print (&quot;    Availability: Sometimes\n&quot;);
+    else if (padtemplate-&gt;presence == GST_PAD_REQUEST) {
+      g_print (&quot;    Availability: On request\n&quot;);
+    } else
+      g_print (&quot;    Availability: UNKNOWN!!!\n&quot;);
+
+    if (padtemplate-&gt;static_caps.string) {
+      GstCaps *caps;
+      g_print (&quot;    Capabilities:\n&quot;);
+      caps = gst_static_caps_get (&amp;padtemplate-&gt;static_caps);
+      print_caps (caps, &quot;      &quot;);
+      gst_caps_unref (caps);
+
+    }
+
+    g_print (&quot;\n&quot;);
+  }
+}
+
+/* Shows the CURRENT capabilities of the requested pad in the given element */
+static void print_pad_capabilities (GstElement *element, gchar *pad_name) {
+  GstPad *pad = NULL;
+  GstCaps *caps = NULL;
+
+  /* Retrieve pad */
+  pad = gst_element_get_static_pad (element, pad_name);
+  if (!pad) {
+    g_printerr (&quot;Could not retrieve pad &#39;%s&#39;\n&quot;, pad_name);
+    return;
+  }
+
+  /* Retrieve negotiated caps (or acceptable caps if negotiation is not finished yet) */
+  caps = gst_pad_get_current_caps (pad);
+  if (!caps)
+    caps = gst_pad_query_caps (pad, NULL);
+
+  /* Print and free */
+  g_print (&quot;Caps for the %s pad:\n&quot;, pad_name);
+  print_caps (caps, &quot;      &quot;);
+  gst_caps_unref (caps);
+  gst_object_unref (pad);
+}
+
+int main(int argc, char *argv[]) {
+  GstElement *pipeline, *source, *sink;
+  GstElementFactory *source_factory, *sink_factory;
+  GstBus *bus;
+  GstMessage *msg;
+  GstStateChangeReturn ret;
+  gboolean terminate = FALSE;
+
+  /* Initialize GStreamer */
+  gst_init (&amp;argc, &amp;argv);
+
+  /* Create the element factories */
+  source_factory = gst_element_factory_find (&quot;audiotestsrc&quot;);
+  sink_factory = gst_element_factory_find (&quot;autoaudiosink&quot;);
+  if (!source_factory || !sink_factory) {
+    g_printerr (&quot;Not all element factories could be created.\n&quot;);
+    return -1;
+  }
+
+  /* Print information about the pad templates of these factories */
+  print_pad_templates_information (source_factory);
+  print_pad_templates_information (sink_factory);
+
+  /* Ask the factories to instantiate actual elements */
+  source = gst_element_factory_create (source_factory, &quot;source&quot;);
+  sink = gst_element_factory_create (sink_factory, &quot;sink&quot;);
+
+  /* Create the empty pipeline */
+  pipeline = gst_pipeline_new (&quot;test-pipeline&quot;);
+
+  if (!pipeline || !source || !sink) {
+    g_printerr (&quot;Not all elements could be created.\n&quot;);
+    return -1;
+  }
+
+  /* Build the pipeline */
+  gst_bin_add_many (GST_BIN (pipeline), source, sink, NULL);
+  if (gst_element_link (source, sink) != TRUE) {
+    g_printerr (&quot;Elements could not be linked.\n&quot;);
+    gst_object_unref (pipeline);
+    return -1;
+  }
+
+  /* Print initial negotiated caps (in NULL state) */
+  g_print (&quot;In NULL state:\n&quot;);
+  print_pad_capabilities (sink, &quot;sink&quot;);
+
+  /* Start playing */
+  ret = gst_element_set_state (pipeline, GST_STATE_PLAYING);
+  if (ret == GST_STATE_CHANGE_FAILURE) {
+    g_printerr (&quot;Unable to set the pipeline to the playing state (check the bus for error messages).\n&quot;);
+  }
+
+  /* Wait until error, EOS or State Change */
+  bus = gst_element_get_bus (pipeline);
+  do {
+    msg = gst_bus_timed_pop_filtered (bus, GST_CLOCK_TIME_NONE, GST_MESSAGE_ERROR | GST_MESSAGE_EOS |
+        GST_MESSAGE_STATE_CHANGED);
+
+    /* Parse message */
+    if (msg != NULL) {
+      GError *err;
+      gchar *debug_info;
+
+      switch (GST_MESSAGE_TYPE (msg)) {
+        case GST_MESSAGE_ERROR:
+          gst_message_parse_error (msg, &amp;err, &amp;debug_info);
+          g_printerr (&quot;Error received from element %s: %s\n&quot;, GST_OBJECT_NAME (msg-&gt;src), err-&gt;message);
+          g_printerr (&quot;Debugging information: %s\n&quot;, debug_info ? debug_info : &quot;none&quot;);
+          g_clear_error (&amp;err);
+          g_free (debug_info);
+          terminate = TRUE;
+          break;
+        case GST_MESSAGE_EOS:
+          g_print (&quot;End-Of-Stream reached.\n&quot;);
+          terminate = TRUE;
+          break;
+        case GST_MESSAGE_STATE_CHANGED:
+          /* We are only interested in state-changed messages from the pipeline */
+          if (GST_MESSAGE_SRC (msg) == GST_OBJECT (pipeline)) {
+            GstState old_state, new_state, pending_state;
+            gst_message_parse_state_changed (msg, &amp;old_state, &amp;new_state, &amp;pending_state);
+            g_print (&quot;\nPipeline state changed from %s to %s:\n&quot;,
+                gst_element_state_get_name (old_state), gst_element_state_get_name (new_state));
+            /* Print the current capabilities of the sink element */
+            print_pad_capabilities (sink, &quot;sink&quot;);
+          }
+          break;
+        default:
+          /* We should not reach here because we only asked for ERRORs, EOS and STATE_CHANGED */
+          g_printerr (&quot;Unexpected message received.\n&quot;);
+          break;
+      }
+      gst_message_unref (msg);
+    }
+  } while (!terminate);
+
+  /* Free resources */
+  gst_object_unref (bus);
+  gst_element_set_state (pipeline, GST_STATE_NULL);
+  gst_object_unref (pipeline);
+  gst_object_unref (source_factory);
+  gst_object_unref (sink_factory);
+  return 0;
+}</code></pre></figure><p>所需要的库只有<code>gstreamer-1.0</code>。</p><h3 id="代码分析">代码分析</h3><p><code>print_field</code>, <code>print_caps</code>和<code>print_pad_templates</code>简单的以友好的格式显示了caps的结构，更多的GstCaps内部结构组织可以阅读GStreamer的关于Pad Caps的文档。</p><figure class="code code-plain"><pre><code>/* Shows the CURRENT capabilities of the requested pad in the given element */
+static void print_pad_capabilities (GstElement *element, gchar *pad_name) {
+  GstPad *pad = NULL;
+  GstCaps *caps = NULL;
+
+  /* Retrieve pad */
+  pad = gst_element_get_static_pad (element, pad_name);
+  if (!pad) {
+    g_printerr (&quot;Could not retrieve pad &#39;%s&#39;\n&quot;, pad_name);
+    return;
+  }
+
+  /* Retrieve negotiated caps (or acceptable caps if negotiation is not finished yet) */
+  caps = gst_pad_get_current_caps (pad);
+  if (!caps)
+    caps = gst_pad_query_caps (pad, NULL);
+
+  /* Print and free */
+  g_print (&quot;Caps for the %s pad:\n&quot;, pad_name);
+  print_caps (caps, &quot;      &quot;);
+  gst_caps_unref (caps);
+  gst_object_unref (pad);
+}</code></pre></figure><p><code>gst_element_get_static_pad</code>函数从给定的元素中检索命名的pad。这个pad是静态的，因为它总是存在于元素中。有关Pad可用性的更多信息，可以阅读有关Pads的GStreamer文档。<br>然后调用<code>gst_pad_get_current_caps</code>来检索pad的当前caps，它可以是固定的或不固定的，具体取决于协商过程的状态。甚至可能不存在，这种情况下调用<code>gst_pad_query_caps</code>来检索当前可接受的pad caps。当前可接受的caps将成为处于NULL状态的pad模板的caps，但可能会在以后的状态中更改，因为可能会查询实际的硬件功能。<br>然后将这些功能打印出来:</p><figure class="code code-plain"><pre><code>/* Create the element factories */
+source_factory = gst_element_factory_find (&quot;audiotestsrc&quot;);
+sink_factory = gst_element_factory_find (&quot;autoaudiosink&quot;);
+if (!source_factory || !sink_factory) {
+  g_printerr (&quot;Not all element factories could be created.\n&quot;);
+  return -1;
+}
+
+/* Print information about the pad templates of these factories */
+print_pad_templates_information (source_factory);
+print_pad_templates_information (sink_factory);
+
+/* Ask the factories to instantiate actual elements */
+source = gst_element_factory_create (source_factory, &quot;source&quot;);
+sink = gst_element_factory_create (sink_factory, &quot;sink&quot;);
+</code></pre></figure><p>之前直接使用<code>gst_element_factory_make</code>函数创建了元素，并跳过了关于工厂的讨论。GstElementFactory负责实例化由其工厂名称标识的特定类型的元素。<br>可以使用<code>gst_element_factory_find</code>来创建一个类型为“videotestsrc”的工厂，然后通过<code>gst_element_factory_create</code>使用它实例化多个“videotestsrc”元素。<code>gst_element_factory_make</code>实际上是<code>gst_element_factory_find</code>+<code>gst_element_factory_create</code>的快捷方式。<br>Pad模板已经可以通过工厂来访问，所以一旦工厂被创建，它们就会被打印出来。<br>跳过管道的创建以及开始，转到State-Changed消息处理：</p><figure class="code code-plain"><pre><code>case GST_MESSAGE_STATE_CHANGED:
+  /* We are only interested in state-changed messages from the pipeline */
+  if (GST_MESSAGE_SRC (msg) == GST_OBJECT (pipeline)) {
+    GstState old_state, new_state, pending_state;
+    gst_message_parse_state_changed (msg, &amp;old_state, &amp;new_state, &amp;pending_state);
+    g_print (&quot;\nPipeline state changed from %s to %s:\n&quot;,
+        gst_element_state_get_name (old_state), gst_element_state_get_name (new_state));
+    /* Print the current capabilities of the sink element */
+    print_pad_capabilities (sink, &quot;sink&quot;);
+  }
+  break;</code></pre></figure><p>该段代码在每次Pipeline状态发生改变时简单的打印出当前的pad caps。可以在输出中看到初始caps（pad模板的caps）是如何逐步完善直至完全固定（包含无范围单一类型）。</p><hr class="footnotes-sep"><section class="footnotes"><ol class="footnotes-list"><li id="fn1" class="footnote-item"><p>对于整型/长整型等数据类型，小端与大端相反，按照从低地址到高地址的顺序存放数据的高位字节到低位字节。 <a href="#fnref1" class="footnote-backref">↩︎</a></p></li></ol></section></div><footer class="post-foot"><nav class="post-siblings" aria-label="相邻文章"><a class="sib sib-prev" href="/posts/9dfc9fe0/"><span class="sib-label">较新一篇</span>不满就折腾小记</a> <a class="sib sib-next" href="/posts/40a79901/"><span class="sib-label">较旧一篇</span>GSreamer笔记四: GUI Toolkit Integration</a></nav></footer></article><nav class="toc" id="toc" aria-label="目录"><p class="toc-title">目录</p><ul><li class="toc-l3"><a href="#基本概念">基本概念</a></li><li class="toc-l3"><a href="#pad功能实例">Pad功能实例</a></li><li class="toc-l3"><a href="#代码分析">代码分析</a></li></ul></nav></div></main><footer class="site-foot"><p class="foot-motto">多可喜，亦多可悲</p><p class="foot-line">© 1992–2026 dfine <span class="foot-sep">·</span> <span id="busuanzi_container_site_uv" hidden>访客 <span id="busuanzi_value_site_uv"></span></span> <span id="busuanzi_container_site_pv" hidden><span class="foot-sep">·</span> 浏览 <span id="busuanzi_value_site_pv"></span></span> <span class="foot-sep">·</span> <a href="/atom.xml">RSS</a></p></footer></body></html>
