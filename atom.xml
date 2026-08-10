@@ -16,8 +16,8 @@
     <category term="Agent"/>
     <category term="RLM"/>
     <category term="IPython"/>
-    <content type="html">&lt;p&gt;终端 coding agent 见得多了，Prime Agent 还是让我停下来看了半天：模型手里只有一个工具，经验能落盘，关了终端会话也接着跑。&lt;br&gt;
-它是 PrimeIntellect 开源的 coding / research agent，TUI 与 agent 基座借自开源的 pi，MIT 协议。这篇是通读文档和源码之后的笔记。&lt;/p&gt;
+    <content type="html">&lt;p&gt;终端 coding agent 见得多了，Prime Agent 还是让我停下来看了半天：模型手里只有一个工具，跑过的经验能沉淀回自身，关了终端会话也接着跑。&lt;br&gt;
+它是 PrimeIntellect 开源的 coding / research agent，官方定位就一个词——self-improving，自我进化；TUI 与 agent 基座借自开源的 pi，MIT 协议。这篇是通读文档和源码之后的笔记。&lt;/p&gt;
 &lt;!--more--&gt;
 &lt;h3 id=&quot;只有一个工具&quot;&gt;只有一个工具&lt;/h3&gt;
 &lt;p&gt;一般的 coding agent 给模型发一把工具：读文件、写文件、跑命令、搜索，各是各的调用。Prime Agent 只内建一个 &lt;code&gt;ipython&lt;/code&gt;——一个持久的 IPython 内核：读写文件、跑 shell（&lt;code&gt;%%bash&lt;/code&gt; 单元）、变换数据、调 skill、开子 agent，全部写成代码。&lt;/p&gt;
@@ -57,8 +57,9 @@ prime-agent schedule add worker &amp;quot;0 9 * * 1-5&amp;quot; -- &amp;quot;Rev
 &lt;code&gt;/autonomous&lt;/code&gt;：无人值守的有界续跑，质量闸命令不过就把输出喂回去再来，工作区没变化不重复跑同一个闸；回合、token、墙钟都有上限&lt;br&gt;
 自动 compaction 总结旧上下文、保留近期消息，内核不死，goal、心跳、子会话也不受影响&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;h3 id=&quot;经验落盘&quot;&gt;经验落盘&lt;/h3&gt;
-&lt;p&gt;&lt;code&gt;/refine&lt;/code&gt; 是他们说的 Continual Harness：对当前轨迹做一次专门复盘，往持久状态里做小而有据的增删改——补充提示、记忆、可复用的 skill 描述、子 agent 规格。每次 refinement 记快照可回滚，基础 system prompt 永远不动。状态默认存在会话工件目录的 &lt;code&gt;harness/harness_state.json&lt;/code&gt;，明确标为全局的才进 &lt;code&gt;~/.prime/agent/harness/&lt;/code&gt;。&lt;/p&gt;
+&lt;h3 id=&quot;自我进化&quot;&gt;自我进化&lt;/h3&gt;
+&lt;p&gt;标题里的 self-improving 落在 &lt;code&gt;/refine&lt;/code&gt;，他们叫 Continual Harness：对当前轨迹做一次专门复盘，往持久状态里做小而有据的增删改——补充提示、记忆、可复用的 skill 描述、子 agent 规格。每次 refinement 记快照可回滚，基础 system prompt 永远不动；进化不碰权重也不碰底稿，全部发生在这层可审查的补充状态里。状态默认只随当前会话，存在工件目录的 &lt;code&gt;harness/harness_state.json&lt;/code&gt;，明确标为全局的才进 &lt;code&gt;~/.prime/agent/harness/&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;另有一条 opt-in 的 &lt;code&gt;/traces&lt;/code&gt; 把轨迹上传给 Prime——他们主业是分布式 RL 训练，verifiers 和 PRIME-RL 都是同门，多半是在给模型侧的进化攒料，不过那是产品之外的事了。&lt;/p&gt;
 &lt;p&gt;skill 这边走 Agent Skills 标准，还多一层：Python-backed skill 在 &lt;code&gt;SKILL.md&lt;/code&gt; 之外带一个真 Python 包，装进内核虚拟环境后按 import 名直接调：&lt;/p&gt;
 &lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;report = await release_audit(repository=&amp;quot;.&amp;quot;, target_version=&amp;quot;0.4.0&amp;quot;)&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;p&gt;对模型来说 skill 不再是「读一篇说明照着做」，而是可以 &lt;code&gt;help()&lt;/code&gt;、可以传参、实现里还能再 &lt;code&gt;rlm(...)&lt;/code&gt; 递归委托的函数。内置的 skill-creator 会教 agent 自己打包新 skill；&lt;code&gt;~/.claude/skills&lt;/code&gt; 这类别家的 skill 目录也能直接挂进来用。&lt;/p&gt;
