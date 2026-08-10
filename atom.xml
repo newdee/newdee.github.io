@@ -16,8 +16,8 @@
     <category term="Agent"/>
     <category term="RLM"/>
     <category term="IPython"/>
-    <content type="html">&lt;p&gt;文件夹还是那个文件夹，里面的 prime-agent 却换了物种：上一篇写的是 ThePrimeagen 那个驱动 Cursor 的七阶段编排脚本，如今同一个目录里躺着的是 PrimeIntellect 的同名项目，整篇对不上号，删了认错重写。&lt;br&gt;
-这回的正主是一个开源的 coding / research agent，TUI 与 agent 基座借自开源的 pi，MIT 协议。它跟满街的终端 agent 差别很清楚：模型手里只有一个工具，经验能落盘，关了终端会话也接着跑。&lt;/p&gt;
+    <content type="html">&lt;p&gt;终端 coding agent 见得多了，Prime Agent 还是让我停下来看了半天：模型手里只有一个工具，经验能落盘，关了终端会话也接着跑。&lt;br&gt;
+它是 PrimeIntellect 开源的 coding / research agent，TUI 与 agent 基座借自开源的 pi，MIT 协议。这篇是通读文档和源码之后的笔记。&lt;/p&gt;
 &lt;!--more--&gt;
 &lt;h3 id=&quot;只有一个工具&quot;&gt;只有一个工具&lt;/h3&gt;
 &lt;p&gt;一般的 coding agent 给模型发一把工具：读文件、写文件、跑命令、搜索，各是各的调用。Prime Agent 只内建一个 &lt;code&gt;ipython&lt;/code&gt;——一个持久的 IPython 内核：读写文件、跑 shell（&lt;code&gt;%%bash&lt;/code&gt; 单元）、变换数据、调 skill、开子 agent，全部写成代码。&lt;/p&gt;
@@ -71,7 +71,7 @@ prime-agent&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;p&gt;worker 和内核的进程隔离是为了生命周期与故障遏制，&lt;strong&gt;不是安全沙箱&lt;/strong&gt;：模型生成的 Python 和项目命令拿着你的用户权限跑。不受信的仓库、指令、skill 请放进外部沙箱；skill 能指挥模型做任何事、还能携带可执行代码，装之前先过目。&lt;br&gt;
 &lt;code&gt;/refine&lt;/code&gt; 只维护描述性的持久状态，替代不了真正打包一个可执行 skill；质量闸通过只说明闸门查的那件事过了，摸到预算上限更不等于任务完成。&lt;br&gt;
 安装脚本只发 macOS / Linux；Windows 得从源码跑（node ≥ 22.8），还要备一个 bash，Git Bash 即可。&lt;/p&gt;
-&lt;p&gt;这回动笔前先 &lt;code&gt;git remote -v&lt;/code&gt; 看了一眼，同一个坑不掉第二次。&lt;/p&gt;
+&lt;p&gt;回头找个不要紧的仓库让它挂一晚，看它早上主动汇报点什么。&lt;/p&gt;
 </content>
   </entry>
   <entry>
