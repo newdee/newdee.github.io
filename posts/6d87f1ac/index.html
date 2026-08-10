@@ -1,0 +1,209 @@
+<!doctype html><html lang="zh-Hans"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hexo博客的优化 · 阁子</title><meta name="description" content="捣鼓个人博客也有一段时间了，其间加了不少的插件，改来改去，最后打开也变得很慢了。问题主要有两个方面，一个是网络问题，因为托管在Github上，国内访问一直很慢，后来还是迁移到Coding上了，妥协了，给他加了个 Hosted by Cod…"><link rel="canonical" href="https://dfine.tech/posts/6d87f1ac/"><meta property="og:title" content="Hexo博客的优化 · 阁子"><meta property="og:type" content="article"><meta property="og:url" content="https://dfine.tech/posts/6d87f1ac/"><meta property="og:site_name" content="阁子"><meta property="og:description" content="捣鼓个人博客也有一段时间了，其间加了不少的插件，改来改去，最后打开也变得很慢了。问题主要有两个方面，一个是网络问题，因为托管在Github上，国内访问一直很慢，后来还是迁移到Coding上了，妥协了，给他加了个 Hosted by Cod…"><link rel="icon" href="/favicon.ico"><link rel="alternate" type="application/atom+xml" title="阁子" href="/atom.xml"><script>(()=>{try{const t=localStorage.getItem('theme');if(t==='dark'||t==='light'||t==='acg')document.documentElement.dataset.theme=t}catch{}})()</script><style>@font-face{font-family:"阁子宋";src:url("/assets/fonts/serif-400-f65ab20b.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}@font-face{font-family:"阁子宋";src:url("/assets/fonts/serif-700-376a125f.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}</style><link rel="stylesheet" href="/assets/main-UENLO5BD.css"><script type="module" src="/assets/main-A7XA5HNI.js"></script></head><body data-page="post"><header class="site-head"><a class="brand" href="/" aria-label="回到首页"><svg class="seal brand-seal" viewBox="0 0 48 48" aria-hidden="true"><rect x="3" y="3" width="42" height="42" rx="6" fill="none" stroke="currentColor" stroke-width="3"/><text x="24" y="25" text-anchor="middle" dominant-baseline="central" font-size="28" fill="currentColor" font-family="阁子宋, 'Noto Serif SC', serif">阁</text></svg><span class="brand-name">阁子</span></a><nav class="site-nav" aria-label="站内导航"><a href="/archives/">文章</a><a href="/talks/">闲言</a><a href="/links/">友人</a><a href="/About/">关于</a></nav><div class="head-actions"><button class="icon-btn" id="search-btn" aria-label="搜索（Ctrl+K）" title="搜索 Ctrl+K"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button> <button class="icon-btn" id="theme-btn" aria-label="切换模式（中年亮 / 中年暗 / 青年）" title="中年（亮）→ 中年（暗）→ 青年"><svg class="ico-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.5 4.5l2 2M17.5 17.5l2 2M19.5 4.5l-2 2M6.5 17.5l-2 2"/></g></svg><svg class="ico-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5Z" fill="currentColor"/></svg><svg class="ico-acg" viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><circle cx="12" cy="12" r="2.1"/><path d="M12 2.6c1.9 0 3.2 1.7 2.8 3.9l-.7 3.1-2.1-1-2.1 1-.7-3.1C8.8 4.3 10.1 2.6 12 2.6ZM21 9.6c.6 1.8-.5 3.6-2.7 3.9l-3.1.5.3-2.3-1.6-1.6 2.9-1.3c2-.9 3.6-.1 4.2 1.9v-.1ZM17.6 20c-1.5 1.2-3.6.7-4.6-1.2l-1-2 2.3-.4 1-2.1 2 2.4c1.4 1.6 1.4 2.8.3 3.9v-.6ZM6.4 20c-1.1-1.1-1.1-2.3.3-3.9l2-2.4 1 2.1 2.3.4-1 2c-1 1.9-3.1 2.4-4.6 1.2v.6ZM3 9.6c.6-2 2.2-2.8 4.2-1.9l2.9 1.3-1.6 1.6.3 2.3-3.1-.5C3.5 13.2 2.4 11.4 3 9.5v.1Z"/></g></svg></button></div></header><main class="site-main" id="main"><div class="post-wrap"><article class="post" id="post-article" data-title="Hexo博客的优化"><header class="post-head"><h1 class="post-title">Hexo博客的优化</h1><div class="post-meta"><time datetime="2017-09-30T01:34:01+08:00">2017-09-30</time> <span class="pm-sep">·</span><a href="/categories/%E5%8D%9A%E5%AE%A2/">博客</a> <span class="pm-sep">·</span><span>2344 字</span> <span class="pm-sep">·</span><span>约 6 分钟</span> <span id="busuanzi_container_page_pv" hidden><span class="pm-sep">·</span>阅读 <span id="busuanzi_value_page_pv"></span> 次</span></div><span class="chips"><a class="chip" href="/tags/Hexo/">Hexo</a><a class="chip" href="/tags/Nofollow/">Nofollow</a><a class="chip" href="/tags/Emoji/">Emoji</a><a class="chip" href="/tags/Gulp/">Gulp</a></span></header><div class="post-content"><p>捣鼓个人博客也有一段时间了，其间加了不少的插件，改来改去，最后打开也变得很慢了。问题主要有两个方面，一个是网络问题，因为托管在Github上，国内访问一直很慢，后来还是迁移到Coding上了，妥协了，给他加了个<code>Hosted by Coding Pages</code>。另一方面则是加载的问题，由于多了许多插件，导致网页加载变慢，特别是在添加<a href="https://github.com/EYHN/hexo-helper-live2d" target="_blank" rel="noopener external nofollow">live2d</a>之后。所以打算做些工作优化一下博客。</p><h4 id="外部链接优化">外部链接优化</h4><p>主要是告诉搜索引擎爬虫无需抓取目标页，同时告诉搜索引擎无需将的当前页的Pagerank传递到目标页。Google推荐是用nofollow，nofollow是HTML元标签(meta)的content属性和链接标签(a)的rel属性的一个值，告诉机器(爬虫)无需追踪目标页，为了对抗blogspam(博客垃圾留言信息)。但是如果是通过sitemap直接提交该页面，爬虫还是会爬取，这里的nofollow只是当前页对目标页的一种态度，并不代表其他页对目标页的态度。</p><h5 id="主要作用">主要作用</h5><ul><li>防止不可信的内容，最常见的是博客上的垃圾留言与评论中为了获取外链的垃圾链接，为了防止页面指向一些拉圾页面和站点。</li><li>付费链接：为了防止付费链接影响Google的搜索结果排名，Google建议使用nofollow属性。</li><li>引导爬虫抓取有效的页面：避免爬虫抓取一些无意义的页面，影响爬虫抓取的效率。 其主要方法是给所有外部链接加上<code>rel=&quot;external nofollow&quot;</code>属性，对外部链接<code>target=”_blank”</code>采用在新窗口种打开外部链接的方法。</li></ul><h5 id="安装">安装</h5><figure class="code code-plain"><pre><code>npm install hexo-autonofollow --save</code></pre></figure><h5 id="配置">配置</h5><p>编辑站点配置文件。</p><figure class="code code-plain"><pre><code>nofollow:
+    enable: true
+    exclude:
+    - you domain</code></pre></figure><p>这里的<code>exclude</code>下主要填你的域名，为豁免域名。</p><h4 id="在主页不显示某类文章">在主页不显示某类文章</h4><p>修改主题目录下layout的index.swig文件:</p><figure class="code code-plain"><pre><code>{% extends &#39;_layout.swig&#39; %}
+{% import &#39;_macro/post.swig&#39; as post_template %}
+{% import &#39;_macro/sidebar.swig&#39; as sidebar_template %}
+
+{% block title %}{{ config.title }}{% if theme.index_with_subtitle and config.subtitle %} - {{config.subtitle }}{% endif %}{% endblock %}
+
+{% block page_class %}
+  {% if is_home() %} page-home {% endif %}
+{% endblock %}
+
+{% block content %}
+  &lt;section id=&quot;posts&quot; class=&quot;posts-expand&quot;&gt;
+    {% for post in page.posts %}
+	{% if post.categories!= &#39;Recommend&#39; %}
+      {{ post_template.render(post, true) }}
+	{% endif %}
+    {% endfor %}
+  &lt;/section&gt;
+
+  {% include &#39;_partials/pagination.swig&#39; %}
+{% endblock %}
+
+{% block sidebar %}
+  {{ sidebar_template.render(false) }}
+{% endblock %}</code></pre></figure><p>在其中加入page的判断页面即可。</p><h4 id="添加emoji支持smile">添加emoji支持😄</h4><p>由于Hexo的默认Markdown语法不支持emoji表情，网上也有人替换了其Markdown渲染工具，但是又会引入新的Bug，所以就放弃了。后来看到有人照着Github的方式做了一个插件，在生成网页的时候将关键字替换成emoji的unicode字符，然后再利用JavaScript将字符替换成图片，这样即使图片加载失败还有字符fallback。其Repo<a href="https://github.com/crimx/hexo-filter-github-emojis" target="_blank" rel="noopener external nofollow">在此</a>。</p><h5 id="安装-1">安装</h5><figure class="code code-plain"><pre><code>npm install hexo-filter-github-emojis --save</code></pre></figure><h5 id="配置-1">配置</h5><p>编辑站点配置文件</p><figure class="code code-plain"><pre><code>vim _config.xml
+githubEmojis:
+  enable: true
+  className: github-emoji
+  unicode: false
+  styles:
+  localEmojis:</code></pre></figure><p>其中，<code>localEmojis</code>可以添加自己的本地表情。</p><h5 id="warning的处理">Warning的处理</h5><p>在安装完之后再执行hexo生成站点文件时，会有一个警告，主要内容如下:</p><figure class="code code-plain"><pre><code>DeprecationWarning: Calling an asynchronous function without callback is deprecated.</code></pre></figure><p>这个意思是调用无回调的异步函数的方法已经被废弃，可能是使用了<code>writeFile</code>函数。因此在其安装目录下寻找，后来在其index文件中找到了这个函数。修改方法如下:</p><figure class="code code-plain"><pre><code>cd node_modules/hexo-filter-github-emojis
+vim index.js
+</code></pre></figure><p>找到带有<code>writeFile</code>函数的一行，应该是这行:</p><figure class="code code-plain"><pre><code>fs.writeFile(path.join(__dirname, &#39;emojis.json&#39;), JSON.stringify(githubEmojis, null, &#39;\t&#39;))</code></pre></figure><p>将<code>writeFile</code>改为<code>writeFileSync</code>函数，即:</p><figure class="code code-plain"><pre><code>fs.writeFileSync(path.join(__dirname, &#39;emojis.json&#39;), JSON.stringify(githubEmojis, null, &#39;\t&#39;))</code></pre></figure><p>之后再运行，警告消失。</p><h5 id="后加">后加</h5><p>现在听说作者已经修复了这个问题，所以不需要改了。</p><h4 id="静态资源压缩">静态资源压缩</h4><p>网页加载速度优化，主要通过压缩网页的静态资源如JS,Html,CSS,图片等文件来达到加速效果。网上现在主要有两种，一种是直接用Hexo的插件，<a href="https://github.com/rozbo/hexo-neat" target="_blank" rel="noopener external nofollow">Hexo-Neat</a>，还有一种是使用通用的压缩工具<a href="http://www.gulpjs.com.cn/" target="_blank" rel="noopener external nofollow">Gulp</a>。<br>这里主要使用Gulp。</p><h5 id="安装-2">安装</h5><p>首先是安装Gulp插件:</p><figure class="code code-plain"><pre><code>npm install gulp --save-dev</code></pre></figure><p>然后安装gulp相关插件:</p><figure class="code code-plain"><pre><code>$ npm install gulp-clean-css --save-dev
+$ npm install gulp-uglify --save-dev
+$ npm install gulp-htmlmin --save-dev
+$ npm install gulp-htmlclean --save-dev
+$ npm install gulp-imagemin --save-dev
+$ npm install del --save-dev
+$ npm install run-sequence --save-dev
+</code></pre></figure><h5 id="配置-2">配置</h5><p>添加一个gulpfile.js文件，在博客根目录下。</p><figure class="code code-plain"><pre><code>var gulp = require(&#39;gulp&#39;);
+var minifycss = require(&#39;gulp-clean-css&#39;);
+var uglify = require(&#39;gulp-uglify&#39;);
+var htmlmin = require(&#39;gulp-htmlmin&#39;);
+var htmlclean = require(&#39;gulp-htmlclean&#39;);
+var imagemin = require(&#39;gulp-imagemin&#39;);
+var del = require(&#39;del&#39;);
+var runSequence = require(&#39;run-sequence&#39;);
+var Hexo = require(&#39;hexo&#39;);
+
+
+gulp.task(&#39;clean&#39;, function() {
+    return del([&#39;public/**/*&#39;]);
+});
+
+// generate html with &#39;hexo generate&#39;
+var hexo = new Hexo(process.cwd(), {});
+gulp.task(&#39;generate&#39;, function(cb) {
+    hexo.init().then(function() {
+        return hexo.call(&#39;generate&#39;, {
+            watch: false
+        });
+    }).then(function() {
+        return hexo.exit();
+    }).then(function() {
+        return cb()
+    }).catch(function(err) {
+        console.log(err);
+        hexo.exit(err);
+        return cb(err);
+    })
+})
+
+gulp.task(&#39;minify-css&#39;, function() {
+    return gulp.src([&#39;./public/**/*.css&#39;,&#39;public/**/*.min.css&#39;])
+        .pipe(minifycss({
+            compatibility: &#39;ie8&#39;
+        }))
+        .pipe(gulp.dest(&#39;./public&#39;));
+});
+
+gulp.task(&#39;minify-html&#39;, function() {
+    return gulp.src(&#39;./public/**/*.html&#39;)
+        .pipe(htmlclean())
+        .pipe(htmlmin({
+            removeComments: true,
+            minifyJS: true,
+            minifyCSS: true,
+            minifyURLs: true,
+        }))
+        .pipe(gulp.dest(&#39;./public&#39;))
+});
+
+gulp.task(&#39;minify-js&#39;, function() {
+    return gulp.src([&#39;./public/**/*.js&#39;,&#39;!public/**/*.min.js&#39;])
+        .pipe(uglify())
+        .pipe(gulp.dest(&#39;./public&#39;));
+});
+
+gulp.task(&#39;minify-img&#39;, function() {
+    return gulp.src(&#39;./public/images/**/*.*&#39;)
+        .pipe(imagemin())
+        .pipe(gulp.dest(&#39;./public/images&#39;))
+})
+
+gulp.task(&#39;minify-img-aggressive&#39;, function() {
+    return gulp.src(&#39;./public/images/**/*.*&#39;)
+        .pipe(imagemin(
+        [imagemin.gifsicle({&#39;optimizationLevel&#39;: 3}), 
+        imagemin.jpegtran({&#39;progressive&#39;: true}), 
+        imagemin.optipng({&#39;optimizationLevel&#39;: 7}), 
+        imagemin.svgo()],
+        {&#39;verbose&#39;: true}))
+        .pipe(gulp.dest(&#39;./public/images&#39;))
+})
+
+gulp.task(&#39;compress&#39;, function(cb) {
+    runSequence([&#39;minify-html&#39;, &#39;minify-css&#39;, &#39;minify-img&#39;], cb);
+});
+
+gulp.task(&#39;build&#39;, function(cb) {
+    runSequence(&#39;clean&#39;, &#39;generate&#39;, &#39;compress&#39;, cb)
+});
+
+gulp.task(&#39;default&#39;, [&#39;build&#39;])
+</code></pre></figure><p>因为已经将hexo g生成站点文件的过程包含进去了，直接执行gulp即可。 但是不知道是不是Next版本更新的原因，导致js的压缩总是出问题，暂时先删掉了<code>runSequence</code>中的<code>minify-js</code>一项，之后再作讨论。</p><h5 id="问题解决">问题解决</h5><p>原因找到了，是因为Gulp的uglify-js不支持ES6的语法，因此编译会出错。<br>解决方案:先使用babel编译。</p><ol><li>安装</li></ol><figure class="code" data-lang="shell"><pre class="shiki shiki-themes vitesse-light vitesse-dark" style="background-color:#fff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee" tabindex="0"><code><span class="line"><span style="color:#59873a;--shiki-dark:#80A665">npm</span><span style="color:#b56959;--shiki-dark:#C98A7D"> install</span><span style="color:#a65e2b;--shiki-dark:#C99076"> --save-dev</span><span style="color:#b56959;--shiki-dark:#C98A7D"> gulp-babel</span><span style="color:#b56959;--shiki-dark:#C98A7D"> babel-preset-es2015</span><span style="color:#b56959;--shiki-dark:#C98A7D"> babel-core</span></span></code></pre></figure><ol start="2"><li>修改gulpfile.js文件 在变量定义中添加一行:</li></ol><figure class="code" data-lang="javascript"><pre class="shiki shiki-themes vitesse-light vitesse-dark" style="background-color:#fff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee" tabindex="0"><code><span class="line"><span style="color:#ab5959;--shiki-dark:#CB7676">var</span><span style="color:#b07d48;--shiki-dark:#BD976A"> babel</span><span style="color:#999;--shiki-dark:#666666"> =</span><span style="color:#59873a;--shiki-dark:#80A665"> require</span><span style="color:#999;--shiki-dark:#666666">(</span><span style="color:#b5695977;--shiki-dark:#C98A7D77">"</span><span style="color:#b56959;--shiki-dark:#C98A7D">gulp-babel</span><span style="color:#b5695977;--shiki-dark:#C98A7D77">"</span><span style="color:#999;--shiki-dark:#666666">);</span></span></code></pre></figure><p>然后在<code>.pipe(uglify())</code>这一行前加一句:</p><figure class="code code-plain"><pre><code>.pipe(babel({presets: [&#39;es2015&#39;]}))</code></pre></figure><p>问题解决。</p><h4 id="替换谷歌字体库">替换谷歌字体库</h4><p>众所周知，谷歌字体库访问通常情况都非常慢，于是决定使用国内的CND加速，但是之前360的字体库已经下架了，所以使用中科大的(虽然不下架应该也不会选择它 😄 )。 修改方式:<br>编辑主题的配置文件:</p><figure class="code" data-lang="shell"><pre class="shiki shiki-themes vitesse-light vitesse-dark" style="background-color:#fff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee" tabindex="0"><code><span class="line"><span style="color:#59873a;--shiki-dark:#80A665">vim</span><span style="color:#b56959;--shiki-dark:#C98A7D"> theme/next/_config.xml</span></span></code></pre></figure><p>找到<code>fonts</code>的设置，在<code>host:</code>后面填写</p><figure class="code code-plain"><pre><code>//fonts.lug.ustc.edu.cn</code></pre></figure><p>和<code>host:</code>中间注意保持空格。</p><h5 id="后加-1">后加</h5><p>中科大字体库已经挂了，谷歌字体库也经常抽风。于是采用国内CDN加速，参考于Showfom大神的一篇<a href="https://sb.sb/css-cdn/" target="_blank" rel="noopener external nofollow">博客</a> 。</p><h6 id="修改谷歌字体库">修改谷歌字体库</h6><p>将<code>//fonts.googleapis.com</code>修改为国内cdn加速的库，和上面一样，找到<code>fonts</code>的设置，在<code>host:</code>后面填写</p><figure class="code code-plain"><pre><code>//fonts.cat.net</code></pre></figure><h6 id="替换cdnjs-开源-js-库">替换CDNJS 开源 JS 库</h6><p>只需要替换 <code>cdnjs.cloudflare.com</code> 为 <code>cdnjs.cat.net</code> 即可。即：</p><p>在<code>vendors</code>中的<code>jquery：</code> 后面添加自定义的地址:</p><figure class="code code-plain"><pre><code>https://ajax.cat.net/ajax/libs/jquery/3.2.1/jquery.min.js</code></pre></figure><h6 id="修改han字体的cdn">修改Han字体的CDN</h6><p>由于Han字体使用的CDN是cloudflare的，国内速度比较慢，因此替换其CDN:</p><p>在<code>han:</code>后加:</p><figure class="code code-plain"><pre><code>https://cdnjs.cat.net/ajax/libs/Han/3.3.0/han.min.css</code></pre></figure><h6 id="修改其他的cdn">修改其他的CDN</h6><p>最终修改后的配置文件内容如下:</p><figure class="code code-plain"><pre><code># Script Vendors.
+# Set a CDN address for the vendor you want to customize.
+# For example
+#    jquery: https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js
+# Be aware that you should use the same version as internal ones to avoid potential problems.
+# Please use the https protocol of CDN files when you enable https on your site.
+vendors:
+  # Internal path prefix. Please do not edit it.
+  _internal: lib
+
+  # Internal version: 2.1.3
+  jquery: https://ajax.cat.net/ajax/libs/jquery/3.2.1/jquery.min.js
+
+  # Internal version: 2.1.5
+  # See: http://fancyapps.com/fancybox/
+  fancybox: https://cdnjs.cat.net/ajax/libs/fancybox/3.1.25/jquery.fancybox.min.js
+  fancybox_css: https://cdnjs.cat.net/ajax/libs/fancybox/3.1.25/jquery.fancybox.min.css
+
+  # Internal version: 1.0.6
+  # See: https://github.com/ftlabs/fastclick
+  fastclick: https://cdnjs.cat.net/ajax/libs/fastclick/1.0.6/fastclick.min.js
+
+  # Internal version: 1.9.7
+  # See: https://github.com/tuupola/jquery_lazyload
+  lazyload: https://cdnjs.cat.net/ajax/libs/lazyload/2.0.3/lazyload-min.js
+
+  # Internal version: 1.2.1
+  # See: http://VelocityJS.org
+  velocity: https://cdnjs.cat.net/ajax/libs/velocity/1.5.0/velocity.min.js
+
+  # Internal version: 1.2.1
+  # See: http://VelocityJS.org
+  velocity_ui: https://cdnjs.cat.net/ajax/libs/velocity/1.5.0/velocity.ui.min.js
+
+  # Internal version: 0.7.9
+  # See: https://faisalman.github.io/ua-parser-js/
+  ua_parser: https://cdnjs.cat.net/ajax/libs/UAParser.js/0.7.9/ua-parser.min.js
+
+  # Internal version: 4.6.2
+  # See: http://fontawesome.io/
+  fontawesome: https://cdnjs.cat.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css
+
+  # Internal version: 1
+  # https://www.algolia.com
+  algolia_instant_js: 
+  algolia_instant_css:
+
+  # Internal version: 1.0.2
+  # See: https://github.com/HubSpot/pace
+  # Or use direct links below:
+  # pace: //cdn.bootcss.com/pace/1.0.2/pace.min.js
+  # pace_css: //cdn.bootcss.com/pace/1.0.2/themes/blue/pace-theme-flash.min.css
+  pace:
+  pace_css:
+
+  # Internal version: 1.0.0
+  # https://github.com/hustcc/canvas-nest.js
+  canvas_nest: https://cdnjs.cat.net/ajax/libs/canvas-nest.js/1.0.1/canvas-nest.min.js
+
+  # three
+  three:
+
+  # three_waves
+  # https://github.com/jjandxa/three_waves
+  three_waves:
+
+  # three_waves
+  # https://github.com/jjandxa/canvas_lines
+  canvas_lines:
+
+  # three_waves
+  # https://github.com/jjandxa/canvas_sphere
+  canvas_sphere:
+
+  # Internal version: 1.0.0
+  # https://github.com/zproo/canvas-ribbon
+  canvas_ribbon:
+
+  # Internal version: 3.3.0
+  # https://github.com/ethantw/Han
+  han: https://cdnjs.cat.net/ajax/libs/Han/3.3.0/han.min.css
+</code></pre></figure><p>然后找出网页中所有其他的使用cloudflare加速的内容，替换掉。</p></div><footer class="post-foot"><nav class="post-siblings" aria-label="相邻文章"><a class="sib sib-prev" href="/posts/b9c74ed9/"><span class="sib-label">较新一篇</span>Mathjax的LaTeX公式语法</a> <a class="sib sib-next" href="/posts/4da30c7/"><span class="sib-label">较旧一篇</span>Next主题的Gitalk移植</a></nav></footer></article></div></main><footer class="site-foot"><p class="foot-motto">多可喜，亦多可悲</p><p class="foot-line">© 1992–2026 dfine <span class="foot-sep">·</span> <span id="busuanzi_container_site_uv" hidden>访客 <span id="busuanzi_value_site_uv"></span></span> <span id="busuanzi_container_site_pv" hidden><span class="foot-sep">·</span> 浏览 <span id="busuanzi_value_site_pv"></span></span> <span class="foot-sep">·</span> <a href="/atom.xml">RSS</a></p></footer><script type="application/json" id="acg-config">{"backgrounds":["https://t.alcy.cc/moe","https://www.loliapi.com/acg/","https://api.btstu.cn/sjbz/api.php?lx=dongman&format=images"],"live2d":true,"music":[]}</script></body></html>

@@ -1,0 +1,520 @@
+<!doctype html><html lang="zh-Hans"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GSreamer笔记四: GUI Toolkit Integration · 阁子</title><meta name="description" content="主要是关于如何将GStreamer集成到图形用户界面(GUI)工具箱中。基本上当GUI工具箱处理用户界面时，GStreamer主要负责媒体播放。其中两个库必须交互的部分是最有趣的两个部分，即:指导GStreamer将视频输出到GTK+的窗…"><link rel="canonical" href="https://dfine.tech/posts/40a79901/"><meta property="og:title" content="GSreamer笔记四: GUI Toolkit Integration · 阁子"><meta property="og:type" content="article"><meta property="og:url" content="https://dfine.tech/posts/40a79901/"><meta property="og:site_name" content="阁子"><meta property="og:description" content="主要是关于如何将GStreamer集成到图形用户界面(GUI)工具箱中。基本上当GUI工具箱处理用户界面时，GStreamer主要负责媒体播放。其中两个库必须交互的部分是最有趣的两个部分，即:指导GStreamer将视频输出到GTK+的窗…"><link rel="icon" href="/favicon.ico"><link rel="alternate" type="application/atom+xml" title="阁子" href="/atom.xml"><script>(()=>{try{const t=localStorage.getItem('theme');if(t==='dark'||t==='light'||t==='acg')document.documentElement.dataset.theme=t}catch{}})()</script><style>@font-face{font-family:"阁子宋";src:url("/assets/fonts/serif-400-f65ab20b.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}@font-face{font-family:"阁子宋";src:url("/assets/fonts/serif-700-376a125f.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}</style><link rel="stylesheet" href="/assets/main-UENLO5BD.css"><script type="module" src="/assets/main-A7XA5HNI.js"></script></head><body data-page="post"><header class="site-head"><a class="brand" href="/" aria-label="回到首页"><svg class="seal brand-seal" viewBox="0 0 48 48" aria-hidden="true"><rect x="3" y="3" width="42" height="42" rx="6" fill="none" stroke="currentColor" stroke-width="3"/><text x="24" y="25" text-anchor="middle" dominant-baseline="central" font-size="28" fill="currentColor" font-family="阁子宋, 'Noto Serif SC', serif">阁</text></svg><span class="brand-name">阁子</span></a><nav class="site-nav" aria-label="站内导航"><a href="/archives/">文章</a><a href="/talks/">闲言</a><a href="/links/">友人</a><a href="/About/">关于</a></nav><div class="head-actions"><button class="icon-btn" id="search-btn" aria-label="搜索（Ctrl+K）" title="搜索 Ctrl+K"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button> <button class="icon-btn" id="theme-btn" aria-label="切换模式（中年亮 / 中年暗 / 青年）" title="中年（亮）→ 中年（暗）→ 青年"><svg class="ico-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.5 4.5l2 2M17.5 17.5l2 2M19.5 4.5l-2 2M6.5 17.5l-2 2"/></g></svg><svg class="ico-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5Z" fill="currentColor"/></svg><svg class="ico-acg" viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><circle cx="12" cy="12" r="2.1"/><path d="M12 2.6c1.9 0 3.2 1.7 2.8 3.9l-.7 3.1-2.1-1-2.1 1-.7-3.1C8.8 4.3 10.1 2.6 12 2.6ZM21 9.6c.6 1.8-.5 3.6-2.7 3.9l-3.1.5.3-2.3-1.6-1.6 2.9-1.3c2-.9 3.6-.1 4.2 1.9v-.1ZM17.6 20c-1.5 1.2-3.6.7-4.6-1.2l-1-2 2.3-.4 1-2.1 2 2.4c1.4 1.6 1.4 2.8.3 3.9v-.6ZM6.4 20c-1.1-1.1-1.1-2.3.3-3.9l2-2.4 1 2.1 2.3.4-1 2c-1 1.9-3.1 2.4-4.6 1.2v.6ZM3 9.6c.6-2 2.2-2.8 4.2-1.9l2.9 1.3-1.6 1.6.3 2.3-3.1-.5C3.5 13.2 2.4 11.4 3 9.5v.1Z"/></g></svg></button></div></header><main class="site-main" id="main"><div class="post-wrap"><article class="post" id="post-article" data-title="GSreamer笔记四: GUI Toolkit Integration"><header class="post-head"><h1 class="post-title">GSreamer笔记四: GUI Toolkit Integration</h1><div class="post-meta"><time datetime="2017-12-04T16:23:14+08:00">2017-12-04</time> <span class="pm-sep">·</span><a href="/categories/TX1%E5%85%A5%E5%9D%91/">TX1入坑</a> <span class="pm-sep">·</span><span>6157 字</span> <span class="pm-sep">·</span><span>约 15 分钟</span> <span id="busuanzi_container_page_pv" hidden><span class="pm-sep">·</span>阅读 <span id="busuanzi_value_page_pv"></span> 次</span></div><span class="chips"><a class="chip" href="/tags/GStreamer/">GStreamer</a><a class="chip" href="/tags/TX1/">TX1</a><a class="chip" href="/tags/Linux/">Linux</a></span></header><div class="post-content"><p>主要是关于如何将GStreamer集成到图形用户界面(GUI)工具箱中。基本上当GUI工具箱处理用户界面时，GStreamer主要负责媒体播放。其中两个库必须交互的部分是最有趣的两个部分，即:指导GStreamer将视频输出到GTK+的窗口中并将用户操作转发给GStreamer。</p><p>需要解决的问题有:</p><ul><li>告诉GStreamer如何将视频输出到特定窗口，而不是自己创建窗口；</li><li>如何使用GStreamer的信息持续刷新GUI；</li><li>如何从GStreamer的多个线程更新GUI(这是大多数GUI工具包中被禁止的操作)；</li><li>一个只订阅感兴趣的消息而不是通知所有人的机制。</li></ul><h3 id="关于gtk">关于GTK+</h3><p>这里将使用GTK+工具包构建媒体播放器，这些概念亦适用于其他工具包如QT。<br>关键是告诉GStreamer将视频输出到所选择的窗口。具体机制取决于操作系统(或者窗口系统)，但GStreamer为平台独立性提供了一个抽象层。这种独立性来自GstVideoOverlay接口，它允许应用程序告诉视频接收器(sink)应该接收渲染的窗口的处理程序。<br>Gstreamer所使用的是GObject 接口。GObject的接口是元素可以实现的一组函数，包括GstVideoOverlay等。具体介绍如下:</p><blockquote><p>A GObject interface (which GStreamer uses) is a set of functions that an element can implement. If it does, then it is said to support that particular interface. For example, video sinks usually create their own windows to display video, but, if they are also capable of rendering to an external window, they can choose to implement the GstVideoOverlay interface and provide functions to specify this external window. From the application developer point of view, if a certain interface is supported, you can use it and forget about which kind of element is implementing it. Moreover, if you are using playbin, it will automatically expose some of the interfaces supported by its internal elements: You can use your interface functions directly on playbin without knowing who is implementing them!</p></blockquote><p>另一个问题是，GUI工具包通常只允许主（或应用）线程来操作图形“小部件”，而GStreamer通常会派生多个线程来处理不同的任务。从回调函数中调用GTK +函数通常会失败，因为回调函数在调用线程中执行，并不需要在主线程中。这个问题可以通过回调函数在GStreamer总线上发布消息来解决: 主线程接收消息并做出相应反应。<br>这里已经注册了一个handle_message函数，每次在总线上出现一条消息时都会调用这个函数，这迫使我们解析每条消息，看看我们是否对其感兴趣。本例中使用了一种不同的方法来为每种消息注册一个回调，所以解析更少，代码更少。</p><h3 id="gtk播放器示例">GTK+播放器示例</h3><p>一个简单的基于playbin的带GUI的媒体播放器如下:</p><figure class="code code-plain"><pre><code>#include &lt;string.h&gt;
+
+#include &lt;gtk/gtk.h&gt;
+#include &lt;gst/gst.h&gt;
+#include &lt;gst/video/videooverlay.h&gt;
+
+#include &lt;gdk/gdk.h&gt;
+#if defined (GDK_WINDOWING_X11)
+#include &lt;gdk/gdkx.h&gt;
+#elif defined (GDK_WINDOWING_WIN32)
+#include &lt;gdk/gdkwin32.h&gt;
+#elif defined (GDK_WINDOWING_QUARTZ)
+#include &lt;gdk/gdkquartz.h&gt;
+#endif
+
+/* Structure to contain all our information, so we can pass it around */
+typedef struct _CustomData {
+  GstElement *playbin;           /* Our one and only pipeline */
+
+  GtkWidget *slider;              /* Slider widget to keep track of current position */
+  GtkWidget *streams_list;        /* Text widget to display info about the streams */
+  gulong slider_update_signal_id; /* Signal ID for the slider update signal */
+
+  GstState state;                 /* Current state of the pipeline */
+  gint64 duration;                /* Duration of the clip, in nanoseconds */
+} CustomData;
+
+/* This function is called when the GUI toolkit creates the physical window that will hold the video.
+ * At this point we can retrieve its handler (which has a different meaning depending on the windowing system)
+ * and pass it to GStreamer through the VideoOverlay interface. */
+static void realize_cb (GtkWidget *widget, CustomData *data) {
+  GdkWindow *window = gtk_widget_get_window (widget);
+  guintptr window_handle;
+
+  if (!gdk_window_ensure_native (window))
+    g_error (&quot;Couldn&#39;t create native window needed for GstVideoOverlay!&quot;);
+
+  /* Retrieve window handler from GDK */
+#if defined (GDK_WINDOWING_WIN32)
+  window_handle = (guintptr)GDK_WINDOW_HWND (window);
+#elif defined (GDK_WINDOWING_QUARTZ)
+  window_handle = gdk_quartz_window_get_nsview (window);
+#elif defined (GDK_WINDOWING_X11)
+  window_handle = GDK_WINDOW_XID (window);
+#endif
+  /* Pass it to playbin, which implements VideoOverlay and will forward it to the video sink */
+  gst_video_overlay_set_window_handle (GST_VIDEO_OVERLAY (data-&gt;playbin), window_handle);
+}
+
+/* This function is called when the PLAY button is clicked */
+static void play_cb (GtkButton *button, CustomData *data) {
+  gst_element_set_state (data-&gt;playbin, GST_STATE_PLAYING);
+}
+
+/* This function is called when the PAUSE button is clicked */
+static void pause_cb (GtkButton *button, CustomData *data) {
+  gst_element_set_state (data-&gt;playbin, GST_STATE_PAUSED);
+}
+
+/* This function is called when the STOP button is clicked */
+static void stop_cb (GtkButton *button, CustomData *data) {
+  gst_element_set_state (data-&gt;playbin, GST_STATE_READY);
+}
+
+/* This function is called when the main window is closed */
+static void delete_event_cb (GtkWidget *widget, GdkEvent *event, CustomData *data) {
+  stop_cb (NULL, data);
+  gtk_main_quit ();
+}
+
+/* This function is called everytime the video window needs to be redrawn (due to damage/exposure,
+ * rescaling, etc). GStreamer takes care of this in the PAUSED and PLAYING states, otherwise,
+ * we simply draw a black rectangle to avoid garbage showing up. */
+static gboolean draw_cb (GtkWidget *widget, cairo_t *cr, CustomData *data) {
+  if (data-&gt;state &lt; GST_STATE_PAUSED) {
+    GtkAllocation allocation;
+
+    /* Cairo is a 2D graphics library which we use here to clean the video window.
+     * It is used by GStreamer for other reasons, so it will always be available to us. */
+    gtk_widget_get_allocation (widget, &amp;allocation);
+    cairo_set_source_rgb (cr, 0, 0, 0);
+    cairo_rectangle (cr, 0, 0, allocation.width, allocation.height);
+    cairo_fill (cr);
+  }
+
+  return FALSE;
+}
+
+/* This function is called when the slider changes its position. We perform a seek to the
+ * new position here. */
+static void slider_cb (GtkRange *range, CustomData *data) {
+  gdouble value = gtk_range_get_value (GTK_RANGE (data-&gt;slider));
+  gst_element_seek_simple (data-&gt;playbin, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_KEY_UNIT,
+      (gint64)(value * GST_SECOND));
+}
+
+/* This creates all the GTK+ widgets that compose our application, and registers the callbacks */
+static void create_ui (CustomData *data) {
+  GtkWidget *main_window;  /* The uppermost window, containing all other windows */
+  GtkWidget *video_window; /* The drawing area where the video will be shown */
+  GtkWidget *main_box;     /* VBox to hold main_hbox and the controls */
+  GtkWidget *main_hbox;    /* HBox to hold the video_window and the stream info text widget */
+  GtkWidget *controls;     /* HBox to hold the buttons and the slider */
+  GtkWidget *play_button, *pause_button, *stop_button; /* Buttons */
+
+  main_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  g_signal_connect (G_OBJECT (main_window), &quot;delete-event&quot;, G_CALLBACK (delete_event_cb), data);
+
+  video_window = gtk_drawing_area_new ();
+  gtk_widget_set_double_buffered (video_window, FALSE);
+  g_signal_connect (video_window, &quot;realize&quot;, G_CALLBACK (realize_cb), data);
+  g_signal_connect (video_window, &quot;draw&quot;, G_CALLBACK (draw_cb), data);
+
+  play_button = gtk_button_new_from_icon_name (&quot;media-playback-start&quot;, GTK_ICON_SIZE_SMALL_TOOLBAR);
+  g_signal_connect (G_OBJECT (play_button), &quot;clicked&quot;, G_CALLBACK (play_cb), data);
+
+  pause_button = gtk_button_new_from_icon_name (&quot;media-playback-pause&quot;, GTK_ICON_SIZE_SMALL_TOOLBAR);
+  g_signal_connect (G_OBJECT (pause_button), &quot;clicked&quot;, G_CALLBACK (pause_cb), data);
+
+  stop_button = gtk_button_new_from_icon_name (&quot;media-playback-stop&quot;, GTK_ICON_SIZE_SMALL_TOOLBAR);
+  g_signal_connect (G_OBJECT (stop_button), &quot;clicked&quot;, G_CALLBACK (stop_cb), data);
+
+  data-&gt;slider = gtk_scale_new_with_range (GTK_ORIENTATION_HORIZONTAL, 0, 100, 1);
+  gtk_scale_set_draw_value (GTK_SCALE (data-&gt;slider), 0);
+  data-&gt;slider_update_signal_id = g_signal_connect (G_OBJECT (data-&gt;slider), &quot;value-changed&quot;, G_CALLBACK (slider_cb), data);
+
+  data-&gt;streams_list = gtk_text_view_new ();
+  gtk_text_view_set_editable (GTK_TEXT_VIEW (data-&gt;streams_list), FALSE);
+
+  controls = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start (GTK_BOX (controls), play_button, FALSE, FALSE, 2);
+  gtk_box_pack_start (GTK_BOX (controls), pause_button, FALSE, FALSE, 2);
+  gtk_box_pack_start (GTK_BOX (controls), stop_button, FALSE, FALSE, 2);
+  gtk_box_pack_start (GTK_BOX (controls), data-&gt;slider, TRUE, TRUE, 2);
+
+  main_hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start (GTK_BOX (main_hbox), video_window, TRUE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (main_hbox), data-&gt;streams_list, FALSE, FALSE, 2);
+
+  main_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+  gtk_box_pack_start (GTK_BOX (main_box), main_hbox, TRUE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (main_box), controls, FALSE, FALSE, 0);
+  gtk_container_add (GTK_CONTAINER (main_window), main_box);
+  gtk_window_set_default_size (GTK_WINDOW (main_window), 640, 480);
+
+  gtk_widget_show_all (main_window);
+}
+
+/* This function is called periodically to refresh the GUI */
+static gboolean refresh_ui (CustomData *data) {
+  gint64 current = -1;
+
+  /* We do not want to update anything unless we are in the PAUSED or PLAYING states */
+  if (data-&gt;state &lt; GST_STATE_PAUSED)
+    return TRUE;
+
+  /* If we didn&#39;t know it yet, query the stream duration */
+  if (!GST_CLOCK_TIME_IS_VALID (data-&gt;duration)) {
+    if (!gst_element_query_duration (data-&gt;playbin, GST_FORMAT_TIME, &amp;data-&gt;duration)) {
+      g_printerr (&quot;Could not query current duration.\n&quot;);
+    } else {
+      /* Set the range of the slider to the clip duration, in SECONDS */
+      gtk_range_set_range (GTK_RANGE (data-&gt;slider), 0, (gdouble)data-&gt;duration / GST_SECOND);
+    }
+  }
+
+  if (gst_element_query_position (data-&gt;playbin, GST_FORMAT_TIME, &amp;current)) {
+    /* Block the &quot;value-changed&quot; signal, so the slider_cb function is not called
+     * (which would trigger a seek the user has not requested) */
+    g_signal_handler_block (data-&gt;slider, data-&gt;slider_update_signal_id);
+    /* Set the position of the slider to the current pipeline positoin, in SECONDS */
+    gtk_range_set_value (GTK_RANGE (data-&gt;slider), (gdouble)current / GST_SECOND);
+    /* Re-enable the signal */
+    g_signal_handler_unblock (data-&gt;slider, data-&gt;slider_update_signal_id);
+  }
+  return TRUE;
+}
+
+/* This function is called when new metadata is discovered in the stream */
+static void tags_cb (GstElement *playbin, gint stream, CustomData *data) {
+  /* We are possibly in a GStreamer working thread, so we notify the main
+   * thread of this event through a message in the bus */
+  gst_element_post_message (playbin,
+    gst_message_new_application (GST_OBJECT (playbin),
+      gst_structure_new_empty (&quot;tags-changed&quot;)));
+}
+
+/* This function is called when an error message is posted on the bus */
+static void error_cb (GstBus *bus, GstMessage *msg, CustomData *data) {
+  GError *err;
+  gchar *debug_info;
+
+  /* Print error details on the screen */
+  gst_message_parse_error (msg, &amp;err, &amp;debug_info);
+  g_printerr (&quot;Error received from element %s: %s\n&quot;, GST_OBJECT_NAME (msg-&gt;src), err-&gt;message);
+  g_printerr (&quot;Debugging information: %s\n&quot;, debug_info ? debug_info : &quot;none&quot;);
+  g_clear_error (&amp;err);
+  g_free (debug_info);
+
+  /* Set the pipeline to READY (which stops playback) */
+  gst_element_set_state (data-&gt;playbin, GST_STATE_READY);
+}
+
+/* This function is called when an End-Of-Stream message is posted on the bus.
+ * We just set the pipeline to READY (which stops playback) */
+static void eos_cb (GstBus *bus, GstMessage *msg, CustomData *data) {
+  g_print (&quot;End-Of-Stream reached.\n&quot;);
+  gst_element_set_state (data-&gt;playbin, GST_STATE_READY);
+}
+
+/* This function is called when the pipeline changes states. We use it to
+ * keep track of the current state. */
+static void state_changed_cb (GstBus *bus, GstMessage *msg, CustomData *data) {
+  GstState old_state, new_state, pending_state;
+  gst_message_parse_state_changed (msg, &amp;old_state, &amp;new_state, &amp;pending_state);
+  if (GST_MESSAGE_SRC (msg) == GST_OBJECT (data-&gt;playbin)) {
+    data-&gt;state = new_state;
+    g_print (&quot;State set to %s\n&quot;, gst_element_state_get_name (new_state));
+    if (old_state == GST_STATE_READY &amp;&amp; new_state == GST_STATE_PAUSED) {
+      /* For extra responsiveness, we refresh the GUI as soon as we reach the PAUSED state */
+      refresh_ui (data);
+    }
+  }
+}
+
+/* Extract metadata from all the streams and write it to the text widget in the GUI */
+static void analyze_streams (CustomData *data) {
+  gint i;
+  GstTagList *tags;
+  gchar *str, *total_str;
+  guint rate;
+  gint n_video, n_audio, n_text;
+  GtkTextBuffer *text;
+
+  /* Clean current contents of the widget */
+  text = gtk_text_view_get_buffer (GTK_TEXT_VIEW (data-&gt;streams_list));
+  gtk_text_buffer_set_text (text, &quot;&quot;, -1);
+
+  /* Read some properties */
+  g_object_get (data-&gt;playbin, &quot;n-video&quot;, &amp;n_video, NULL);
+  g_object_get (data-&gt;playbin, &quot;n-audio&quot;, &amp;n_audio, NULL);
+  g_object_get (data-&gt;playbin, &quot;n-text&quot;, &amp;n_text, NULL);
+
+  for (i = 0; i &lt; n_video; i++) {
+    tags = NULL;
+    /* Retrieve the stream&#39;s video tags */
+    g_signal_emit_by_name (data-&gt;playbin, &quot;get-video-tags&quot;, i, &amp;tags);
+    if (tags) {
+      total_str = g_strdup_printf (&quot;video stream %d:\n&quot;, i);
+      gtk_text_buffer_insert_at_cursor (text, total_str, -1);
+      g_free (total_str);
+      gst_tag_list_get_string (tags, GST_TAG_VIDEO_CODEC, &amp;str);
+      total_str = g_strdup_printf (&quot;  codec: %s\n&quot;, str ? str : &quot;unknown&quot;);
+      gtk_text_buffer_insert_at_cursor (text, total_str, -1);
+      g_free (total_str);
+      g_free (str);
+      gst_tag_list_free (tags);
+    }
+  }
+
+  for (i = 0; i &lt; n_audio; i++) {
+    tags = NULL;
+    /* Retrieve the stream&#39;s audio tags */
+    g_signal_emit_by_name (data-&gt;playbin, &quot;get-audio-tags&quot;, i, &amp;tags);
+    if (tags) {
+      total_str = g_strdup_printf (&quot;\naudio stream %d:\n&quot;, i);
+      gtk_text_buffer_insert_at_cursor (text, total_str, -1);
+      g_free (total_str);
+      if (gst_tag_list_get_string (tags, GST_TAG_AUDIO_CODEC, &amp;str)) {
+        total_str = g_strdup_printf (&quot;  codec: %s\n&quot;, str);
+        gtk_text_buffer_insert_at_cursor (text, total_str, -1);
+        g_free (total_str);
+        g_free (str);
+      }
+      if (gst_tag_list_get_string (tags, GST_TAG_LANGUAGE_CODE, &amp;str)) {
+        total_str = g_strdup_printf (&quot;  language: %s\n&quot;, str);
+        gtk_text_buffer_insert_at_cursor (text, total_str, -1);
+        g_free (total_str);
+        g_free (str);
+      }
+      if (gst_tag_list_get_uint (tags, GST_TAG_BITRATE, &amp;rate)) {
+        total_str = g_strdup_printf (&quot;  bitrate: %d\n&quot;, rate);
+        gtk_text_buffer_insert_at_cursor (text, total_str, -1);
+        g_free (total_str);
+      }
+      gst_tag_list_free (tags);
+    }
+  }
+
+  for (i = 0; i &lt; n_text; i++) {
+    tags = NULL;
+    /* Retrieve the stream&#39;s subtitle tags */
+    g_signal_emit_by_name (data-&gt;playbin, &quot;get-text-tags&quot;, i, &amp;tags);
+    if (tags) {
+      total_str = g_strdup_printf (&quot;\nsubtitle stream %d:\n&quot;, i);
+      gtk_text_buffer_insert_at_cursor (text, total_str, -1);
+      g_free (total_str);
+      if (gst_tag_list_get_string (tags, GST_TAG_LANGUAGE_CODE, &amp;str)) {
+        total_str = g_strdup_printf (&quot;  language: %s\n&quot;, str);
+        gtk_text_buffer_insert_at_cursor (text, total_str, -1);
+        g_free (total_str);
+        g_free (str);
+      }
+      gst_tag_list_free (tags);
+    }
+  }
+}
+
+/* This function is called when an &quot;application&quot; message is posted on the bus.
+ * Here we retrieve the message posted by the tags_cb callback */
+static void application_cb (GstBus *bus, GstMessage *msg, CustomData *data) {
+  if (g_strcmp0 (gst_structure_get_name (gst_message_get_structure (msg)), &quot;tags-changed&quot;) == 0) {
+    /* If the message is the &quot;tags-changed&quot; (only one we are currently issuing), update
+     * the stream info GUI */
+    analyze_streams (data);
+  }
+}
+
+int main(int argc, char *argv[]) {
+  CustomData data;
+  GstStateChangeReturn ret;
+  GstBus *bus;
+
+  /* Initialize GTK */
+  gtk_init (&amp;argc, &amp;argv);
+
+  /* Initialize GStreamer */
+  gst_init (&amp;argc, &amp;argv);
+
+  /* Initialize our data structure */
+  memset (&amp;data, 0, sizeof (data));
+  data.duration = GST_CLOCK_TIME_NONE;
+
+  /* Create the elements */
+  data.playbin = gst_element_factory_make (&quot;playbin&quot;, &quot;playbin&quot;);
+
+  if (!data.playbin) {
+    g_printerr (&quot;Not all elements could be created.\n&quot;);
+    return -1;
+  }
+
+  /* Set the URI to play */
+  g_object_set (data.playbin, &quot;uri&quot;, &quot;https://www.freedesktop.org/software/gstreamer-sdk/data/media/sintel_trailer-480p.webm&quot;, NULL);
+
+  /* Connect to interesting signals in playbin */
+  g_signal_connect (G_OBJECT (data.playbin), &quot;video-tags-changed&quot;, (GCallback) tags_cb, &amp;data);
+  g_signal_connect (G_OBJECT (data.playbin), &quot;audio-tags-changed&quot;, (GCallback) tags_cb, &amp;data);
+  g_signal_connect (G_OBJECT (data.playbin), &quot;text-tags-changed&quot;, (GCallback) tags_cb, &amp;data);
+
+  /* Create the GUI */
+  create_ui (&amp;data);
+
+  /* Instruct the bus to emit signals for each received message, and connect to the interesting signals */
+  bus = gst_element_get_bus (data.playbin);
+  gst_bus_add_signal_watch (bus);
+  g_signal_connect (G_OBJECT (bus), &quot;message::error&quot;, (GCallback)error_cb, &amp;data);
+  g_signal_connect (G_OBJECT (bus), &quot;message::eos&quot;, (GCallback)eos_cb, &amp;data);
+  g_signal_connect (G_OBJECT (bus), &quot;message::state-changed&quot;, (GCallback)state_changed_cb, &amp;data);
+  g_signal_connect (G_OBJECT (bus), &quot;message::application&quot;, (GCallback)application_cb, &amp;data);
+  gst_object_unref (bus);
+
+  /* Start playing */
+  ret = gst_element_set_state (data.playbin, GST_STATE_PLAYING);
+  if (ret == GST_STATE_CHANGE_FAILURE) {
+    g_printerr (&quot;Unable to set the pipeline to the playing state.\n&quot;);
+    gst_object_unref (data.playbin);
+    return -1;
+  }
+
+  /* Register a function that GLib will call every second */
+  g_timeout_add_seconds (1, (GSourceFunc)refresh_ui, &amp;data);
+
+  /* Start the GTK main loop. We will not regain control until gtk_main_quit is called. */
+  gtk_main ();
+
+  /* Free resources */
+  gst_element_set_state (data.playbin, GST_STATE_NULL);
+  gst_object_unref (data.playbin);
+  return 0;
+}</code></pre></figure><p>Required libraries: gstreamer-video-1.0 gtk+-3.0 gstreamer-1.0<br>所以此时编译需加上<code>pkg-config --cflags --libs gstreamer-video-1.0 gtk+-3.0 gstreamer-1.0</code>参数获取所需的头文件和库文件。<br>如果提示找不到gtk+-3.0,则安装。<code>sudo apt install build-essential libgtk-3-dev</code> 提示未安装gstreamer-video-1.0，则安装。<code>sudo apt install libgstreamer-plugins-base1.0-dev</code> 该例将会打开一个GTK+窗口并显示一个伴有音频的电影。媒体来自于互联网，所以窗口可能需要几秒才能显示，具体取决于网速。该窗口有一些按钮来暂停、停止和播放电影，还有个滑块显示当前位置，可以拖动或者改变它。此外，关于流的信息显示在右边的一列上。</p><h3 id="代码分析">代码分析</h3><p>本例中，函数不再在使用之前定义，代码呈现的顺序也不总是和程序顺序相匹配。</p><figure class="code code-plain"><pre><code>#include &lt;gdk/gdk.h&gt;
+#if defined (GDK_WINDOWING_X11)
+#include &lt;gdk/gdkx.h&gt;
+#elif defined (GDK_WINDOWING_WIN32)
+#include &lt;gdk/gdkwin32.h&gt;
+#elif defined (GDK_WINDOWING_QUARTZ)
+#include &lt;gdk/gdkquartzwindow.h&gt;
+#endif</code></pre></figure><p>首先需要注意的是，现在并不是与平台完全无关的了，因为我们需要为所使用的窗口系统包含适当的头文件。幸运的是，没有那么多支持的窗口系统，所以X11 for Linux，Win32 for Windows和Quartz for Mac OSX这三行足够了。本例主要有回调函数组成，这些回调函数将从GStreamer或GTK+中调用。所以先看一下主函数，其中将会用到所有的回调函数。</p><figure class="code code-plain"><pre><code>int main(int argc, char *argv[]) {
+  CustomData data;
+  GstStateChangeReturn ret;
+  GstBus *bus;
+
+  /* Initialize GTK */
+  gtk_init (&amp;argc, &amp;argv);
+
+  /* Initialize GStreamer */
+  gst_init (&amp;argc, &amp;argv);
+
+  /* Initialize our data structure */
+  memset (&amp;data, 0, sizeof (data));
+  data.duration = GST_CLOCK_TIME_NONE;
+
+  /* Create the elements */
+  data.playbin = gst_element_factory_make (&quot;playbin&quot;, &quot;playbin&quot;);
+
+  if (!data.playbin) {
+    g_printerr (&quot;Not all elements could be created.\n&quot;);
+    return -1;
+  }
+
+  /* Set the URI to play */
+  g_object_set (data.playbin, &quot;uri&quot;, &quot;https://www.freedesktop.org/software/gstreamer-sdk/data/media/sintel_trailer-480p.webm&quot;, NULL);</code></pre></figure><p>标准的GStreamer和playbin管道创建，以及GTK+初始化。</p><figure class="code code-plain"><pre><code>  /* Connect to interesting signals in playbin */
+  g_signal_connect (G_OBJECT (data.playbin), &quot;video-tags-changed&quot;, (GCallback) tags_cb, &amp;data);
+  g_signal_connect (G_OBJECT (data.playbin), &quot;audio-tags-changed&quot;, (GCallback) tags_cb, &amp;data);
+  g_signal_connect (G_OBJECT (data.playbin), &quot;text-tags-changed&quot;, (GCallback) tags_cb, &amp;data);</code></pre></figure><p>我们希望在流上出现新标签(元数据)时收到通知，为了简单起见，将处理来自相同回调函数<code>tag_cb</code>的所有种类标签(视频、音频和文本)。<br>然后创建GUI:</p><figure class="code code-plain"><pre><code>/* Create the GUI */
+create_ui (&amp;data);</code></pre></figure><p>所有的GTK+部件创建和信号注册都发生在这个函数中，它只包含GTK相关的函数调用，所以可以跳过它的定义。其所注册的信号传递用户命令，如下面在查看回调时所示。</p><figure class="code code-plain"><pre><code>/* Instruct the bus to emit signals for each received message, and connect to the interesting signals */
+  bus = gst_element_get_bus (data.playbin);
+  gst_bus_add_signal_watch (bus);
+  g_signal_connect (G_OBJECT (bus), &quot;message::error&quot;, (GCallback)error_cb, &amp;data);
+  g_signal_connect (G_OBJECT (bus), &quot;message::eos&quot;, (GCallback)eos_cb, &amp;data);
+  g_signal_connect (G_OBJECT (bus), &quot;message::state-changed&quot;, (GCallback)state_changed_cb, &amp;data);
+  g_signal_connect (G_OBJECT (bus), &quot;message::application&quot;, (GCallback)application_cb, &amp;data);
+  gst_object_unref (bus);</code></pre></figure><p>其中，<code>gst_bus_add_watch</code>函数用于注册用于接收所有的消息并发送给GStreamer总线。可以通过使用信号来达到更精细的粒度，这使得我们仅注册感兴趣的消息。<br>通过调用<code>gst_bus_add_signal_watch</code>函数，我们指导总线在每次收到一个消息时发出一个信号。信号名称是<code>message::detail</code>，其中‘detail’是触发信号发出的消息。例如，当总线接收到EOS消息时，将发出一个名为<code>message::eos</code>的信号。<br>例中仅使用信号描述(detail)来注册所感兴趣的消息。如果我们注册了一个消息的信号，我们将收到每个消息的通知，如<code>gst_bus_add_watch</code>函数所做的一样。<br>为了使“bus watches”工作（无论是<code>gst_bus_add_watch</code>还是<code>gst_bus_add_signal_watch</code>），必须运行GLib主循环。这种情况下，它隐藏在GTK+主循环中。</p><figure class="code code-plain"><pre><code>/* Register a function that GLib will call every second */
+g_timeout_add_seconds (1, (GSourceFunc)refresh_ui, &amp;data);</code></pre></figure><p>在将控制移交给GTK+之前，使用<code>g_timeout_add_seconds</code>函数来注册另一个回调函数————超时，且每秒会被调用：用其从<code>refresh_ui</code>函数刷新GUI。<br>在这之后，我们完成了建立并启动GTK+主循环。感兴趣的事件发生时，将从回调函数中重新获取控制权。每个回调函数都有不同的签名，具体取决于调用者。可以再信号的文档中查找签名(参数的含义和返回值)。</p><figure class="code code-plain"><pre><code>/* This function is called when the GUI toolkit creates the physical window that will hold the video.
+ * At this point we can retrieve its handler (which has a different meaning depending on the windowing system)
+ * and pass it to GStreamer through the VideoOverlay interface. */
+static void realize_cb (GtkWidget *widget, CustomData *data) {
+  GdkWindow *window = gtk_widget_get_window (widget);
+  guintptr window_handle;
+
+  if (!gdk_window_ensure_native (window))
+    g_error (&quot;Couldn&#39;t create native window needed for GstVideoOverlay!&quot;);
+
+  /* Retrieve window handler from GDK */
+#if defined (GDK_WINDOWING_WIN32)
+  window_handle = (guintptr)GDK_WINDOW_HWND (window);
+#elif defined (GDK_WINDOWING_QUARTZ)
+  window_handle = gdk_quartz_window_get_nsview (window);
+#elif defined (GDK_WINDOWING_X11)
+  window_handle = GDK_WINDOW_XID (window);
+#endif
+  /* Pass it to playbin, which implements VideoOverlay and will forward it to the video sink */
+  gst_video_overlay_set_window_handle (GST_VIDEO_OVERLAY (data-&gt;playbin), window_handle);
+}</code></pre></figure><p>在应用程序生命周期的这一点上，我们知道GStreamer应该呈现视频的窗口句柄（无论是X11的XID，Window的HWND还是Quartz的NSView）。我们只需从窗口系统中检索它，并使用<code>gst_video_overlay_set_window_handle</code>通过GstVideoOverlay接口将其传递给playbin。playbin将定位视频接收器并将处理程序传递给它，所以它不会创建自己的窗口并使用它。playbin和GstVideoOverlay将此过程简化了许多。</p><figure class="code code-plain"><pre><code>/* This function is called when the PLAY button is clicked */
+static void play_cb (GtkButton *button, CustomData *data) {
+  gst_element_set_state (data-&gt;playbin, GST_STATE_PLAYING);
+}
+
+/* This function is called when the PAUSE button is clicked */
+static void pause_cb (GtkButton *button, CustomData *data) {
+  gst_element_set_state (data-&gt;playbin, GST_STATE_PAUSED);
+}
+
+/* This function is called when the STOP button is clicked */
+static void stop_cb (GtkButton *button, CustomData *data) {
+  gst_element_set_state (data-&gt;playbin, GST_STATE_READY);
+}</code></pre></figure><p>这三个回调函数是关于GUI的播放，暂停和停止按钮的，它们只需要将管道设置为相应的状态即可。值得注意的是，在STOP状态下，将管道状态设置为READY。可以将流水线一直带到NULL状态，但是会导致过渡慢一点，因为有些资源(如音频设备)需要重新释放重新获取。</p><figure class="code code-plain"><pre><code>/* This function is called when the main window is closed */
+static void delete_event_cb (GtkWidget *widget, GdkEvent *event, CustomData *data) {
+  stop_cb (NULL, data);
+  gtk_main_quit ();
+}</code></pre></figure><p><code>gtk_main_quit</code>最终会在main中调用<code>gtk_main_run</code>来终止，并在这种情况下完成整个程序。这里，在停止管道(只是为了整洁)后，当主窗口关闭时调用它。</p><figure class="code code-plain"><pre><code>/* This function is called everytime the video window needs to be redrawn (due to damage/exposure,
+ * rescaling, etc). GStreamer takes care of this in the PAUSED and PLAYING states, otherwise,
+ * we simply draw a black rectangle to avoid garbage showing up. */
+static gboolean draw_cb (GtkWidget *widget, cairo_t *cr, CustomData *data) {
+  if (data-&gt;state &lt; GST_STATE_PAUSED) {
+    GtkAllocation allocation;
+
+    /* Cairo is a 2D graphics library which we use here to clean the video window.
+     * It is used by GStreamer for other reasons, so it will always be available to us. */
+    gtk_widget_get_allocation (widget, &amp;allocation);
+    cairo_set_source_rgb (cr, 0, 0, 0);
+    cairo_rectangle (cr, 0, 0, allocation.width, allocation.height);
+    cairo_fill (cr);
+  }
+
+  return FALSE;
+}</code></pre></figure><p>当有数据流时（处于PAUSED和PLAYING状态），视频接收器负责刷新视频窗口的内容。但其他情况下不会这样，所以必须我们自己来做: 例中我们是使用一个黑色的矩形填充窗口。</p><figure class="code code-plain"><pre><code>/* This function is called when the slider changes its position. We perform a seek to the
+ * new position here. */
+static void slider_cb (GtkRange *range, CustomData *data) {
+  gdouble value = gtk_range_get_value (GTK_RANGE (data-&gt;slider));
+  gst_element_seek_simple (data-&gt;playbin, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_KEY_UNIT,
+      (gint64)(value * GST_SECOND));
+}</code></pre></figure><p>通过GStreamer和GTK+的协作，可以非常容易地实现一个复杂的GUI元素，如一个搜索条（或者允许搜索的滑块）。如果滑块被拖动到新位置，则告诉GStreamer使用<code>gst_element_seek_simple</code>查找该位置。 滑块已经设置，它的值代表秒。<br>值得注意的是，一些性能和响应可以通过不去响应所有的单个用户的搜索请求来获得。由于搜索操作需要花费一些时间，所以在允许另一个搜索操作之前，更好的办法是等待一会(如半秒钟)。否则，如果用户疯狂的拖拽滑动条，应用程序看起来可能也没有响应，因为在一个新的搜索操作在队列中之前将不会允许任何搜索。</p><figure class="code code-plain"><pre><code>/* This function is called periodically to refresh the GUI */
+static gboolean refresh_ui (CustomData *data) {
+  gint64 current = -1;
+
+  /* We do not want to update anything unless we are in the PAUSED or PLAYING states */
+  if (data-&gt;state &lt; GST_STATE_PAUSED)
+    return TRUE;</code></pre></figure><p>该函数将移动滑块以反映媒体当前的位置。如果我们不处于PLAYING状态，那么在这里没有任何事情可做（位置和持续时间查询通常会失败）。</p><figure class="code code-plain"><pre><code>/* If we didn&#39;t know it yet, query the stream duration */
+if (!GST_CLOCK_TIME_IS_VALID (data-&gt;duration)) {
+  if (!gst_element_query_duration (data-&gt;playbin, GST_FORMAT_TIME, &amp;data-&gt;duration)) {
+    g_printerr (&quot;Could not query current duration.\n&quot;);
+  } else {
+    /* Set the range of the slider to the clip duration, in SECONDS */
+    gtk_range_set_range (GTK_RANGE (data-&gt;slider), 0, (gdouble)data-&gt;duration / GST_SECOND);
+  }
+}</code></pre></figure><p>可以设置滑块的范围以防我们在不知情的情况下恢复clip的持续时间。</p><figure class="code code-plain"><pre><code>if (gst_element_query_position (data-&gt;playbin, GST_FORMAT_TIME, &amp;current)) {
+  /* Block the &quot;value-changed&quot; signal, so the slider_cb function is not called
+   * (which would trigger a seek the user has not requested) */
+  g_signal_handler_block (data-&gt;slider, data-&gt;slider_update_signal_id);
+  /* Set the position of the slider to the current pipeline positoin, in SECONDS */
+  gtk_range_set_value (GTK_RANGE (data-&gt;slider), (gdouble)current / GST_SECOND);
+  /* Re-enable the signal */
+  g_signal_handler_unblock (data-&gt;slider, data-&gt;slider_update_signal_id);
+}
+return TRUE;</code></pre></figure><p>查询当前的管道位置，并根据滑块设置其位置。这将会触发一个<code>value-changed</code>信号，我们可以通过其知道用户在拖动滑块。除非用户请求它们，否则我们不希望发生这种情况，所以在此操作期间，使用<code>g_sinal_handler_block</code>和<code>g_signal_handler_unblock</code>禁用<code>value-changed</code>的信号发出。<br>该函数返回True将在之后保持其调用。如果返回FALSE，定时器将被删除。</p><figure class="code code-plain"><pre><code>/* This function is called when new metadata is discovered in the stream */
+static void tags_cb (GstElement *playbin, gint stream, CustomData *data) {
+  /* We are possibly in a GStreamer working thread, so we notify the main
+   * thread of this event through a message in the bus */
+  gst_element_post_message (playbin,
+    gst_message_new_application (GST_OBJECT (playbin),
+      gst_structure_new_empty (&quot;tags-changed&quot;)));
+}</code></pre></figure><p>这里是该例的重点。当媒体中发现新标签时，该函数将会从streaming线程中调用，即从一个应用程序线程(或主线程)之外的线程调用。我们这里希望做的是更新GTK+的部件来反映这个新的信息，但GTK+不允许主线程之外的其它线程的操作。<br>解决方法是让playbin在总线上发布消息并返回给调用线程。在适当时候，主线程会接收到这个消息并更新GTK。<br><code>gst_element_post_message</code>函数使GStreamer元素将给定的消息发送到总线。<code>gst_message_new_application</code>函数创建一个新的应用程序类型的消息。GStreamer消息有不同的类型，且这种特殊类型将保留给应用程序:它会通过不受GStreamer影响的总线。<br>类型列表可在GstMessageType文档中找到。<br>消息可以通过嵌入的GstStructure提供额外的信息，GstStructure是一个非常灵活的数据容器。这里使用<code>gst_structure_new</code>创建一个新结构体，并将其命名为tags-changed，以避免在我们想发送其它应用程序消息时发生混淆。<br>然后，一旦在主线程中，总线将会收到这个消息并发送<code>message::application</code>信号，该信号与<code>application_cb</code>函数关联:</p><figure class="code code-plain"><pre><code>/* This function is called when an &quot;application&quot; message is posted on the bus.
+ * Here we retrieve the message posted by the tags_cb callback */
+static void application_cb (GstBus *bus, GstMessage *msg, CustomData *data) {
+  if (g_strcmp0 (gst_structure_get_name (gst_message_get_structure (msg)), &quot;tags-changed&quot;) == 0) {
+    /* If the message is the &quot;tags-changed&quot; (only one we are currently issuing), update
+     * the stream info GUI */
+    analyze_streams (data);
+  }
+}</code></pre></figure><p>一旦确定它是标签变化(tag-changed)消息，则调用<code>analyze_streams</code>函数。其基本上从流中恢复标签，并将其写入GUI中的文本小部件中。<br>虽然该例代码量较大，但所需的概念很少且很容易。<br>最后效果图如下:</p><center><p><img src="https://raw.githubusercontent.com/newdee/BlogImage/master/20190906101926.png" alt="" loading="lazy" decoding="async"></p></center></div><footer class="post-foot"><nav class="post-siblings" aria-label="相邻文章"><a class="sib sib-prev" href="/posts/79fb69ed/"><span class="sib-label">较新一篇</span>GStreamer笔记五: Media Formats and Pad Capabilities</a> <a class="sib sib-next" href="/posts/58b8a847/"><span class="sib-label">较旧一篇</span>GStreamer笔记三: Time Management</a></nav></footer></article><nav class="toc" id="toc" aria-label="目录"><p class="toc-title">目录</p><ul><li class="toc-l3"><a href="#关于gtk">关于GTK+</a></li><li class="toc-l3"><a href="#gtk播放器示例">GTK+播放器示例</a></li><li class="toc-l3"><a href="#代码分析">代码分析</a></li></ul></nav></div></main><footer class="site-foot"><p class="foot-motto">多可喜，亦多可悲</p><p class="foot-line">© 1992–2026 dfine <span class="foot-sep">·</span> <span id="busuanzi_container_site_uv" hidden>访客 <span id="busuanzi_value_site_uv"></span></span> <span id="busuanzi_container_site_pv" hidden><span class="foot-sep">·</span> 浏览 <span id="busuanzi_value_site_pv"></span></span> <span class="foot-sep">·</span> <a href="/atom.xml">RSS</a></p></footer><script type="application/json" id="acg-config">{"backgrounds":["https://t.alcy.cc/moe","https://www.loliapi.com/acg/","https://api.btstu.cn/sjbz/api.php?lx=dongman&format=images"],"live2d":true,"music":[]}</script></body></html>

@@ -1,0 +1,460 @@
+<!doctype html><html lang="zh-Hans"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Linux的文件IO和多进程 · 阁子</title><meta name="description" content="Linux中的用户编程接口（API）遵循了UNIX中的应用编程界面标准——POSIX。这些系统调用编程接口主要是通过C库(libc)实现的。 Linux中程序的运行空间主要分为内核空间和用户空间，通常用户能直接访问的是用户空间，内核空间一…"><link rel="canonical" href="https://dfine.tech/posts/360656f/"><meta property="og:title" content="Linux的文件IO和多进程 · 阁子"><meta property="og:type" content="article"><meta property="og:url" content="https://dfine.tech/posts/360656f/"><meta property="og:site_name" content="阁子"><meta property="og:description" content="Linux中的用户编程接口（API）遵循了UNIX中的应用编程界面标准——POSIX。这些系统调用编程接口主要是通过C库(libc)实现的。 Linux中程序的运行空间主要分为内核空间和用户空间，通常用户能直接访问的是用户空间，内核空间一…"><link rel="icon" href="/favicon.ico"><link rel="alternate" type="application/atom+xml" title="阁子" href="/atom.xml"><script>(()=>{try{const t=localStorage.getItem('theme');if(t==='dark'||t==='light'||t==='acg')document.documentElement.dataset.theme=t}catch{}})()</script><style>@font-face{font-family:"阁子宋";src:url("/assets/fonts/serif-400-f65ab20b.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}@font-face{font-family:"阁子宋";src:url("/assets/fonts/serif-700-376a125f.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}</style><link rel="stylesheet" href="/assets/main-UENLO5BD.css"><script type="module" src="/assets/main-A7XA5HNI.js"></script></head><body data-page="post"><header class="site-head"><a class="brand" href="/" aria-label="回到首页"><svg class="seal brand-seal" viewBox="0 0 48 48" aria-hidden="true"><rect x="3" y="3" width="42" height="42" rx="6" fill="none" stroke="currentColor" stroke-width="3"/><text x="24" y="25" text-anchor="middle" dominant-baseline="central" font-size="28" fill="currentColor" font-family="阁子宋, 'Noto Serif SC', serif">阁</text></svg><span class="brand-name">阁子</span></a><nav class="site-nav" aria-label="站内导航"><a href="/archives/">文章</a><a href="/talks/">闲言</a><a href="/links/">友人</a><a href="/About/">关于</a></nav><div class="head-actions"><button class="icon-btn" id="search-btn" aria-label="搜索（Ctrl+K）" title="搜索 Ctrl+K"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button> <button class="icon-btn" id="theme-btn" aria-label="切换模式（中年亮 / 中年暗 / 青年）" title="中年（亮）→ 中年（暗）→ 青年"><svg class="ico-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.5 4.5l2 2M17.5 17.5l2 2M19.5 4.5l-2 2M6.5 17.5l-2 2"/></g></svg><svg class="ico-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5Z" fill="currentColor"/></svg><svg class="ico-acg" viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><circle cx="12" cy="12" r="2.1"/><path d="M12 2.6c1.9 0 3.2 1.7 2.8 3.9l-.7 3.1-2.1-1-2.1 1-.7-3.1C8.8 4.3 10.1 2.6 12 2.6ZM21 9.6c.6 1.8-.5 3.6-2.7 3.9l-3.1.5.3-2.3-1.6-1.6 2.9-1.3c2-.9 3.6-.1 4.2 1.9v-.1ZM17.6 20c-1.5 1.2-3.6.7-4.6-1.2l-1-2 2.3-.4 1-2.1 2 2.4c1.4 1.6 1.4 2.8.3 3.9v-.6ZM6.4 20c-1.1-1.1-1.1-2.3.3-3.9l2-2.4 1 2.1 2.3.4-1 2c-1 1.9-3.1 2.4-4.6 1.2v.6ZM3 9.6c.6-2 2.2-2.8 4.2-1.9l2.9 1.3-1.6 1.6.3 2.3-3.1-.5C3.5 13.2 2.4 11.4 3 9.5v.1Z"/></g></svg></button></div></header><main class="site-main" id="main"><div class="post-wrap"><article class="post" id="post-article" data-title="Linux的文件IO和多进程"><header class="post-head"><h1 class="post-title">Linux的文件IO和多进程</h1><div class="post-meta"><time datetime="2017-11-18T14:38:28+08:00">2017-11-18</time> <span class="pm-sep">·</span><a href="/categories/Linux/">Linux</a> <span class="pm-sep">·</span><span>12774 字</span> <span class="pm-sep">·</span><span>约 32 分钟</span> <span id="busuanzi_container_page_pv" hidden><span class="pm-sep">·</span>阅读 <span id="busuanzi_value_page_pv"></span> 次</span></div><span class="chips"><a class="chip" href="/tags/Linux/">Linux</a><a class="chip" href="/tags/%E6%96%87%E4%BB%B6IO/">文件IO</a><a class="chip" href="/tags/%E5%A4%9A%E8%BF%9B%E7%A8%8B/">多进程</a></span></header><div class="post-content"><p>Linux中的用户编程接口（API）遵循了UNIX中的应用编程界面标准——POSIX。这些系统调用编程接口主要是通过C库(libc)实现的。<br>Linux中程序的运行空间主要分为内核空间和用户空间，通常用户能直接访问的是用户空间，内核空间一般通过系统调用才能访问。<br>主要内容均来自于网络，仅作笔记之用，主要记录一下文件IO的一些基本API和多进程编程方式。</p><h3 id="文件io">文件IO</h3><p>文件IO中的API主要是对文件的读写操作以及属性查询。主要API包括<code>open</code>,<code>read</code>,<code>write</code>,<code>close</code>,<code>lseek</code>,<code>select</code>和属性查询的<code>stat</code>。<br>对于系统内核，所有操作的文件都是通过文件描述符引用的。文件描述符用一个非负整数表示，当程序打开或者创建文件时，内核向进程返回一个文件描述符用于继续操作；当写一个文件时，则是通过将文件描述符作为参数传递给操作文件的API用于继续处理。</p><blockquote><p>在POSIX应用程序中，整数0、1、2应被代换成符号常数： <code>STDIN_FILENO</code>(标准输入，默认是键盘) <code>STDOUT_FILENO</code>(标准输出，默认是屏幕) <code>STDERR_FILENO</code>(标准错误输出，默认是屏幕)</p></blockquote><p>这些常数都定义在头文件&lt;unistd.h&gt;中，文件描述符的范围是0～OPEN_MAX。早期的UNIX版本采用的上限值是19（允许每个进程打开20个文件）， 现在很多系统则将其增加至256。<br>可用的文件I\O函数很多，包括：打开文件，读文件，写文件等。大多数Linux文件I\O只需要用到5个函数：open，read，write，lseek以及close。</p><h4 id="open">open</h4><h5 id="功能说明">功能说明</h5><p>需要包含的头文件: <code>&lt;sys/types.h&gt;, &lt;sys/stat.h&gt;, &lt;fcntl.h&gt;</code> 函数原型:</p><figure class="code code-plain"><pre><code>int open(const str * pathname, int oflag, [..., mode_t mode])</code></pre></figure><p>该函数主要用于打开文件，打开成功返回文件描述符，失败返回-1。</p><h5 id="参数说明">参数说明</h5><p><code>pathname</code>: 文件的全路径名。 <code>mode</code>: 对于<code>open</code>函数而言，仅当创建文件时才使用该参数，主要用于文件权限的设置。</p><blockquote><p><code>oflag</code>: 表示打开的一些方式,主要有<code>O_RDONLY</code>(只读打开)、<code>O_WRONLY</code>(只写打开)、<code>O_RDWR</code>(读写打开)和: <code>O_APPEND</code>: 追加到文件尾<br><code>O_CREAT</code>: 若文件不存在则创建它。使用此选择项时，需同时说明第三个参数mode，用其说明新文件的访问权限<br><code>O_EXCL</code>: 如果同时指定<code>O_CREAT</code>，而该文件又是存在的，报错；也可以测试一个文件是否存在，不存在则创建。<br><code>O_TRUNC</code>: 如果此文件存在，而且为读写或只写成功打开，则将其长度截短为0<br><code>O_SYNC</code>: 使每次write都等到物理I\O操作完成</p></blockquote><h5 id="例子">例子</h5><p>创建文件:</p><figure class="code code-plain"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;sys/stat.h&gt;
+#include &lt;fcntl.h&gt;
+
+#define FILE_PATH   &quot;./test.txt&quot;
+
+int main(void)
+{
+    int fd;
+    if ((fd = open(FILE_PATH, O_RDWR | O_CREAT | O_EXCL, 0666)) &lt; 0) {
+        printf(&quot;open error\n&quot;);
+        exit(-1);
+    } else {
+        printf(&quot;open success\n&quot;);
+    }
+    return 0;
+}</code></pre></figure><h4 id="read">read</h4><h5 id="功能说明-1">功能说明</h5><p>主要用于读取文件数据。头文件: <code>&lt;unistd.h&gt;</code> 函数原型:</p><figure class="code code-plain"><pre><code>ssize_t read(int fd, void * buf, size_t count)</code></pre></figure><p>返回实际读到的字节数，读到文件尾返回0，出错返回-1。其中<code>ssize_t</code>是在头文件中用<code>typedef</code>定义的，相当于<code>signed int</code>类型。</p><h5 id="参数说明-1">参数说明</h5><blockquote><p><code>fd</code>：要读取的文件的描述符 <code>buf</code>：得到的数据在内存中的位置的首地址 <code>count</code>：期望本次能读取到的最大字节数。<code>size_t</code>是系统头文件中用<code>typedef</code>定义的数据类型，相当于<code>unsigned int</code></p></blockquote><h4 id="write">write</h4><h5 id="功能说明-2">功能说明</h5><p>和<code>read</code>对应，主要用于写入和修改文件。 函数原型:</p><figure class="code code-plain"><pre><code>ssize_t write(int fd, const void * buf, size_t count)</code></pre></figure><p>返回实际写入的字节数，出错返回-1。</p><h5 id="参数说明-2">参数说明</h5><blockquote><p>fd：要写入文件的文件描述符 buf：要写入文件的数据在内存中存放位置的首地址 count：期望写入的数据的最大字节数</p></blockquote><h5 id="例子-1">例子</h5><p>读写文件:<code>read &amp;&amp; write</code></p><figure class="code code-plain"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;unistd.h&gt;
+
+int main(void)
+{
+    char buf[100];
+    int num = 0;
+
+    // 获取键盘输入
+    if ((num = read(STDIN_FILENO, buf, 10)) == -1) {
+        printf (&quot;read error&quot;);
+        error(-1);
+    } else {
+    // 输出到屏幕上
+        write(STDOUT_FILENO, buf, num);
+    }
+
+    return 0;
+}</code></pre></figure><h4 id="close">close</h4><h5 id="功能说明-3">功能说明</h5><p>主要用于关闭文件，头文件是<code>unistd.h</code>。 函数原型:</p><figure class="code code-plain"><pre><code>int close(int filedes)</code></pre></figure><h5 id="参数说明-3">参数说明</h5><p>输入参数是需要关闭的文件的描述符。</p><blockquote><p>当一个进程终止的时候，它所有的打开文件都是由内核自动关闭。很多程序都使用这一功能而不显式地调用close关闭一个已打开的文件。<br>但是，作为一名优秀的程序员，应该显式的调用close来关闭已不再使用的文件。</p></blockquote><h4 id="lseek">lseek</h4><h5 id="功能说明-4">功能说明</h5><p>主要用来设置文件内容的读写位置，是用的较多的操作。需要包含头文件<code>unistd.h</code>和<code>sys/types.h</code></p><blockquote><p>每个打开的文件都有一个“当前文件偏移量”，是一个非负整数，用以度量从文件开始处计算的字节数。通常，读写操作都是从当前文件偏移量处开始，并使偏移量增加所读或写的字节数。默认情况下，你打开一个文件时(<code>open</code>)，除非指定<code>O_APPEND</code>参数，不然位移量被设为0。<br>函数原型:</p></blockquote><figure class="code code-plain"><pre><code>off_t lseek(int filesdes, off_t offset, int whence)</code></pre></figure><h5 id="参数说明-4">参数说明</h5><p>返回新的文件位移，出错返回-1。同样<code>off_t</code>是系统头文件定义的数据类型，相当于<code>signed int</code>。</p><blockquote><p>whence是<code>SEEK_SET</code>, 那么该文件的位移量设置为据文件开始处offset个字节 whence是<code>SEEK_CUR</code>, 那么该文件的位移量设置为当前值加offset。offset可为正或负 whence是<code>SEEK_END</code>, 那么该文件的位移量设置为文件长度加offset。offset可为正或负</p></blockquote><h5 id="例子-2">例子</h5><figure class="code code-plain"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;fcntl.h&gt;
+
+int main(int argc, char * argv[])
+{
+    int fd;
+    char buf[100];
+    if ((fd = open(argv[1], O_RDONLY)) &lt; 0) {
+        perror(&quot;open&quot;);
+        exit(-1);
+    }
+    read(fd, buf, 1);
+    write(STDOUT_FILENO, buf, 1);
+    lseek(fd, 2, SEEK_CUR);
+
+    read(fd, buf, 1);
+    write(STDOUT_FILENO, buf, 1);
+    lseek(fd, -1, SEEK_END);
+
+    read(fd, buf, 1);
+    write(STDOUT_FILENO, buf, 1);
+    lseek(fd, 0, SEEK_SET);
+
+    read(fd, buf, 1);
+    write(STDOUT_FILENO, buf, 1);
+    close(fd);
+    printf(&quot;\n&quot;);
+
+    return 0;
+}</code></pre></figure><h4 id="select">select</h4><h5 id="功能说明-5">功能说明</h5><p>用于同时监控多个文件描述符。因为<code>read</code>一次只能监控一个，且在监控过程中处于阻塞状态，无法同时监控多个输入。需要包含头文件<code>sys/select.h</code>。<br>函数原型:</p><figure class="code code-plain"><pre><code>int select(int maxfd, fd_set \* readset, fd_set \* writeset, fd_set \* exceptset, const struct timeval \* timeout)</code></pre></figure><h5 id="参数说明-5">参数说明</h5><p>返回值：失败返回-1，成功返回readset，writeset，exceptset中所有，有指定变化的文件描述符的数目(若超时返回0)</p><blockquote><p><code>maxfd</code>：要检测的描述符个数， 因此值应为最大描述符+1 <code>readset</code>：被监控是否有输入的文件描述符集。不监控时，设为NULL <code>writeset</code>：被监控是否可以输入的文件描述符集。不监控时，设为NULL <code>exceptset</code>：被监控是否有错误产生的文件描述符集。不监控时，设为NULL <code>timeval</code>：监控超时时间。设置为NULL表示一直阻塞到有文件描述符被监控到有指定变化。</p></blockquote><blockquote><p>Tips: <code>readset，writeset，exceptset</code>这三个描述符集指针均是值—结果参数，调用的时候，被监控描述符相应位需要置1；返回时，未就绪的描数字相应位会被清0，而就绪的会被置1。 下面的系统定义的宏，和<code>select</code>配套使用 <code>FD_ZERO(&amp;rset)</code>：将文件描述符集<code>rset</code>的所有位清0 <code>FD_SET(4, &amp;reset)</code>：设置文件描述符集<code>rset</code>的<code>bit 4</code> <code>FD_CLR(fileno(stdin), &amp;rset)</code>：将文件描述符集<code>rset</code>的<code>bit 0</code>清0 <code>FD_ISSET(socketfd, &amp;rset)</code>：若文件描述符集<code>rset</code>中的<code>socketfd</code>位置1</p></blockquote><h5 id="例子-3">例子</h5><figure class="code code-plain"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;sys/select.h&gt;
+#include &lt;fcntl.h&gt;
+#include &lt;unistd.h&gt;
+
+#define MAXNUM      100
+#define OPEN_DEV    &quot;/dev/input/mice&quot;
+
+int main(void)
+{
+    fd_set rfds;
+    struct timeval tv;
+    int retval, fd;
+    char buf[MAXNUM];
+
+    fd = open(OPEN_DEV, O_RDONLY);
+    while (1) {
+        FD_ZERO(&amp;rfds);
+        FD_SET(0, &amp;rfds);
+        FD_SET(fd, &amp;rfds);
+        tv.tv_sec = 5;
+        tv.tv_usec = 0;
+
+        retval = select(fd+1, &amp;rfds, NULL, NULL, &amp;tv);
+        if (retval &lt; 0)
+            printf (&quot;error\n&quot;);
+        if (retval == 0)
+            printf (&quot;No data within 5 seconds\n&quot;);
+        if (retval &gt; 0) {
+            if (FD_ISSET(0, &amp;rfds)) {
+                printf (&quot;Data is available from keyboard now\n&quot;);
+                read(0, buf, MAXNUM);
+            }
+            if (FD_ISSET(fd, &amp;rfds)) {
+                printf (&quot;Data is available from mouse now\n&quot;);
+                read(fd, buf, MAXNUM);
+            }
+        }
+    }
+    return 0;
+}</code></pre></figure><h4 id="stat">stat</h4><h5 id="基本用法">基本用法</h5><p>主要功能是获取文件的属性。需要包含头文件<code>&lt;sys/types.h&gt;，&lt;sys/stat.h&gt;，&lt;unistd.h&gt;</code>。 函数原型:</p><figure class="code code-plain"><pre><code>int stat(const char \* path, struct stat \* buf)</code></pre></figure><h5 id="参数说明-6">参数说明</h5><blockquote><p><code>path</code>：要查看属性的文件或目录的全路径名称。</p><p><code>buf</code>：指向用于存放属性的结构体。stat成功调用后，buf的各个字段将存放各个属性。struct stat是系统头文件中定义的结构体，定义如下：</p></blockquote><figure class="code code-plain"><pre><code>struct stat {
+    dev_t       st_dev;
+    ino_t       st_ino;
+    mode_t      st_mode;
+    nlink_t     st_nlink;
+    uid_t       st_uid;
+    gid_t       st_gid;
+    dev_t       st_rdev;
+    off_t       st_size;
+    blksize_t   st_blksize;
+    blkcnt_t    st_blocks;
+    time_t      st_atime;
+    time_t      st_mtime;
+    time_t      st_ctime;
+};</code></pre></figure><blockquote><p><code>st_ino</code>：节点号 <code>st_mode</code>：文件类型和文件访问权限被编码在该字段中 <code>st_nlink</code>：硬连接数 <code>st_uid</code>：属主的用户ID <code>st_gid</code>：所属组的组ID <code>st_rdev</code>：设备文件的主、次设备号编码在该字段中 <code>st_size</code>：文件的大小 <code>st_mtime</code>：文件最后被修改时间 成功返回0，失败返回-1。</p></blockquote><h5 id="例子-4">例子</h5><figure class="code code-plain"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;sys/stat.h&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;unistd.h&gt;
+
+int main(int argc, char **argv)
+{
+    struct stat     buf;
+    if(argc != 2) { 
+        printf(&quot;Usage: stat &lt;pathname&gt;&quot;); 
+        exit(-1); 
+    }
+    if(stat(argv[1], &amp;buf) != 0) { 
+        printf(&quot;stat error.&quot;); 
+        exit(-1); 
+    }
+    printf(&quot;#i-node:    %ld\n&quot;, buf.st_ino);
+    printf(&quot;#link:      %d\n&quot;, buf.st_nlink);
+    printf(&quot;UID:        %d\n&quot;, buf.st_uid);
+    printf(&quot;GID:        %d\n&quot;, buf.st_gid);
+    printf(&quot;Size        %ld\n&quot;, buf.st_size);
+    exit(0);
+}</code></pre></figure><h5 id="文件类型的判定">文件类型的判定</h5><p><code>struct stat</code>中有个字段为<code>st_mode</code>，可用来获取文件类型和文件访问权限，可以从该字段解码我们需要的文件信息。</p><blockquote><p><code>st_mode</code>中文件类型宏定义： <code>S_ISREG()</code>:	普通文件 <code>S_ISDIR()</code>:	目录文件 <code>S_ISCHR()</code>:	字符设备文件 <code>S_ISBLK()</code>:	块设备文件 <code>S_ISFIFO()</code>:	有名管道文件 <code>S_ISLNK()</code>:	软连接(符号链接)文件 <code>S_ISSOCK()</code>:	套接字文件</p></blockquote><h5 id="例子-5">例子</h5><figure class="code code-plain"><pre><code>#include &lt;stdlib.h&gt;
+#include &lt;sys/stat.h&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;unistd.h&gt;
+
+int main(int argc, char **argv)
+{
+    struct stat buf;
+    char * file_mode;
+    if(argc != 2) {
+        printf(&quot;Usage: stat &lt;pathname&gt;\n&quot;); 
+        exit(-1); 
+    }
+    if(stat(argv[1], &amp;buf) != 0) {
+        printf(&quot;stat error.\n&quot;); 
+        exit(-1); 
+    }
+    if (S_ISREG(buf.st_mode))
+        file_mode = &quot;-&quot;;
+    else if (S_ISDIR(buf.st_mode))
+        file_mode = &quot;d&quot;;
+    else if (S_ISCHR(buf.st_mode))
+        file_mode = &quot;c&quot;;
+    else if(S_ISBLK(buf.st_mode))
+        file_mode = &quot;b&quot;;
+    printf(&quot;#i-node:    %ld\n&quot;, buf.st_ino);
+    printf(&quot;#link:      %d\n&quot;, buf.st_nlink);
+    printf(&quot;UID:        %d\n&quot;, buf.st_uid);
+    printf(&quot;GID:        %d\n&quot;, buf.st_gid);
+    printf(&quot;Size        %ld\n&quot;, buf.st_size);
+    printf(&quot;mode: %s\n&quot;, file_mode);
+    exit(0);
+}</code></pre></figure><h4 id="文件权限的判定">文件权限的判定</h4><p>文件类型与许可设定被一起编码在<code>st_mode</code>字段中，也需要一组由系统提供的宏来完成解码。</p><blockquote><p><code>S_ISUID</code>:	执行时，设置用户ID <code>S_ISGID</code>:	执行时，设置组ID <code>S_ISVTX</code>:	保存正文 <code>S_IRWXU</code>:	拥有者的读、写和执行权限 <code>S_IRUSR</code>:	拥有者的读权限 <code>S_IWUSR</code>:	拥有者的写权限 <code>S_IXUSR</code>:	拥有者的执行权限 <code>S_IRWXG</code>:	用户组的读、写和执行权限 <code>S_IRGRP</code>:	用户组的读权限 <code>S_IWGRP</code>:	用户组的写权限 <code>S_IXGRP</code>:	用户组的执行权限 <code>S_IRWXO</code>:	其它读、写、执行权限 <code>S_IROTH</code>:	其它读权限 <code>S_IWOTH</code>:	其它写权限 <code>S_IXOTH</code>:	其它执行权限</p></blockquote><h4 id="stat的目录操作">stat的目录操作</h4><h5 id="打开目录">打开目录</h5><blockquote><p>需要包含的头文件：<code>&lt;sys/types.h&gt;，&lt;dirent.h&gt;</code> 函数原型：<code>DIR * opendir(const char * name)</code> 功能：<code>opendir()</code>用来打开参数<code>name</code>指定的目录，并返回<code>DIR *</code>形态的目录流 返回值：成功返回目录流；失败返回NULL</p></blockquote><h5 id="读取目录">读取目录</h5><blockquote><p>函数原型：<code>struct dirent * readdir(DIR * dir)</code> 功能：<code>readdir()</code>返回参数dir目录流的下一个子条目(子目录或子文件) 返回值： 成功返回结构体指向的指针，错误或已读完目录，返回NULL 函数执行成功返回的结构体原型如下：</p></blockquote><figure class="code code-plain"><pre><code>struct dirent {
+   ino_t   d_ino;
+   off_t   d_off;
+   unsigned short  d_reclen;
+   unsigned char   d_type;
+   char    d_name[256];
+};</code></pre></figure><p>其中 <code>d_name</code>字段，是存放子条目的名称</p><h5 id="关闭目录">关闭目录</h5><blockquote><p>函数原型：<code>int closedir(DIR * dir)</code> 功能：<code>closedir()</code>关闭dir所指的目录流 返回值：成功返回0；失败返回-1，错误原因在<code>errno</code>中 例子:</p></blockquote><figure class="code code-plain"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;dirent.h&gt;
+int main(int argc, char *argv[])
+{
+    DIR *dp;
+    struct dirent *entp;
+    if (argc != 2) {
+        printf(&quot;usage: showdir dirname\n&quot;);
+        exit(0);
+    }
+    if ((dp = opendir(argv[1])) == NULL) {
+        perror(&quot;opendir&quot;);
+        exit(-1);
+    }
+    while ((entp = readdir(dp)) != NULL)
+        printf(&quot;%s\n&quot;, entp-&gt;d_name);
+
+    closedir(dp);
+    return 0;
+}</code></pre></figure><h3 id="多进程">多进程</h3><h4 id="linux的基本进程状态">Linux的基本进程状态</h4><p>其实在使用<code>top</code>命令时候也可以看到一些标识,如<code>R/S/D/T/Z/X</code>等。</p><blockquote><p><code>R (TASK_RUNNING)</code>，可执行状态。 只有在该状态的进程才可能在CPU上运行。而同一时刻可能有多个进程处于可执行状态，这些进程的<code>task_struct</code>结构（进程控制块）被放入对应CPU的可执行队列中（一个进程最多只能出现在一个CPU的可执行队列中）。进程调度器的任务就是从各个CPU的可执行队列中分别选择一个进程在该CPU上运行。 很多操作系统教科书将正在CPU上执行的进程定义为RUNNING状态、而将可执行但是尚未被调度执行的进程定义为READY状态，这两种状态在linux下统一为 <code>TASK_RUNNING</code>状态。 <code>S (TASK_INTERRUPTIBLE)</code>，可中断的睡眠状态。 处于这个状态的进程因为等待某某事件的发生（比如等待socket连接、等待信号量），而被挂起。这些进程的<code>task_struct</code>结构被放入对应事件的等待队列中。当这些事件发生时（由外部中断触发、或由其他进程触发），对应的等待队列中的一个或多个进程将被唤醒。 通过ps命令我们会看到，一般情况下，进程列表中的绝大多数进程都处于<code>TASK_INTERRUPTIBLE</code>状态（除非机器的负载很高）。毕竟CPU就这么一两个，进程动辄几十上百个，如果不是绝大多数进程都在睡眠，CPU又怎么响应得过来。 <code>D (TASK_UNINTERRUPTIBLE)</code>，不可中断的睡眠状态。 与<code>TASK_INTERRUPTIBLE</code>状态类似，进程处于睡眠状态，但是此刻进程是不可中断的。不可中断，指的并不是CPU不响应外部硬件的中断，而是指进程不响应异步信号。 绝大多数情况下，进程处在睡眠状态时，总是应该能够响应异步信号的。否则你将惊奇的发现，kill -9竟然杀不死一个正在睡眠的进程了！于是我们也很好理解，为什么ps命令看到的进程几乎不会出现<code>TASK_UNINTERRUPTIBLE</code>状态，而总是<code>TASK_INTERRUPTIBLEi</code>状态。 而<code>TASK_UNINTERRUPTIBLE</code>状态存在的意义就在于，内核的某些处理流程是不能被打断的。如果响应异步信号，程序的执行流程中就会被插入一段用于处理异步信号的流程（这个插入的流程可能只存在于内核态，也可能延伸到用户态），于是原有的流程就被中断了。（参见《linux内核异步中断浅析》） 在进程对某些硬件进行操作时（比如进程调用read系统调用对某个设备文件进行读操作，而read系统调用最终执行到对应设备驱动的代码，并与对应的物理设备进行交互），可能需要使用<code>TASK_UNINTERRUPTIBLE</code>状态对进程进行保护，以避免进程与设备交互的过程被打断，造成设备陷入不可控的状态。这种情况下的<code>TASK_UNINTERRUPTIBLE</code>状态总是非常短暂的，通过ps命令基本上不可能捕捉到。 linux系统中也存在容易捕捉的<code>TASK_UNINTERRUPTIBLE</code>状态。执行vfork系统调用后，父进程将进入<code>TASK_UNINTERRUPTIBLE</code>状态，直到子进程调用exit或exec（参见《神奇的vfork》）。 通过下面的代码就能得到处于<code>TASK_UNINTERRUPTIBLE</code>状态的进程：</p></blockquote><figure class="code code-plain"><pre><code>ps -ax | grep a\.out
+4371 pts/0    D+     0:00 ./a.out
+4372 pts/0    S+     0:00 ./a.out
+4374 pts/1    S+     0:00 grep a.out</code></pre></figure><blockquote><p>然后我们可以试验一下<code>TASK_UNINTERRUPTIBLE</code>状态的威力。不管kill还是kill -9，这个<code>TASK_UNINTERRUPTIBLE</code>状态的父进程依然屹立不倒。 <code>T (TASK_STOPPED or TASK_TRACED)</code>，暂停状态或跟踪状态。 向进程发送一个SIGSTOP信号，它就会因响应该信号而进入<code>TASK_STOPPED</code>状态（除非该进程本身处于<code>TASK_UNINTERRUPTIBLE</code>状态而不响应信号）。（SIGSTOP与SIGKILL信号一样，是非常强制的。不允许用户进程通过signal系列的系统调用重新设置对应的信号处理函数。） 向进程发送一个SIGCONT信号，可以让其从<code>TASK_STOPPED</code>状态恢复到<code>TASK_RUNNING</code>状态。 当进程正在被跟踪时，它处于<code>TASK_TRACED</code>这个特殊的状态。“正在被跟踪”指的是进程暂停下来，等待跟踪它的进程对它进行操作。比如在gdb中对被跟踪的进程下一个断点，进程在断点处停下来的时候就处于<code>TASK_TRACED</code>状态。而在其他时候，被跟踪的进程还是处于前面提到的那些状态。 对于进程本身来说，<code>TASK_STOPPED</code>和<code>TASK_TRACED</code>状态很类似，都是表示进程暂停下来。 而<code>TASK_TRACED</code>状态相当于在<code>TASK_STOPPED</code>之上多了一层保护，处于<code>TASK_TRACED</code>状态的进程不能响应SIGCONT信号而被唤醒。只能等到调试进程通过ptrace系统调用执行<code>PTRACE_CONT、PTRACE_DETACH</code>等操作（通过ptrace系统调用的参数指定操作），或调试进程退出，被调试的进程才能恢复<code>TASK_RUNNING</code>状态。 <code>Z (TASK_DEAD – EXIT_ZOMBIE)</code>，退出状态，进程成为僵尸进程。</p><p>进程在退出的过程中，处于<code>TASK_DEAD</code>状态。</p><p>在这个退出过程中，进程占有的所有资源将被回收，除了<code>task_struct</code>结构（以及少数资源）以外。于是进程就只剩下<code>task_struct</code>这么个空壳，故称为僵尸。</p><p>之所以保留<code>task_struct</code>，是因为<code>task_struct</code>里面保存了进程的退出码、以及一些统计信息。而其父进程很可能会关心这些信息。比如在shell中，$?变量就保存了最后一个退出的前台进程的退出码，而这个退出码往往被作为if语句的判断条件。</p><p>当然，内核也可以将这些信息保存在别的地方，而将<code>task_struct</code>结构释放掉，以节省一些空间。但是使用<code>task_struct</code>结构更为方便，因为在内核中已经建立了从pid到<code>task_struct</code>查找关系，还有进程间的父子关系。释放掉<code>task_struct</code>，则需要建立一些新的数据结构，以便让父进程找到它的子进程的退出信息。 父进程可以通过wait系列的系统调用（如wait4、waitid）来等待某个或某些子进程的退出，并获取它的退出信息。然后wait系列的系统调用会顺便将子进程的尸体（<code>task_struct</code>）也释放掉。 子进程在退出的过程中，内核会给其父进程发送一个信号，通知父进程来“收尸”。这个信号默认是SIGCHLD，但是在通过clone系统调用创建子进程时，可以设置这个信号。</p></blockquote><figure class="code code-plain"><pre><code>ps -ax | grep a\.out
+10410 pts/0    S+     0:00 ./a.out
+10411 pts/0    Z+     0:00 [a.out]
+0413 pts/1    S+     0:00 grep a.out</code></pre></figure><blockquote><p>只要父进程不退出，这个僵尸状态的子进程就一直存在。那么如果父进程退出了呢，谁又来给子进程“收尸”？ 当进程退出的时候，会将它的所有子进程都托管给别的进程（使之成为别的进程的子进程）。托管给谁呢？可能是退出进程所在进程组的下一个进程（如果存在的话），或者是1号进程。所以每个进程、每时每刻都有父进程存在。除非它是1号进程。 1号进程，pid为1的进程，又称init进程。 linux系统启动后，第一个被创建的用户态进程就是init进程。它有两项使命： 1、执行系统初始化脚本，创建一系列的进程（它们都是init进程的子孙）； 2、在一个死循环中等待其子进程的退出事件，并调用waitid系统调用来完成“收尸”工作； init进程不会被暂停、也不会被杀死（这是由内核来保证的）。它在等待子进程退出的过程中处于<code>TASK_INTERRUPTIBLE</code>状态，“收尸”过程中则处于<code>TASK_RUNNING</code>状态。 X (<code>TASK_DEAD – EXIT_DEAD</code>)，退出状态，进程即将被销毁。 而进程在退出过程中也可能不会保留它的<code>task_struct</code>。比如这个进程是多线程程序中被detach过的进程（进程、线程参见《linux线程浅析》）。或者父进程通过设置SIGCHLD信号的handler为<code>SIG_IGN</code>，显式的忽略了SIGCHLD信号。（这是posix的规定，尽管子进程的退出信号可以被设置为SIGCHLD以外的其他信号。） 此时，进程将被置于<code>EXIT_DEAD</code>退出状态，这意味着接下来的代码立即就会将该进程彻底释放。所以<code>EXIT_DEAD</code>状态是非常短暂的，几乎不可能通过ps命令捕捉到。</p></blockquote><h6 id="获取进程标识号">获取进程标识号</h6><p>主要有两个函数:<code>getpid和getppid</code>。 前者是获取进程号，后者是获取父进程号。 需要包含的头文件：<code>&lt;sys/types.h&gt;, &lt;unistd.h&gt;</code></p><blockquote><p>函数原型：<code>pid_t getpid(void)</code> 功能：获取当前进程ID 返回值：调用进程的进程ID 函数原型：<code>pid_t getppid(void)</code> 功能：获取父进程ID 返回值：调用进程的父进程ID 例子:</p></blockquote><figure class="code code-plain"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;unistd.h&gt;
+
+int main(void)
+{
+    pid_t pid = getpid();
+    pid_t ppid = getppid();
+
+    printf (&quot;pid = %d\n&quot;, pid);
+    printf (&quot;ppid = %d\n&quot;, ppid);
+
+    return 0;
+}</code></pre></figure><h4 id="linux下c进程内存布局">Linux下C进程内存布局</h4><h5 id="c进程内存布局说明">C进程内存布局说明</h5><p>text：代码段。存放的是程序的全部代码（指令），来源于二进制可执行文件中的代码部分 initialized data（简称data段）和uninitialized data（简称bss段）组成了数据段。</p><blockquote><p>其中data段存放的是已初始化全局变量和已初始化static局部变量，来源于二进制可执行文件中的数据部分；bss段存放的是未初始化全局变量和未初始化static局部变量，其内容不来源于二进制可执行文件中的数据部分（也就是说：二进制可执行文件中的数据部分没有未初始化全局变量和未初始化static局部变量）。根据C语言标准规定，他们的初始值必须为0，因此bss段存放的是全0。将bss段清0的工作是由系统在加载二进制文件后，开始执行程序前完成的，系统执行这个清0操作是由内核的一段代码完成的，这段代码就是即将介绍的exec系统调用。至于exec从内存什么地方开始清0以及要清0多少空间，则是由记录在二进制可执行文件中的信息决定的（即：二进制文件中记录了text、data、bss段的大小） malloc是从heap（堆）中分配空间的 stack（栈）存放的是动态局部变量。 当子函数被调用时，系统会从栈中分配空间给该子函数的动态局部变量（注意：此时栈向内存低地址延伸）；当子函数返回时，系统的栈会向内存高地址延伸，这相当于释放子函数的动态局部变量的内存空间。我们假设一下，main函数在调用子函数A后立即调用子函数B，那么子函数B的动态局部变量会覆盖原来子函数A的动态局部变量的存储空间，这就是子函数不能互相访问对方动态局部变量的根本物理原因。 内存的最高端存放的是命令行参数和环境变量，将命令行参数和环境变量放到指定位置这个操作是由OS的一段代码（exec系统调用）在加载二进制文件到内存后，开始运行程序前完成的。 Linux下C进程内存布局可以由下面的程序的运行结果来获得验证：</p></blockquote><figure class="code code-plain"><pre><code> #include &lt;stdio.h&gt;
+ #include &lt;stdlib.h&gt;
+
+ int global_init_val = 100;
+ int global_noninit_val;
+ extern char **environ;
+
+ int main(int argc, char *argv[], char *envp[])
+ {
+         static int localstaticval = 10;
+         char *localval;
+         localval = malloc(10);
+         printf(&quot;address of text  is : %p\n&quot;, main);
+         printf(&quot;address of data  is : %p, %p\n&quot;, &amp;global_init_val, &amp;localstaticval);
+         printf(&quot;address of bss   is : %p\n&quot;, &amp;global_noninit_val);
+         printf(&quot;address of heap  is : %p\n&quot;, localval);
+         printf(&quot;address of stack is : %p\n&quot;, &amp;localval);
+         free(localval);
+
+         printf(&quot;&amp;environ = %p, environ = %p\n&quot;, &amp;envp, envp);
+         printf(&quot;&amp;argv = %p, argv = %p\n&quot;, &amp;argv, argv);
+         return 0;
+  }</code></pre></figure><p>运行结果，如下：</p><figure class="code code-plain"><pre><code>1 address of text  is : 0x8048454
+2 address of data  is : 0x804a01c, 0x804a020
+3 address of bss   is : 0x804a02c
+4 address of heap  is : 0x96e1008
+5 address of stack is : 0xbffca8bc
+6 &amp;environ = 0xbffca8d8, environ = 0xbffca97c
+7 &amp;argv = 0xbffca8d4, argv = 0xbffca974</code></pre></figure><p>运行结果的第1（2、3、4、5、6、7）行是由程序的第13（14、15、16、17、20、21）行打印的。 由运行结果的第1、2、3、4行可知，存放的是程序代码的text段位于进程地址空间的最低端；往上是存放已初始化全局变量和已初始化static局部变量的data段；往上是存放未初始化全局变量的bss段；往上是堆区（heap）。 由运行结果的第7、6、5行可知，命令行参数和环境变量存放在进程地址空间的最高端；往下是存放动态局部变量的栈区（stack）。</p><h5 id="环境变量的获取与设置">环境变量的获取与设置</h5><p>坏境变量在内存中通常是一字符串环境变量名=环境变量值的形式存放。我们的程序可能会调用Linux系统的环境变量，甚至修改环境变量，所以，Linux向我们提供了这种API。需要包含头文件<code>&lt;stdlib.h&gt;</code>。 函数原型： <code>char * getenv(const char * name)</code> 返回字符指针，该指针指向变量名为name的环境变量的值字符串。 <code>int putenv(const char * str)</code> 将“环境变量=环境变量值”形式的字符创增加到环境变量列表中；如果该环境变量已存在，则更新已有的值。 <code>int setenv(const char * name, const char * value, int rewrite)</code> 设置名字为name的环境变量的值为value；如果该环境变量已存在，且rewrite不为0，用新值替换旧值；rewrite为0，就不做任何事。 例子:</p><figure class="code code-plain"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;unistd.h&gt;
+
+int main(int argc, char *argv[], char *envp[])
+{
+        char **ptr;
+        for (ptr = envp; *ptr != 0; ptr++)   /* and all env strings */
+                printf (&quot;%s\n&quot;, *ptr);
+
+        printf (&quot;\n\n--------My environment variable-------\n\n&quot;);
+        printf (&quot;USERNAME is %s\n&quot;, getenv(&quot;USERNAME&quot;));
+        putenv (&quot;USERNAME=shiyanlou&quot;);
+
+        printf (&quot;USERNAME is %s\n&quot;, getenv(&quot;USERNAME&quot;));
+        setenv (&quot;USERNAME&quot;, &quot;shiyanlou-2&quot;, 0);
+
+        printf (&quot;USERNAME is %s\n&quot;, getenv(&quot;USERNAME&quot;));
+        setenv (&quot;USERNAME&quot;, &quot;shiyanlou-2&quot;, 1);
+
+        printf (&quot;USERNAME is %s\n&quot;, getenv(&quot;USERNAME&quot;));
+
+        return 0;
+}</code></pre></figure><h4 id="fork进程控制">fork进程控制</h4><p>fork被称为进程控制天字第1号系统调用，可以看出其使用广泛性。</p><h5 id="fork的机制与特性">fork的机制与特性</h5><figure class="code code-plain"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;stdlib.h&gt;
+
+int main(void)
+{
+    pid_t pid;
+    if ((pid = fork()) == 0) {
+        getchar();
+        exit(0);
+    }
+    getchar();
+}</code></pre></figure><p>父进程调用fork将会产生一个子进程。此时会有2个问题：</p><ol><li>子进程的代码从哪里来？</li><li>子进程首次被OS调度时，执行的第1条代码是哪条代码？</li></ol><blockquote><p>子进程的代码是父进程代码的一个完全相同拷贝。事实上不仅仅是text段，子进程的全部进程空间（包括：text/data/bss/heap/stack/command line/environment variables）都是父进程空间的一个完全拷贝。 下一个问题是：谁为子进程分配了内存空间？谁拷贝了父进程空间的内容到子进程的内存空间？fork当仁不让！事实上，查看fork实现的源代码，由4部分工作组成：首先，为子进程分配内存空间；然后，将父进程空间的全部内容拷贝到分配给子进程的内存空间；然后在内核数据结构中创建并正确初始化子进程的PCB（包括2个重要信息：子进程pid，PC的值=善后代码的第1条指令地址）；最后是一段善后代码。 由于子进程的PCB已经产生，所以子进程已经出生，因此子进程就可以被OS调度到来运行。子进程首次被OS调度时，执行的第1条代码在fork内部，不过从应用程序的角度来看，子进程首次被OS调度时，执行的第1条代码是从fork返回。这就导致了fork被调用1次，却返回2次：父、子进程中各返回1次。对于应用程序员而言，最重要的是fork的2次返回值不一样，父进程返回值是子进程的pid，子进程的返回值是0。 至于子进程产生后，父、子进程谁先运行，取决于OS调度策略，应用程序员无法控制。 以上分析了fork的内部实现以及对应用程序的影响。如果应用程序员觉得难以理解的话，可以暂时抛开，只要记住3个结论即可： fork函数被调用1次（在父进程中被调用），但返回2次（父、子进程中各返回一次）。两次返回的区别是子进程的返回值是0，而父进程的返回值则是子进程的进程ID。 父、子进程完全一样（代码、数据），子进程从fork内部开始执行；父、子进程从fork返回后，接着执行下一条语句。 一般来说，在fork之后是父进程先执行还是子进程先执行是不确定的，应用程序员无法控制。</p></blockquote><h5 id="fork实例分析">fork实例分析</h5><figure class="code code-plain"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;sys/types.h&gt;
+
+#define err_sys(info)    \     
+   {                      \   
+        printf (&quot;%s\n&quot;, info);\  
+        exit(0); \               
+   }
+
+int glob = 6;  /* external variable in initialized data */
+char buf[ ] = &quot;a write to stdout\n&quot;;
+
+int main(void)
+{
+    int var;  /* automatic variable on the stack */
+    pid_t pid;
+    var = 88;
+
+    if ((write(STDOUT_FILENO, buf, sizeof(buf)-1) != sizeof(buf)-1))
+        err_sys(&quot;write error&quot;);
+
+    printf(&quot;before fork\n&quot;);  /* we don&#39;t flush stdout */
+
+    if ( (pid = fork()) &lt; 0) {
+        err_sys(&quot;fork error&quot;);
+    } else if (pid == 0) {   /* child */
+       glob++;      /* modify variables */
+       var++;
+    } else {
+        sleep(2);   /* parent */
+    }
+
+    printf(&quot;pid = %d, ppid = %d, glob = %d, var = %d\n&quot;, getpid(),getppid(), glob, var);
+    exit(0);
+ }
+</code></pre></figure><p>运行结果:</p><figure class="code code-plain"><pre><code>a write to stdout
+before fork
+pid = 9009, ppid = 9008, glob = 7, var = 89
+pid = 9008, ppid = 8979, glob = 6, var = 88</code></pre></figure><blockquote><p>运行结果分析： 结果的第1行是由父进程的21行打印； 结果的第2行是由父进程的24行打印； 由于父进程在24行睡眠了2秒，因此fork返回后，子进程先于父进程运行是大概率事件，所以子进程运行到25行打印出结果中的第3行。由于子进程会拷贝父进程的整个进程空间（这其中包括数据），因此当子进程26行从fork返回后，子进程中的glob=6，var=88（拷贝自父进程的数据）。此时子进程中pid=0，因此子进程会执行29、30行，当子进程到达35行时，将打印glob=7，var=89。 虽然，子进程改变了glob和var的值，但它仅仅是改变了子进程中的glob和var，而影响不了父进程中的glob和var。在子进程出生后，父、子进程的进程空间（代码、数据等）就是独立，互不干扰的。因此当父进程运行到35行，将会打印父进程中的glob和var的值，他们分别是6和88，这就是运行结果的第4行。</p></blockquote><h4 id="exec进程控制">exec进程控制</h4><p>与fork相对应，exec被成为进程控制的地字一号系统调用。</p><h5 id="文件描述符详解">文件描述符详解</h5><p>文件描述符本质是数组下表，如下图所示:</p><center><p><img src="https://raw.githubusercontent.com/newdee/BlogImage/master/20190906111812.png" alt="" loading="lazy" decoding="async"></p></center><blockquote><p>右侧的表称为i节点表，在整个系统中只有1张。该表可以视为结构体数组，该数组的一个元素对应于一个物理文件。 中间的表称为文件表，在整个系统中只有1张。该表可以视为结构体数组，一个结构体中有很多字段，其中有3个字段比较重要：</p><blockquote><p>file status flags：用于记录文件被打开来读的，还是写的。其实记录的就是open调用中用户指定的第2个参数 current file offset：用于记录文件的当前读写位置（指针）。正是由于此字段的存在，使得一个文件被打开并读取后，下一次读取将从上一次读取的字符后开始读取 v-node ptr：该字段是指针，指向右侧表的一个元素，从而关联了物理文件。 左侧的表称为文件描述符表，每个进程有且仅有1张。该表可以视为指针数组，数组的元素指向文件表的一个元素。最重要的是：数组元素的下标就是大名鼎鼎的文件描述符。 open系统调用执行的操作：新建一个i节点表元素，让其对应打开的物理文件（如果对应于该物理文件的i节点元素已经建立，就不做任何操作）；新建一个文件表的元素，根据open的第2个参数设置file status flags字段，将current file offset字段置0，将v-node ptr指向刚建立的i节点表元素；在文件描述符表中，寻找1个尚未使用的元素，在该元素中填入一个指针值，让其指向刚建立的文件表元素。最重要的是：将该元素的下标作为open的返回值返回。 这样一来，当调用read（write）时，根据传入的文件描述符，OS就可以找到对应的文件描述符表元素，进而找到文件表的元素，进而找到i节点表元素，从而完成对物理文件的读写。</p></blockquote></blockquote><h5 id="fork对文件描述符的影响">fork对文件描述符的影响</h5><p>fork会导致子进程继承父进程打开的文件描述符，其本质是将父进程的整个文件描述符表复制一份，放到子进程的PCB中。因此父、子进程中相同文件描述符（文件描述符为整数）指向的是同一个文件表元素，所以父（子）进程读取文件后，子（父）进程将读取同一文件的后续内容。</p><figure class="code code-plain"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;fcntl.h&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;sys/types.h&gt;
+
+int main(void)
+{
+        int fd, pid, status;
+        char buf[10];
+        if ((fd = open(&quot;./test.txt&quot;, O_RDONLY)) &lt; 0) {
+                perror(&quot;open&quot;);  exit(-1);
+        }
+        if ((pid = fork()) &lt; 0) {
+                perror(&quot;fork&quot;);  exit(-1);
+        } else if (pid == 0) {  //child
+                read(fd, buf, 2);
+                write(STDOUT_FILENO, buf, 2);
+        } else {  //parent
+                sleep(2);
+                lseek(fd, 1, SEEK_CUR);
+                read(fd, buf, 3);
+                write(STDOUT_FILENO, buf, 3);
+                write(STDOUT_FILENO, &quot;\n&quot;, 1);
+        }
+        return 0;
+}</code></pre></figure><p>假设，./test.txt的内容是abcdefg。那么子进程的18行将读到字符ab；由于，父、子进程的文件描述符fd都指向同一个文件表元素，因此当父进程执行23行时，fd对应的文件的读写指针将移动到字符d，而不是字符b，从而24行读到的是字符def，而不是字符bcd。程序运行的最终结果是打印abdef，而不是abbcd。 相对应的，如果是两个进程独立调用open去打开同一个物理文件，就会有2个文件表元素被创建，并且他们都指向同一个i节点表元素。两个文件表元素都有自己独立的current file offset字段，这将导致2个进程独立的对同一个物理文件进行读写，因此第1个进程读取到文件的第1个字符后，第2个进程再去读取该文件时，仍然是读到的是文件的第1个字符，而不是第1个字符的后续字符。 对应用程序员而言，最重要结论是： 如果子进程不打算使用父进程打开的文件，那么应该在fork返回后立即调用close关闭该文件。</p><h5 id="wait同步">wait同步</h5><h6 id="wait作用">wait作用</h6><p>在forkbase.c中，fork出子进程后，为了保证子进程先于父进程运行，在父进程中使用了sleep（2）的方式让父进程睡眠2秒。但实际上这样做，并不能100%保证子进程先于父进程运行，因为在负荷非常重的系统中，有可能在父进程睡眠2秒期间，OS并没有调度到子进程运行，并且当父进程睡醒后，首先调度到父进程运行。系统调用wait可以100%保证父、子进程完全按程序员的安排来进行同步。 需要包含的头文件： <code>wait.h</code> 函数原型：<code>pid_t wait(int * status)</code> 功能：等待进程结束。 返回值：若成功则为子进程ID号，若出错则为-1。 参数说明：</p><blockquote><p>status：用于存放进程结束状态。 wait函数用于使父进程阻塞，直到一个子进程结束。父进程调用wait，该父进程可能会:</p><blockquote><p>阻塞(如果其所有子进程都还在运行)。 带子进程的终止状态立即返回(如果一个子进程已终止，正等待父进程存取其终止状态)。 出错立即返回(如果它没有任何子进程)。</p></blockquote></blockquote><h6 id="wait调用">wait调用</h6><figure class="code code-plain"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;wait.h&gt;
+void pr_exit(intstatus);
+int main(void)
+{
+        pid_t pid;
+        int  status;
+        if ( (pid = fork()) &lt; 0)
+            { perror(&quot;fork&quot;);exit(-1); }
+        else if (pid == 0) {            /* child */
+            sleep(1);
+            printf(&quot;inchild\n&quot;);
+            exit(101);
+        }
+        if (wait(&amp;status) != pid)    /* wait for child */
+            { perror(&quot;wait&quot;);exit(-2); }
+        printf(&quot;in parent\n&quot;);
+        pr_exit(status);               /* and print itsstatus */
+        if ( (pid = fork()) &lt; 0)
+            { perror(&quot;fork&quot;);exit(-1); }
+        else if (pid == 0)              /*child */
+            abort();                    /* generates SIGABRT */
+        if (wait(&amp;status) != pid)               /* wait for child */
+            { perror(&quot;wait&quot;);exit(-2); }
+        pr_exit(status);                      /* and printits status */
+        if ( (pid = fork()) &lt; 0)
+            { perror(&quot;fork&quot;);exit(-1); }
+        else if (pid == 0)              /*child */
+            status /= 0;            /* divide by 0 generates SIGFPE */
+        if (wait(&amp;status) != pid)               /* wait for child */
+            { perror(&quot;wait&quot;);exit(-1); }
+        pr_exit(status);       /* and printits status */
+        exit(0);
+ }
+ void pr_exit(int status) {
+        if (WIFEXITED(status))
+            printf(&quot;normallytermination, low-order 8 bit of exit status = %d\n&quot;, WEXITSTATUS(status));
+        else if(WIFSIGNALED(status))
+            printf(&quot;abnormallytermination, singal number = %d\n&quot;, WTERMSIG(status));
+ }</code></pre></figure><p>其中，11行创建了一个子进程，13行根据fork的返回值区分父、子进程。</p><p>我们先看父进程，父进程从18行运行，这里调用了<code>wait</code>函数等待子进程结束，并将子进程结束的状态保存在<code>status</code>中。这时，父进程就阻塞在<code>wait</code>这里了，这样就保证了子进程先运行。子进程从13行开始运行，然后<code>sleep</code> 1秒，打印出“in child”后，调用<code>exit</code>函数退出进程。这里<code>exit</code>中有个参数101，表示退出的值是101。.子进程退出后，父进程<code>wait</code>到了子进程的状态，并把状态保存到了<code>status</code>中。后面的<code>pr_exit</code>函数是用来对进程的退出状态进行打印。接下来，父进程又创建一个子进程，然后又一次调用<code>wait</code>函数等待子进程结束，父进程这时候阻塞在了wait这里。子进程开始执行，子进程里面只有一句话：abort（），abort会结束子进程并发送一个SIGABORT信号，唤醒父进程。所以父进程会接受到一个SIGABRT信号，并将子进程的退出状态保存到status中。然后调用<code>pr_exit</code>函数打印出子进程结束的状态。然后父进程再次创建了一个子进程，依然用<code>wait</code>函数等待子进程结束并获取子进程退出时的状态。子进程里面就一句<code>status/= 0</code>，这里用0做了除数，所以子进程会终止，并发送一个SIGFPE信号，这个信号是用来表示浮点运算异常，比如运算溢出，除数不能为0等。这时候父进程<code>wait</code>函数会捕捉到子进程的退出状态，然后调用<code>pr_exit</code>处理。</p><blockquote><p><code>pr_exit</code>函数将status状态传入，然后判断该状态是不是正常退出，如果是正常退出会打印出退出值；不是正常退出会打印出退出时的异常信号。这里用到了几个宏，简单解释如下：</p><blockquote><p><code>WIFEXITED</code>： 这个宏是用来判断子进程的返回状态是不是为正常，如果是正常退出，这个宏返回真。 <code>WEXITSTATUS</code>： 用来返回子进程正常退出的状态值。 <code>WIFSIGNALED</code>： 用来判断子进程的退出状态是否是非正常退出，若非正常退出时发送信号，则该宏返回真。 <code>WTERMSIG</code>： 用来返回非正常退出状态的信号number。 所以这段代码的结果是分别打印出了三个子进程的退出状态和异常结束的信号编号</p></blockquote></blockquote><h5 id="exec详解">exec详解</h5><p>当一个程序调用fork产生子进程，通常是为了让子进程去完成不同于父进程的某项任务，因此含有fork的程序，通常的编程模板如下：</p><figure class="code code-plain"><pre><code>if ((pid = fork()) == 0) {
+       dosomething in child process;
+       exit(0);
+}
+do something in parent process;</code></pre></figure><blockquote><p>这样的编程模板使得父、子进程各自执行同一个二进制文件中的不同代码段，完成不同的任务。这样的编程模板在大多数情况下都能胜任，但仔细观察这种编程模板，你会发现它要求程序员在编写源代码的时候，就要预先知道子进程要完成的任务是什么。这本不是什么过分的要求，但在某些情况下，这样的前提要求却得不到满足，最典型的例子就是Linux的基础应用程序 —— shell。你想一想，在编写shell的源代码期间，程序员是不可能知道当shell运行时，用户输入的命令是ls还是cp，难道你要在shell的源代码中使用if--elseif--else if--else if ……结构，并拷贝 ls、cp等等外部命令的源代码到shell源代码中吗？退一万步讲，即使这种弱智的处理方式被接受的话，你仍然会遇到无法解决的难题。想一想，如果用户自己编写了一个源程序，并将其编译为二进制程序test，然后再在shell命令提示符下输入./test，对于采用前述弱智方法编写的shell，它将情何以堪？ 因此需要exec予以协作。</p></blockquote><h6 id="exec机制">exec机制</h6><blockquote><p>在用fork函数创建子进程后，子进程往往要调用exec函数以执行另一个程序。 当子进程调用exec函数时，会将一个二进制可执行程序的全路径名作为参数传给exec，exec会用新程序代换子进程原来全部进程空间的内容，而新程序则从其main函数开始执行，这样子进程要完成的任务就变成了新程序要完成的任务了。 因为调用exec并不创建新进程，所以前后的进程ID并未改变。exec只是用另一个新程序替换了当前进程的正文、数据、堆和栈段。进程还是那个进程，但实质内容已经完全改变。呵呵，这是不是和中国A股的借壳上市有异曲同工之妙？ 顺便说一下，新程序的bss段清0这个操作，以及命令行参数和环境变量的指定，也是由exec完成的。</p></blockquote><h6 id="exec用法">exec用法</h6><p>函数原型：</p><blockquote><p><code>int execle(const char * pathname,const char * arg0, ... (char *)0, char * const envp [] )</code> 返回值： exec执行失败返回-1，成功将永不返回（想想为什么？）。哎，牛人就是有脾气，天字1号是调用1次，返回2次；地字1号，干脆就不返回了，你能奈我何？ 参数： <code>pathname</code>：新程序的二进制文件的全路径名 <code>arg0</code>：新程序的第1个命令行参数<code>argv[0]</code>，之后是新程序的第2、3、4……个命令行参数，以<code>(char*)0</code>表示命令行参数的结束 <code>envp</code>：新程序的环境变量</p></blockquote><figure class="code code-plain"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;unistd.h&gt;
+int main(int argc, char*argv[])
+{
+       int  i;
+       char **ptr;
+       extern char  **environ;
+        for (i = 0; i &lt; argc; i++)   /* echo all command-line args */
+            printf(&quot;argv[%d]:%s\n&quot;, i, argv[i]);
+        for (ptr = environ; *ptr != 0;ptr++)  /* and all env strings */
+            printf(&quot;%s\n&quot;,*ptr);
+}</code></pre></figure><p>将此程序进行编译，生成二进制文件命名为echoall，放在当前目录下。很容易看出，此程序运行将打印进程的所有命令行参数和环境变量。 运行结果分析：</p><blockquote><p>1-5行是第1个子进程14行运行新程序echoall的结果，其中：1-3行打印的是命令行参数；4、5行打印的是环境变量。 6行之后是第2个子进程23行运行新程序echoall的结果，其中：6、7行打印的是命令行参数；8行之后打印的是环境变量。之所以第2个子进程的环境变量那么多，是因为程序23行调用execlp时，没有给出环境变量参数，因此子进程就会继承父进程的全部环境变量。</p></blockquote><h4 id="进程的消亡">进程的消亡</h4><h5 id="gdb调试多进程技巧">gdb调试多进程技巧</h5><p>对多进程程序进行调试，存在一个较大的难题，那就是当程序调用fork产生子进程后，gdb跟踪的是父进程，无法进入到子进程里去单步调试子进程。这样一来，如果子进程中的代码运行出错的话，将无法进行调试。 因此想调试子进程的话，需要一点技巧：</p><blockquote><p>在子进程的入口处加入sleep(20)函数，以使子进程在被创建后能暂时停止。 用ps查看子进程的pid，假定pid为222，则输入命令：gdb程序名称222。从而再运行一个调试程序，使得gdb attach到子进程。 用gdb的break命令在子进程中设定断点。 用gdb的continue，恢复子进程的运行。 等待sleep的睡眠时间到达，从而子进程将在断点处停下来。</p></blockquote><h5 id="启动例程与main函数">启动例程与main函数</h5><p>从程序员的角度看，C应用程序从main函数开始运行。但事实上，当C应用程序被内核通过exec启动时，一个启动例程会先于main函数运行，它会为main函数的运行准备好环境后，调用main函数。而main函数正常结束后return语句将使得main函数返回到启动例程，启动例程在完成必要的善后处理后将最终调用<code>_exit</code>结束进程。 有5种方式结束进程：</p><h6 id="正常结束">正常结束：</h6><p>1.从main函数返回 2.调用exit 3.调用<code>_exit</code></p><h6 id="非正常结束">非正常结束：</h6><p>4.调用abort 5.被信号中止</p><h5 id="exit函数与_exit函数"><code>exit</code>函数与<code>_exit</code>函数</h5><p>需要包含的头文件：<code>&lt;stdlib.h&gt;、&lt;unistd.h&gt;</code> 函数原型：</p><blockquote><p><code>void exit(int status)、 void _exit(int status)</code> 这两个函数的功能都是使进程正常结束。 <code>_exit</code>：立即返回内核，它是一个系统调用 <code>exit</code>：在返回内核前会执行一些清理操作，这些清理操作包括调用exit handler，以及彻底关闭标准I/O流(这回使得I/O流的buffer中的数据被刷新，即被提交给内核)，它是标准C库中的一个函数。</p></blockquote><h4 id="io流和io库缓存">I/O流和I/O库缓存</h4><p>关于IO流的buffer:</p><figure class="code code-plain"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+int main(void)
+{
+    printf(&quot;hello&quot;);
+    //printf(&quot;hello\n&quot;);
+    //write(1, &quot;hello&quot;, 5);
+    sleep(100);
+    return 0;
+ }</code></pre></figure><p>其结果没有任何输出。</p><blockquote><p>当应用程序调用printf时，将字符串&quot;hello&quot;提交给了标准I/O库的I/O库缓存。I/O库缓存大致可以认为是printf实现中定义的全局字符数组，因此它位于用户空间，可见&quot;hello&quot;并没有被提交给内核(所以也不可能出现内核将&quot;hello&quot;打印到屏幕的操作)，所以没有打印出任何东西。只有当某些条件满足时，标准I/O库才会刷新I/O库缓存，这些条件包括：</p><blockquote><p>用户空间的I/O库缓存已被填满 I/O库缓存遇到了换行符(‘\n’)，并且输出目标是行缓冲设备(屏幕就是这种设备)。因此将上面的代码第6行注释掉，并取消第7行的注释，就可以看到打印出了hello I/O流被关闭，上节中的exit函数就会关闭I/O流 Tips: 当标准I/O库缓存时，会调用以前的我们学过的系统调用，例如：write，将I/O库缓存中的内容提交给内核。 so，上述代码也可以这样：第6行注释，第7行注释，第8行取消注释。也可以在屏幕上看见&quot;hello&quot;</p></blockquote></blockquote><h4 id="exit-handler">Exit handler</h4><p>Exit handler 是程序员编写的函数，进程正常结束时，它们会被系统调回。这使程序员具备了在进程正常结束时，控制进程执行某些善后操作的能力。 使用Exit handler，需要程序员完成两件事情：编写Exit handler函数；调用<code>atexit</code>或<code>on_exit</code>向系统注册Exit handler(即告知系统需要回调的Exit handler函数是谁) 需要包含头的文件：&lt;stdlib.h&gt; 函数原型：</p><figure class="code code-plain"><pre><code>int atexit(void (* func)(void))
+int on_exit(void (* func)(int, void *),)</code></pre></figure><p>功能： <code>atexit</code>注册的函数func没有参数；<code>on_exit</code>注册的函数func有一个int型参数，系统调用回调func时将向该参数传入进程的退出值，func的另一个<code>void *</code>类型参数将会是arg。 ANSI C中，进程最多可以注册32个Exit handler函数，这些函数按照注册时的顺序被逆序调用。</p><figure class="code code-plain"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;unistd.h&gt;
+static void my_exit0(int, void *);
+static void my_exit1(void);
+static void my_exit2(void);
+char str[9]=&quot;for test&quot;;
+int main(void) {
+        //char str[9]=&quot;for test&quot;;
+    if (atexit(my_exit2) != 0) {
+        perror(&quot;can&#39;t register my_exit2&quot;); 
+        exit(-1); 
+    }
+    if (atexit(my_exit1) != 0) { 
+        perror(&quot;can&#39;t register my_exit1&quot;); 
+        exit(-1); 
+    }
+    if (on_exit(my_exit0,(void *)str) !=0) {
+        perror(&quot;can&#39;t register my_exit0&quot;); 
+        exit(-1); 
+    }
+    printf(&quot;main is done\n&quot;);
+    printf(&quot;abc&quot;);
+    //_exit(1234);
+    exit(1234);
+}
+
+static void my_exit0(int status, void *arg) {
+    printf(&quot;zero exit handler\n&quot;);
+    printf(&quot;exit %d\n&quot;, status);
+    printf(&quot;arg=%s\n&quot;,(char *)arg);
+}
+
+static void my_exit1(void) {
+    printf(&quot;first exit handler\n&quot;);
+}
+static void my_exit2(void)  {
+    printf(&quot;second exit handler\n&quot;);
+}</code></pre></figure><p>进程中止处理函数执行顺序按照设置顺序的相反顺序执行。</p></div><footer class="post-foot"><nav class="post-siblings" aria-label="相邻文章"><a class="sib sib-prev" href="/posts/413bb42a/"><span class="sib-label">较新一篇</span>多媒体框架GStreamer</a> <a class="sib sib-next" href="/posts/ad27c4df/"><span class="sib-label">较旧一篇</span>网易18校招题</a></nav></footer></article><nav class="toc" id="toc" aria-label="目录"><p class="toc-title">目录</p><ul><li class="toc-l3"><a href="#文件io">文件IO</a></li><li class="toc-l3"><a href="#多进程">多进程</a></li></ul></nav></div></main><footer class="site-foot"><p class="foot-motto">多可喜，亦多可悲</p><p class="foot-line">© 1992–2026 dfine <span class="foot-sep">·</span> <span id="busuanzi_container_site_uv" hidden>访客 <span id="busuanzi_value_site_uv"></span></span> <span id="busuanzi_container_site_pv" hidden><span class="foot-sep">·</span> 浏览 <span id="busuanzi_value_site_pv"></span></span> <span class="foot-sep">·</span> <a href="/atom.xml">RSS</a></p></footer><script type="application/json" id="acg-config">{"backgrounds":["https://t.alcy.cc/moe","https://www.loliapi.com/acg/","https://api.btstu.cn/sjbz/api.php?lx=dongman&format=images"],"live2d":true,"music":[]}</script></body></html>
