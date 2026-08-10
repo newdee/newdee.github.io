@@ -247,6 +247,281 @@ CLI —— &lt;code&gt;push / pull / search / route&lt;/code&gt;&lt;/p&gt;
 </content>
   </entry>
   <entry>
+    <title>prime-agent，把大工程拆成七个阶段的编排器</title>
+    <link href="https://dfine.tech/posts/e728ebc0/"/>
+    <id>https://dfine.tech/posts/e728ebc0/</id>
+    <published>2026-08-10T20:41:35+08:00</published>
+    <updated>2026-08-10T20:41:35+08:00</updated>
+    <category term="Agent"/>
+    <category term="Cursor"/>
+    <category term="TypeScript"/>
+    <category term="工作流"/>
+    <content type="html">&lt;p&gt;把一个大 feature 整个丢给 coding agent，得到的多半是一个几千行的 PR：类型、接口、实现搅在一块，审无可审，错了也说不清从哪一步开始错的。&lt;br&gt;
+prime-agent 的解法是把开发强拆成七个阶段：每阶段一份 markdown 合同、一次 commit、一个 PR 检查点，重点阶段再拉一个全新 agent 做对抗审查。它本体是跑在 Bun 上的终端小工具，驱动 Cursor 云端 agent 干活；从合同里的 &lt;code&gt;prime@terminal.shop&lt;/code&gt; 和满篇 Odin 游戏路径看，应该就是 ThePrimeagen 自己每天在用的那套。&lt;br&gt;
+项目没有 README，这篇是通读源码后的笔记：合同怎么设计、流水线怎么转、断了怎么接。&lt;/p&gt;
+&lt;!--more--&gt;
+&lt;h3 id=&quot;七份合同&quot;&gt;七份合同&lt;/h3&gt;
+&lt;p&gt;核心设计不在 TypeScript 里，在 &lt;code&gt;phases/&lt;/code&gt; 的七份 markdown 里。每份是一个阶段的行为边界加一张 done criteria 清单，七份合计 187 行，第一条永远是「先追平 master」。分工：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;phase 1 侦查：读旧代码、挑或建 Linear 工单、写一页实现草稿，不写代码&lt;br&gt;
+phase 2 结构：只改 &lt;code&gt;objects/&lt;/code&gt; 下的类型定义。合同原话是不许 build——只做结构改动，按定义此刻就该有东西是坏的&lt;br&gt;
+phase 3 契约：只动函数签名、常量和模块级数据，新函数体一律 &lt;code&gt;unreachable()&lt;/code&gt; 占位；改已有函数的签名可以，函数体一个字不许动&lt;br&gt;
+phase 4 接线点：在运行路径上给每个要改的位置打 TODO，理由限两行内，不写任何代码&lt;br&gt;
+phase 5 试写审计：完整实现一遍 feature，验证 2-4 的契约够不够用，缺口按 phase 2/3/4 归类上报，然后把试写代码整体回滚&lt;br&gt;
+phase 6 断言：补 phase 5 报出的缺口，给不可能状态加负空间断言（合同还让 agent 去参考 NASA 的断言指南）&lt;br&gt;
+phase 7 实现：填掉全部 TODO，端到端跑通，验收脚本 &lt;code&gt;agent_task_finalize&lt;/code&gt; 必须过&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;这么拆的妙处是前四个阶段的 diff 都小而纯：只有类型、只有签名、只有 TODO 注释，人审起来几分钟一个。合同还把 Linear 工单当进度指针用：每阶段开工前先把工单挪到对应 Phase，流水线跑到哪，看板上一目了然。验收口径也定得很死：phase 5 和 7 都得用 JSON 驱动的 game 起一局验证 feature 真能跑，phase 7 的合同还明写不许拿录屏当证据。&lt;/p&gt;
+&lt;p&gt;最狠的一笔是 phase 5：花整整一轮做完整实现，唯一目的却是验证契约，做完即弃。听着奢侈，其实是笔明白账——&lt;strong&gt;agent 的算力时间不值钱，契约返工才值钱&lt;/strong&gt;。真实现写到一半才发现 phase 2 少个字段，和在注定扔掉的试写里发现同一件事，修正成本差着数量级。&lt;/p&gt;
+&lt;h3 id=&quot;流水线&quot;&gt;流水线&lt;/h3&gt;
+&lt;center&gt;
+&lt;p&gt;&lt;img src=&quot;/images/prime-agent-phase-loop.svg&quot; alt=&quot;一个 phase 的生命周期&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
+&lt;/center&gt;
+&lt;p&gt;编排器是 &lt;code&gt;phase-7.ts&lt;/code&gt;，388 行，一条串行流水线。从 phase 1 起步全程 13 步：7 个执行步、5 个审查步、1 个 phase 5 之后的补漏步（回头补 2-4 阶段的契约改动）。跑起来就是 &lt;code&gt;bun phase-7.ts&lt;/code&gt;，敲一句 starting prompt，报完文件路径就可以去干别的，终端里只剩一个盲文小转轮在转。&lt;/p&gt;
+&lt;p&gt;每个阶段发给 agent 的任务提示词简单得过分，就一句 &lt;code&gt;start phase N&lt;/code&gt;，随行的是两块内联上下文：该阶段合同的全文，加起跑时交互式指定的常驻文件。规矩全部长在合同里，代码不重复一遍。用户敲的那句 starting prompt 只有 phase 1 见得到（跟在 &lt;code&gt;start 7 phase planning&lt;/code&gt; 后面），此后各阶段全凭合同和会话记忆推进。&lt;/p&gt;
+&lt;p&gt;起跑时它还会分两次问你要文件：一批随每个 phase 任务带上，一批只随审查带上——给审查者的上下文可以和给实现者的完全不同。&lt;/p&gt;
+&lt;p&gt;主 agent 在源码里就叫 Steve，带着完整会话历史从 phase 1 一路干到 phase 7，每阶段结束立即 commit 并开出或更新 PR——这是写进每份合同的硬性条目，PR 即检查点。&lt;/p&gt;
+&lt;p&gt;审查走另一路。phase 2/3/4/6/7 结束后，编排器用 &lt;code&gt;getPr&lt;/code&gt; 从 Steve 的 run 元数据里摸出 PR URL，再 &lt;code&gt;create&lt;/code&gt; 一个全新的云端 agent 从该 PR checkout，提示词直接摊牌：&lt;/p&gt;
+&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;You are to do an adversarial review of ${input.prUrl}.  You need to
+thoroughly check the code for quality and correctness.&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;审查 agent 手里同样有那份阶段合同，所以它审的不只是代码质量，还有违约：phase 3 的 PR 里混进了一行实现逻辑，就是该被抓出来的东西。审查报告原文灌回 Steve：&lt;code&gt;Fix the PR feedback from the phase N review&lt;/code&gt;。审查者与被审者零共享上下文，这是刻意的——让同一个会话里的 agent 审自己刚写的代码，多半是走过场。&lt;/p&gt;
+&lt;p&gt;phase 6 又进一步：断言不让 Steve 写，另开一个名为 &lt;code&gt;phase 6: invariance&lt;/code&gt; 的新 agent 从当前 PR checkout 来写。写实现者不自定不变量，此之谓也。&lt;/p&gt;
+&lt;h3 id=&quot;断了怎么办&quot;&gt;断了怎么办&lt;/h3&gt;
+&lt;p&gt;云端一个阶段动辄跑几十分钟，容错分两级。&lt;/p&gt;
+&lt;p&gt;第一级对付流断。SDK 的等待流挂掉时报 &lt;code&gt;stream is no longer available&lt;/code&gt;，&lt;code&gt;waitWithReconnect&lt;/code&gt; 只认这一种错误，拿 run id 调 &lt;code&gt;getRun&lt;/code&gt; 重连同一个 run 接着等，其余错误一律照抛。run 本身还在云上跑，本地网络抖一下不该拖垮整条流水线。&lt;/p&gt;
+&lt;p&gt;第二级对付进程挂。本机进程死了什么都不丢，因为会话状态全在 Cursor 云端。&lt;code&gt;--resume&lt;/code&gt; 列出云上 agent 供选，输入 phase 号，再选 &lt;code&gt;phase&lt;/code&gt; 还是 &lt;code&gt;review&lt;/code&gt; 模式，纯函数 &lt;code&gt;pipelineStepsFrom&lt;/code&gt; 推导出剩余步骤接着跑。phase 1/5 本就没有审查步，续跑时选 review 会被 &lt;code&gt;assertResumeMode&lt;/code&gt; 当场拒绝。&lt;/p&gt;
+&lt;h3 id=&quot;部件&quot;&gt;部件&lt;/h3&gt;
+&lt;center&gt;
+&lt;p&gt;&lt;img src=&quot;/images/prime-agent-components.svg&quot; alt=&quot;prime-agent 部件与数据流&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
+&lt;/center&gt;
+&lt;p&gt;流水线之外还有四个小入口，&lt;code&gt;link&lt;/code&gt; 脚本把前三个连同 &lt;code&gt;phase-7&lt;/code&gt; 软链成 &lt;code&gt;prime-agent-*&lt;/code&gt; 全局命令：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;kick-off&lt;/code&gt;：单发任务。读一句 prompt，带上常驻上下文丢给新开的 agent&lt;br&gt;
+&lt;code&gt;review&lt;/code&gt;：手动对抗审查。选一个云上 agent 自动摸它的 PR，或直接贴 PR 链接&lt;br&gt;
+&lt;code&gt;take-over&lt;/code&gt;：反向接力。读本机当前分支，让云端 agent「finish the work started on this branch」&lt;br&gt;
+&lt;code&gt;get&lt;/code&gt;：列出云上 agent，挑一个看详情&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;所有入口汇到同一套底层：&lt;code&gt;context.ts&lt;/code&gt; 出三种提示词模板，把文件全文以 &lt;code&gt;&amp;lt;File&amp;gt;&lt;/code&gt; 块内联进 &lt;code&gt;&amp;lt;Context&amp;gt;&lt;/code&gt;，不指望 agent 自己检索；&lt;code&gt;agents.ts&lt;/code&gt; 封装 &lt;code&gt;@cursor/sdk&lt;/code&gt;，模型写死 grok-4.5、effort high。方向键选择器和等待转轮都是手搓的，整个终端交互没引一个 UI 库。&lt;/p&gt;
+&lt;p&gt;每个项目的配置就一个 &lt;code&gt;.prime-agent&lt;/code&gt; 文件：&lt;/p&gt;
+&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;{ &amp;quot;project&amp;quot;: &amp;quot;owner/repo&amp;quot;, &amp;quot;context&amp;quot;: [&amp;quot;odin.md&amp;quot;] }&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;&lt;code&gt;project&lt;/code&gt; 是云端 agent checkout 的仓库；&lt;code&gt;context&lt;/code&gt; 数组是 &lt;code&gt;kick-off&lt;/code&gt; 每次自动附带的文件，流水线那边的上下文则全在起跑时交互式指定。&lt;/p&gt;
+&lt;h3 id=&quot;边界&quot;&gt;边界&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;合同不通用。七份 phase 文档写满目标项目的私货：Odin 路径、Linear 工单流转、&lt;code&gt;agent_task_finalize&lt;/code&gt;。编排器通用，合同得按项目重写&lt;br&gt;
+串行无预算。一个阶段卡住整条停，没有超时，也没有重试上限&lt;br&gt;
+审查只有单轮。Steve 修完反馈不复审，修没修对，靠后续阶段的审查兜底&lt;br&gt;
+上下文全文内联，常驻文件一大就烧 token，没有任何截断逻辑&lt;br&gt;
+模型硬编码在源码里，换模型要改代码&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&quot;几个数字&quot;&gt;几个数字&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;源码 15 个文件 1277 行；测试 2 个文件 324 行、24 条用例&lt;br&gt;
+24 条测试全押在两处纯逻辑上：流水线步骤推导 15 条、断流重连 9 条，碰网络的部分一条没测&lt;br&gt;
+七份合同 187 行；运行时依赖只有 &lt;code&gt;@cursor/sdk&lt;/code&gt; 和 &lt;code&gt;dotenv&lt;/code&gt; 两个&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;代码是编排，合同才是方法论——这 1277 行里真正值得抄的，是那 187 行 markdown。至于主 agent 为什么叫 Steve，源码里没有答案，我也就不替他追究了。&lt;/p&gt;
+</content>
+  </entry>
+  <entry>
+    <title>Cloudflare Computer，装在 Durable Object 里的文件系统</title>
+    <link href="https://dfine.tech/posts/752fbec9/"/>
+    <id>https://dfine.tech/posts/752fbec9/</id>
+    <published>2026-08-10T20:41:34+08:00</published>
+    <updated>2026-08-10T20:41:34+08:00</updated>
+    <category term="Cloudflare"/>
+    <category term="Durable Objects"/>
+    <category term="FUSE"/>
+    <content type="html">&lt;p&gt;Cloudflare 最近放出了一个叫 Cloudflare Computer 的预览仓库，把「给 agent 一台电脑」拆成了两半：文件系统和执行环境。&lt;br&gt;
+文件系统住进 Durable Object 的 SQLite，执行环境退化成可插拔的外设，容器只是三种外设之一。&lt;br&gt;
+这个拆法跟我对沙箱的直觉正好相反，翻完二十篇规格文档，值得记一篇。&lt;/p&gt;
+&lt;!--more--&gt;
+&lt;h3 id=&quot;它是什么&quot;&gt;它是什么&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;@cloudflare/computer&lt;/code&gt; 是一个跑在 Durable Object 里的虚拟文件系统：整棵树落在 DO 自带的 SQLite 里，&lt;br&gt;
+对外是 &lt;code&gt;workspace.fs&lt;/code&gt;（用起来像 &lt;code&gt;node:fs/promises&lt;/code&gt;）加 &lt;code&gt;workspace.runtime.exec(source, { backend })&lt;/code&gt; 一个执行入口。&lt;br&gt;
+今天有三种后端：container（真容器加 FUSE 挂载）、isolate shell（Dynamic Worker 里跑 just-bash）、isolate JavaScript（Dynamic Worker 里求值 ES module）。&lt;br&gt;
+也可以一个后端都不配，纯当持久文件系统用——&lt;code&gt;fs&lt;/code&gt; 照常工作，&lt;code&gt;exec&lt;/code&gt; 才抛错。&lt;/p&gt;
+&lt;p&gt;丑话在前：README 顶上就是 &lt;strong&gt;PREVIEW ONLY&lt;/strong&gt;，API 不稳定，不适合生产；&lt;code&gt;docs/&lt;/code&gt; 下二十篇规格自称 forward-looking，要当设计意图读，不能当代码现状读。&lt;br&gt;
+下文尽量把两者分开标：比如 R2 只读挂载在 schema 里留好了座位（&lt;code&gt;_vfs_mounts&lt;/code&gt; 表、&lt;code&gt;stub_size&lt;/code&gt; 列），但运行时还没接线，就属于「规格意图」。&lt;/p&gt;
+&lt;h3 id=&quot;为什么不是沙箱&quot;&gt;为什么不是沙箱&lt;/h3&gt;
+&lt;p&gt;给 agent 配环境，常规做法是发一个容器：文件在容器盘上，跑完要么整包丢弃，要么自己往对象存储打包搬运。&lt;br&gt;
+状态的权威在容器里，而容器天生要被回收，这两件事是拧着的。isolate 倒是轻，但 Workers 里压根没有像样的持久文件系统。&lt;/p&gt;
+&lt;p&gt;这个项目把关系倒过来：&lt;strong&gt;权威态只有一份&lt;/strong&gt;，住在 DO 的 SQLite 里（DO 本来就是带事务的有状态单点），&lt;br&gt;
+执行环境全部变成无状态外设，注册在稳定 ID 下、首次使用才懒连接，用完随便死。容器重启、isolate 回收，树还在。&lt;/p&gt;
+&lt;center&gt;
+&lt;p&gt;&lt;img src=&quot;/images/cf-computer-backends.svg&quot; alt=&quot;Cloudflare Computer 三后端架构&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
+&lt;/center&gt;
+&lt;h3 id=&quot;权威态怎么存&quot;&gt;权威态怎么存&lt;/h3&gt;
+&lt;p&gt;schema 是经典 inode 设计，三个机制点值得说：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;vfs_dirents (parent_inode, name) → child_inode&lt;/code&gt; 加一张 &lt;code&gt;vfs_nodes&lt;/code&gt; 节点表，路径解析走间接层：&lt;br&gt;
+本地 rename 是一条 &lt;code&gt;UPDATE&lt;/code&gt;，O(1)；硬链接就是两条 dirent 指同一个 inode，白送。&lt;br&gt;
+文件内容切成 512 KiB 的 chunk，按哈希落进内容寻址的 &lt;code&gt;vfs_blobs&lt;/code&gt;；节点行上冗余一个 &lt;code&gt;size&lt;/code&gt; 列，&lt;code&gt;stat&lt;/code&gt; 不用每次去 &lt;code&gt;SUM&lt;/code&gt;。&lt;br&gt;
+&lt;code&gt;vfs_meta&lt;/code&gt; 里一行单调递增的 &lt;code&gt;rev&lt;/code&gt; 计数器，每次变更原子自增并盖到节点上——整套增量同步就悬在这一个数上。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;计数器是刻意的单写者设计：所有变更先过 Workspace 的 FIFO 串行化，单行永不争用；哪天要加并发写者，得先动它。&lt;br&gt;
+&lt;code&gt;vfs_nodes&lt;/code&gt; 上按 &lt;code&gt;rev&lt;/code&gt; 建了索引，同步端枚举「上次游标之后动过的东西」就是一次索引扫描，不用全表比对。&lt;/p&gt;
+&lt;h3 id=&quot;同步协议&quot;&gt;同步协议&lt;/h3&gt;
+&lt;p&gt;只有 container 后端需要同步——另外两个后端根本没有第二份存储。同步双向增量，各自带单调游标。&lt;/p&gt;
+&lt;p&gt;push（DO 到容器）发生在每次 &lt;code&gt;exec&lt;/code&gt; 之前，把容器没见过的 rev 全推过去。同一路径中间改写五次，线上只有终态一条；&lt;br&gt;
+条目不带字节，只带 chunk 哈希，发送方先 &lt;code&gt;hasObjects&lt;/code&gt; 探测，缺的块才 &lt;code&gt;pushObjects&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;pull（容器回 DO）发生在 &lt;code&gt;exec&lt;/code&gt; 返回之后，&lt;code&gt;fetchChanges({ after: 游标 })&lt;/code&gt;，游标是 &lt;code&gt;(rev, path)&lt;/code&gt; 二元组。&lt;br&gt;
+DO 按 256 条一批收流：查本地缺哪些块、&lt;code&gt;fetchObjects&lt;/code&gt; 补齐、&lt;code&gt;applyChanges&lt;/code&gt; 落库，再把游标推进到这一批最后一条。&lt;br&gt;
+中途崩溃从上个批次续传，重复工作的上界是一批而不是整条流；接收侧 &lt;code&gt;alreadyApplied&lt;/code&gt; 把重复条目原地丢弃，重放廉价且幂等。&lt;/p&gt;
+&lt;p&gt;线协议里没有 rename opcode：只有新路径的活条目加旧路径的墓碑，apply 因此不需要按操作顺序重放。&lt;br&gt;
+代价是目录改名要给整棵子树逐个盖新 rev，O(子树) 条条上线；类型冲突走 last-writer-wins，上游节点直接顶掉本地整棵子树。&lt;/p&gt;
+&lt;p&gt;还有两处取舍写得很直白：硬链接跨线不保身份，一个 inode 挂几个名字就每个名字发一条，落到对端是内容相同的独立文件；&lt;br&gt;
+目录条目的幂等判定只看 mode 不看 mtime，两边目录 mtime 有漂移，不会变成同步流量。&lt;/p&gt;
+&lt;center&gt;
+&lt;p&gt;&lt;img src=&quot;/images/cf-computer-container-sync.svg&quot; alt=&quot;container 后端一次 exec 的同步回路&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
+&lt;/center&gt;
+&lt;h3 id=&quot;容器后端&quot;&gt;容器后端&lt;/h3&gt;
+&lt;p&gt;容器里跑的守护进程叫 &lt;code&gt;computerd&lt;/code&gt;，是个 Node SEA 单二进制：Node 运行时、&lt;code&gt;fuse-native&lt;/code&gt; 预编译件、&lt;code&gt;libfuse&lt;/code&gt; 全部内嵌，&lt;br&gt;
+宿主镜像不需要装 Node，Debian slim 加个 &lt;code&gt;fuse3&lt;/code&gt; 就能起。&lt;/p&gt;
+&lt;p&gt;它把容器内 VFS 用 FUSE 挂到 &lt;code&gt;/workspace&lt;/code&gt;，容器里任何工具——shell、npm、编译器——看到的就是 DO 里那棵树，路径一致。&lt;br&gt;
+建连是反向拨号：后端调 &lt;code&gt;computerd&lt;/code&gt; 的 &lt;code&gt;POST /connect&lt;/code&gt;，让它主动拨一条 WebSocket 出来，capnweb 会话的 bootstrap stub 是 &lt;code&gt;WorkspaceRPC&lt;/code&gt;（&lt;code&gt;sync&lt;/code&gt; 与 &lt;code&gt;shell&lt;/code&gt; 两个子 stub）。&lt;br&gt;
+容器侧 VFS 放在内存里，容器重启就丢，下一次 push 重新基线——权威态从来不在这一边。&lt;/p&gt;
+&lt;p&gt;命令执行的括号是固定的：push、spawn、流事件或 result、pull，把 &lt;code&gt;result()&lt;/code&gt; 或事件流耗尽，收尾的 pull 才算完成。&lt;br&gt;
+&lt;code&gt;computerd&lt;/code&gt; 自己的默认端口是 45678，Cloudflare 后端把镜像内监听钉在 8080；&lt;br&gt;
+它保留进程日志，断线后 &lt;code&gt;getExec&lt;/code&gt; 能重新挂回去看回放、补信号——三个后端里生命周期最全的一个。&lt;/p&gt;
+&lt;h3 id=&quot;isolate-shell&quot;&gt;isolate shell&lt;/h3&gt;
+&lt;p&gt;第二种后端不要容器：just-bash 解释器跑在 &lt;code&gt;env.LOADER&lt;/code&gt; 拉起的 Dynamic Worker 里，&lt;br&gt;
+shell 发出的每个文件系统调用走 Workers RPC 打回宿主 DO，直接读写权威态。零第二存储、零同步回路，result 里 &lt;code&gt;pushed&lt;/code&gt; 和 &lt;code&gt;pulled&lt;/code&gt; 恒为 0。&lt;/p&gt;
+&lt;p&gt;有个实现细节挺有意思：&lt;code&gt;DurableObjectNamespace&lt;/code&gt; 过不了 Worker Loader &lt;code&gt;env&lt;/code&gt; 的 structured clone，&lt;br&gt;
+所以塞进 isolate 的是一个叫 &lt;code&gt;WorkspaceServiceProxy&lt;/code&gt; 的回环入口，每次 &lt;code&gt;env.HOST.getWorkspace()&lt;/code&gt; 由宿主侧代查命名空间。&lt;br&gt;
+isolate 的 &lt;code&gt;globalOutbound&lt;/code&gt; 置 null，&lt;code&gt;fetch&lt;/code&gt; 和 &lt;code&gt;connect&lt;/code&gt; 全封死，唯一出口就是这个回环；&lt;br&gt;
+&lt;code&gt;git&lt;/code&gt; 和 &lt;code&gt;assets publish&lt;/code&gt; 是仅有的两个内建转发命令，R2 桶绑定和签名密钥永远不进 isolate。&lt;/p&gt;
+&lt;p&gt;命令集是 just-bash 的子集：&lt;code&gt;cat&lt;/code&gt;、&lt;code&gt;grep&lt;/code&gt;、&lt;code&gt;awk&lt;/code&gt;、&lt;code&gt;sed&lt;/code&gt;、&lt;code&gt;jq&lt;/code&gt; 这类文本活够用；要编译、装包、跑浏览器，回容器。&lt;/p&gt;
+&lt;p&gt;隔离粒度是每个 workspace 一个 isolate，Worker Loader 按 &lt;code&gt;workspace-shell:${workspace.id}&lt;/code&gt; 缓存：&lt;br&gt;
+同一工作区的并发 exec 共享热 isolate，一段跑飞的脚本最多把自己工作区的 isolate 撑爆，宿主 DO 和别的工作区不受影响。&lt;br&gt;
+这一版是一次调用、缓冲结果的语义，不保留执行记录供事后重挂；&lt;code&gt;timeoutMs&lt;/code&gt; 和并发的 &lt;code&gt;killExec&lt;/code&gt; 只在语句边界协作式中止。&lt;/p&gt;
+&lt;h3 id=&quot;isolate-javascript&quot;&gt;isolate JavaScript&lt;/h3&gt;
+&lt;p&gt;第三种后端把 &lt;code&gt;source&lt;/code&gt; 当真正的 ES module 求值，也在 Dynamic Worker 里：&lt;/p&gt;
+&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;const handle = await workspace.runtime.exec(
+  `
+    import fs from &amp;quot;node:fs/promises&amp;quot;;
+    export default async (input) =&amp;gt; {
+      await fs.writeFile(&amp;quot;/workspace/result.txt&amp;quot;, String(input.value));
+      return { persisted: await fs.readFile(&amp;quot;/workspace/result.txt&amp;quot;, &amp;quot;utf8&amp;quot;) };
+    }
+  `,
+  { backend: &amp;quot;worker-javascript&amp;quot;, input: { value: 21 } },
+);
+const result = await handle.result();&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;默认导出函数收到 &lt;code&gt;options.input&lt;/code&gt;，返回值原样回到 &lt;code&gt;result().value&lt;/code&gt;——这是结构化的值通道，不是 stdout 文本协议。&lt;br&gt;
+相对导入从 &lt;code&gt;cwd&lt;/code&gt; 出发经权威文件系统解析，而且是先静态解析完整个模块图再起 Worker：拒绝符号链接穿越，&lt;br&gt;
+深度、模块数、总字节都有上限，动态 &lt;code&gt;import&lt;/code&gt; 只认字符串字面量。&lt;br&gt;
+&lt;code&gt;node:fs/promises&lt;/code&gt; 是 Workspace 后端的，isolate 里写文件就是写 DO 的 SQLite；&lt;code&gt;ws:git&lt;/code&gt;、&lt;code&gt;ws:artifacts&lt;/code&gt; 两个受信模块管提交与发布。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;process&lt;/code&gt; 是个 shim：&lt;code&gt;env&lt;/code&gt; 只是调用方传入的快照，DO 自己的绑定和密钥永不合并进来；&lt;code&gt;stdin&lt;/code&gt; 是一次性异步迭代；&lt;code&gt;argv&lt;/code&gt;、&lt;code&gt;platform&lt;/code&gt; 给的是占位假值。&lt;br&gt;
+限额给得很足：默认并发 24，超了直接 &lt;code&gt;EEXEC_BUSY&lt;/code&gt;；执行记录保留 100 条或 60 分钟，可回放；&lt;br&gt;
+取消先停新的宿主能力调用、等已受理的调用排空，然后才发布 exit 130——正常完成同样排空，不存在 exit 0 之后还有未落账的写。&lt;/p&gt;
+&lt;p&gt;有个容易踩的点：&lt;code&gt;runtime.exec()&lt;/code&gt; 在 Dynamic Worker 跑完之前就返回，靠悬着的宿主调用把 DO 顶在内存里；&lt;br&gt;
+handle 拿了不读，DO 一闲置执行就可能被驱逐——要么把事件流排干，要么给必须活过驱逐的工作配 &lt;code&gt;ctx.storage.setAlarm()&lt;/code&gt;。&lt;/p&gt;
+&lt;center&gt;
+&lt;p&gt;&lt;img src=&quot;/images/cf-computer-isolate-js.svg&quot; alt=&quot;isolate JavaScript 执行面数据流&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
+&lt;/center&gt;
+&lt;h3 id=&quot;怎么用&quot;&gt;怎么用&lt;/h3&gt;
+&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;npm install @cloudflare/computer&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;import { Workspace } from &amp;quot;@cloudflare/computer&amp;quot;;
+import { WorkerJavaScriptBackend } from &amp;quot;@cloudflare/computer/backends/worker-javascript&amp;quot;;
+
+const workspace = new Workspace({
+  storage: ctx.storage,
+  backends: [
+    new WorkerJavaScriptBackend({ loader: env.LOADER, root: &amp;quot;/workspace&amp;quot; }),
+  ],
+});&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;后端按子路径导入，不用的后端连带 just-bash 载荷一起被 tree-shake 掉。能做的事：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;workspace.fs&lt;/code&gt;：mkdir、readFile、writeFile、rm、symlink、stat，全异步、绝对路径、跨 DO 重启持久；&lt;br&gt;
+&lt;code&gt;workspace.runtime&lt;/code&gt;：exec、getExec、killExec、disposeExec，handle 既是事件流又能 &lt;code&gt;result()&lt;/code&gt;；&lt;br&gt;
+命令后端的 result 带 &lt;code&gt;pushed&lt;/code&gt;、&lt;code&gt;pulled&lt;/code&gt; 和 &lt;code&gt;sync&lt;/code&gt; 状态，命令成功而 pull 失败时可配 &lt;code&gt;SyncRetryScheduler&lt;/code&gt; 只重试同步、不重跑命令；&lt;br&gt;
+&lt;code&gt;@cloudflare/computer/tools&lt;/code&gt;：现成的 AI SDK 工具面（read、write、edit、ls，可选 exec 与 publish）；&lt;br&gt;
+R2 只读挂载：规格已写、schema 留座，运行时未接线（规格意图，非今日代码）。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;省略 &lt;code&gt;backend&lt;/code&gt; 就用第一个配置项。文档特意提醒：路由不是鉴权，公网网关要自己校验 backend 参数。&lt;br&gt;
+仓库的 8 个 examples 里，&lt;code&gt;think-compare-runtimes&lt;/code&gt; 把同一个 agent 任务在容器和 worker 两种运行时上并排跑，最能看出取舍。&lt;/p&gt;
+&lt;h3 id=&quot;边界与限制&quot;&gt;边界与限制&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;工作区约 10 GB 上限，跟 DO 存储共享；容器侧整棵树在内存里，放 agent 级工作区合适，放 monorepo 不行。&lt;br&gt;
+FUSE 在大文件顺序 IO 上吃亏。官方 fs-bench 对 &lt;code&gt;cloudflare/sandbox-sdk&lt;/code&gt; 做全量 &lt;code&gt;npm install&lt;/code&gt;（854 个包、36675 个文件）：computerd 124.7 秒，容器 ext4 63.9 秒，tmpfs 34.3 秒，比真盘慢约一倍。&lt;br&gt;
+反直觉的是元数据操作赢真盘：&lt;code&gt;stat&lt;/code&gt; 0.91x、&lt;code&gt;rm&lt;/code&gt; 0.66x、&lt;code&gt;mkdir&lt;/code&gt; 树 0.74x、&lt;code&gt;find&lt;/code&gt; 0.72x、&lt;code&gt;git init&lt;/code&gt; 加提交 0.72x——内存 inode 表的功劳。&lt;br&gt;
+大文件才是重灾区：纯读 64 MiB 比真盘慢 30 倍、&lt;code&gt;copy&lt;/code&gt; 慢 40 倍；但 &lt;code&gt;npm init&lt;/code&gt; 加小安装 0.95x 追平真盘，日常负载的大头本来就是元数据。&lt;br&gt;
+慢的根源在写路径每 512 KiB 就哈希一次进内容寻址库，换来的是按块增量同步和内容去重。&lt;br&gt;
+PREVIEW ONLY，不收 unsolicited PR，反馈走 issue 和 discussion。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&quot;实测数字&quot;&gt;实测数字&lt;/h3&gt;
+&lt;p&gt;在仓库里自己数的（&lt;code&gt;Get-ChildItem&lt;/code&gt; 加 &lt;code&gt;Measure-Object&lt;/code&gt;，不含 node_modules）：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;5 个包：&lt;code&gt;computer&lt;/code&gt;、&lt;code&gt;dofs&lt;/code&gt;、&lt;code&gt;computerd&lt;/code&gt;、&lt;code&gt;rpc&lt;/code&gt;、&lt;code&gt;computer-computerd-linux-x64&lt;/code&gt;（最后一个只是 Docker 镜像上下文）；&lt;br&gt;
+TypeScript 源码 268 个文件、57507 行：computer 34446 行（144 文件）、dofs 13862 行（88 文件）、computerd 6536 行（27 文件）、rpc 2663 行（9 文件）；&lt;br&gt;
+同步协议本体 &lt;code&gt;dofs/src/sync&lt;/code&gt; 21 个文件 3305 行；三个后端 &lt;code&gt;computer/src/backends&lt;/code&gt; 32 个文件 7613 行；&lt;br&gt;
+规格文档 20 篇共 4902 行；可跑的 examples 8 个。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;4900 行规格配 5.7 万行实现，连「考虑过又放弃的编码方案」都写进了文档，这个密度在预览期项目里少见。&lt;/p&gt;
+&lt;p&gt;写完有点手痒，想把自己博客的构建态也塞进 DO 里，转念一想静态站要什么权威态，睡了。&lt;/p&gt;
+</content>
+  </entry>
+  <entry>
+    <title>QM，给全公司用的 agent 平台</title>
+    <link href="https://dfine.tech/posts/53c0ead3/"/>
+    <id>https://dfine.tech/posts/53c0ead3/</id>
+    <published>2026-08-10T20:39:33+08:00</published>
+    <updated>2026-08-10T20:39:33+08:00</updated>
+    <category term="Agent"/>
+    <category term="Infrastructure"/>
+    <category term="TypeScript"/>
+    <content type="html">&lt;p&gt;市面上的 agent 几乎都按个人助理的样子设计，一个人用很顺，搬进公司就开始别扭：所有人共享一份记忆和一台沙箱，配置互相踩，权限一刀切。&lt;br&gt;
+QM 反过来，从第一天就按「多人」设计：每个人、每个频道各有一套隔离的工作空间，又能在同一个组织里协作。&lt;br&gt;
+上层目录里这份代码已经长到七万多行，值得完整写一写它的设计。&lt;/p&gt;
+&lt;!--more--&gt;
+&lt;h3 id=&quot;它是什么&quot;&gt;它是什么&lt;/h3&gt;
+&lt;p&gt;QM 是一个面向创业公司的 multiplayer agent harness：员工在 Slack 和 Web 两个入口使用同一个 agent，身份与配置在两端完全一致。&lt;br&gt;
+关键抽象是 &lt;strong&gt;scope&lt;/strong&gt;：每个人是一个 scope，每个频道、群组、项目也是一个 scope。memory、文件、keychain 视图、定时任务、Web 应用、durable sandbox，全部按 scope 隔离——你调教出来的 agent 是你的，频道里的 agent 是大家的，互不污染。&lt;/p&gt;
+&lt;p&gt;另一个立场是不绑供应商：Pi、OpenCode、Codex、Claude Code 四种 harness 驱动同一个 core，部署方选自己的模型和 harness，随时可换。&lt;/p&gt;
+&lt;h3 id=&quot;架构&quot;&gt;架构&lt;/h3&gt;
+&lt;center&gt;
+&lt;p&gt;&lt;img src=&quot;/images/qm-architecture.svg&quot; alt=&quot;QM 架构：入口插件、无头 core、按 scope 的沙箱与可插拔 harness&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
+&lt;/center&gt;
+&lt;p&gt;core 是无头的：API、身份、策略、调度器加一个 agent loop，TypeScript 直接跑在 Node 上，HTTP 用 Fastify。Web UI、admin 面板、公开 portal 都是 core HTTP API 之上的可选插件；Slack 是 core 进程内启动并监督的插件（Bolt 实现）。&lt;br&gt;
+持久层是 Postgres：会话历史、memory、队列等全部耐久状态都在这。&lt;br&gt;
+每个 scope 有自己的沙箱——一台「durable computer」，装过的工具一直在，agent 的 &lt;code&gt;execute&lt;/code&gt; 工具就在这台机器里跑命令。&lt;/p&gt;
+&lt;h3 id=&quot;每回合怎么走&quot;&gt;每回合怎么走&lt;/h3&gt;
+&lt;center&gt;
+&lt;p&gt;&lt;img src=&quot;/images/qm-turn-flow.svg&quot; alt=&quot;一条消息的旅程：入口、身份与策略、安全姿态、harness 回合、沙箱执行&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
+&lt;/center&gt;
+&lt;p&gt;每个回合都经过 core 中枢：入口插件收到消息，解析身份并落到对应 scope，策略层决定这个 scope 允许什么，然后交给所选 harness 生成回应。&lt;br&gt;
+工具面是刻意收小的固定集合，其中 &lt;code&gt;execute&lt;/code&gt; 负责一切命令执行，落进该 scope 自己的沙箱。harness 层做了统一适配：&lt;code&gt;pi-harness&lt;/code&gt; / &lt;code&gt;opencode-harness&lt;/code&gt; / &lt;code&gt;codex-harness&lt;/code&gt; / &lt;code&gt;claude-harness&lt;/code&gt; 四个实现落在同一接口上，还有 &lt;code&gt;mock-harness&lt;/code&gt; 供测试，上下文压缩（&lt;code&gt;context-compaction&lt;/code&gt;）和录制回放（&lt;code&gt;replay&lt;/code&gt; / &lt;code&gt;tape-fold&lt;/code&gt;）也做在这一层，换 harness 不用动业务。&lt;/p&gt;
+&lt;h3 id=&quot;安全姿态&quot;&gt;安全姿态&lt;/h3&gt;
+&lt;p&gt;QM 的信任模型与本地编码 agent（OpenCode、Codex、Claude Code）同源：agent 以使用者的身份行事，用他的凭证和权限，一切留审计。组织选一个安全姿态，更窄的 scope 只能收紧不能放松：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Strict：除两个无副作用的回合终止工具外，每次 harness 工具调用都停下来等人工批准。&lt;br&gt;
+Auto（默认）：带来源标注的外部数据与工具结果，先过一个分类器再进模型；部署方可以把分类器指向自己的筛查代理。&lt;br&gt;
+Dangerous：不筛内容、不暂停。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;预声明命令策略是姿态之外的另一层：递归删除、破坏性 SQL 这类命令的批准规则与硬性拒绝，在任何姿态下都生效，Dangerous 也不例外。&lt;/p&gt;
+&lt;h3 id=&quot;deployment-directory&quot;&gt;deployment directory&lt;/h3&gt;
+&lt;p&gt;core 本身是通用的，一切公司特定的东西——组织配置、自定义工具与技能、沙箱镜像、基础设施——都放在一个独立的&lt;strong&gt;部署目录&lt;/strong&gt;里，由 &lt;code&gt;qm&lt;/code&gt; CLI 校验和部署：&lt;/p&gt;
+&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;npm exec --yes --package=@yc-software/qm@latest -- \
+  qm init . --org &amp;lt;slug&amp;gt; --target &amp;lt;fly-or-aws&amp;gt;
+npm install&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;初始化会物化一个部署技能，带着 agent 走完基础设施、Web 登录、连接器凭证、Slack 接入、部署与线上验证，全程不需要 checkout 源码。每个部署跑在运营方自己的云账号里（Fly 或 AWS）。&lt;br&gt;
+想把定制和核心放在一个仓库里读的组织，走&lt;strong&gt;私有 fork&lt;/strong&gt;：用裸克隆 mirror 出一个独立私有仓，而不是 GitHub 的 Fork 按钮——GitHub fork 会继承上游仓库的可见性，公共仓库的 fork 私有不了，这个坑文档里点得很清楚。&lt;/p&gt;
+&lt;h3 id=&quot;数字&quot;&gt;数字&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;src 下 72,203 行 TypeScript，45 个子系统目录。&lt;br&gt;
+harness 实现四个（Pi / OpenCode / Codex / Claude Code）加一个 mock。&lt;br&gt;
+插件六个：admin、auth、chassis、onboarding、portal、web-ui。&lt;br&gt;
+测试文件 401 个，CI 分片并行跑全量。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;工程规范也值得一提：仓库标准是&lt;strong&gt;零注释&lt;/strong&gt;，意图全靠命名、结构和测试表达；合并前必须由没看过这个 diff 的新上下文做破坏性审查，作者自审不算数。贡献方式更特别——只收人写的文字（ADR），不收代码，对齐之后由维护方实现。&lt;/p&gt;
+&lt;h3 id=&quot;边界和取舍&quot;&gt;边界和取舍&lt;/h3&gt;
+&lt;p&gt;固定小工具面意味着放弃各 harness 自带的工具生态，换来的是四种 harness 行为一致、审计一致。&lt;br&gt;
+agent 以人的身份行事，是把「agent 做了什么」等同于「这个人做了什么」——审计因此简单，但也要求组织真的信任姿态与命令策略这两层闸门。&lt;br&gt;
+多 scope 隔离的代价是运维面变宽：每个 scope 一台沙箱，状态耐久也就意味着状态要管。&lt;/p&gt;
+&lt;p&gt;回头看，这套东西像是把「本地编码 agent」的那套信任与工具哲学，抬到了组织级——个人的照样是个人的，公司的才是公司的。&lt;/p&gt;
+</content>
+  </entry>
+  <entry>
     <title>PersonaLive: 把肖像扩散模型压到能直播</title>
     <link href="https://dfine.tech/posts/4bd1127b/"/>
     <id>https://dfine.tech/posts/4bd1127b/</id>
@@ -3442,625 +3717,6 @@ netmask 255.255.255.0&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;lxc config device add mycontainer sharedtmp disk  path=/tmp/share_on_lxc source=/tmp/share_on_host&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;p&gt;其中，&lt;code&gt;path&lt;/code&gt;和&lt;code&gt;source&lt;/code&gt;的地址可以自己定义。&lt;br&gt;
 到这里，基本结束。&lt;/p&gt;
-</content>
-  </entry>
-  <entry>
-    <title>Time Machine</title>
-    <link href="https://dfine.tech/posts/a0c49a8e/"/>
-    <id>https://dfine.tech/posts/a0c49a8e/</id>
-    <published>2018-10-10T07:15:37+08:00</published>
-    <updated>2018-10-10T07:15:37+08:00</updated>
-    <category term="Docker"/>
-    <category term="Linux"/>
-    <category term="CUDA"/>
-    <category term="TensorFlow"/>
-    <category term="OwnCloud"/>
-    <content type="html">&lt;p&gt;Docker是个好东西，或者说容器是个好东西。
-毕竟回忆里的昨天,我再也回不去。&lt;br&gt;
-但容器可以。&lt;/p&gt;
-&lt;!--more--&gt;
-&lt;h3 id=&quot;docker存储方式&quot;&gt;Docker存储方式&lt;/h3&gt;
-&lt;p&gt;还是先说一下Docker容器的储存结构，容器镜像采用的是分层存储的方式，下面是一个Ubuntu16.04的镜像结构。&lt;/p&gt;
-&lt;center&gt;
-&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/newdee/BlogImage/master/20190325151627.png&quot; alt=&quot;docker&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;/center&gt;
-&lt;p&gt;也可以在命令行观察，在拉取的时候也可以看到结果：&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt; $ ▶ docker pull ubuntu:16.04
- 16.04: Pulling from library/ubuntu
- 3b37166ec614: Already exists
- 504facff238f: Already exists
- ebbcacd28e10: Already exists
- c7fb3351ecad: Already exists
- 2e3debadcbf7: Already exists
- Digest: sha256:45ddfa61744947b0b8f7f20b8de70cbcdd441a6a0532f791fd4c09f5e491a8eb
- Status: Downloaded newer image for ubuntu:16.04
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;其中，每层表示的是与上一层的差异，而不是直接操作底层镜像，这样，当使用其他基于此镜像制作的镜像时，就不必整个拉取或者复制过来，因为它们很多的底层镜像是一样的。Docker镜像采用的是共享存储方式，当拉取一个镜像时，会首先获取所有层的信息，如果该镜像层本地已经有了，就不用下载，只需要下载所需要的镜像层。&lt;/p&gt;
-&lt;center&gt;
-&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/newdee/BlogImage/master/20190325151653.png&quot; alt=&quot;docker&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;/center&gt;
-&lt;p&gt;在使用镜像建立容器时候，会在最上面一层镜像上建立一个可写层，即容器层。当在容器中所有的操作都会被保存在这个可写层，如果直接删除容器，则可写层就会被删除，即使利用相同镜像重新建立容器，之前的所有操作也不会被保存。镜像层都是只读的，基于此安全性，所有的容器都可以访问底层镜像，所以一次可以利用同一镜像建立多个容器。最后完成修改封装成新的容器的时候，也只是在原来的镜像层之上又加了一层而已。镜像的这种共享存储方式可以极大地提高资源利用效率，而差异存储也是文件管理的主流之选。&lt;/p&gt;
-&lt;p&gt;说到这个，想起来目前有个PWD(Play with Docker)的网站，可以直接在里面体验docker，地址&lt;a href=&quot;https://labs.play-with-docker.com/?stack=https://raw.githubusercontent.com/docker-library/docs/e24f39cddf21560cf0a24f149059ff23640b0f16/owncloud/stack.yml&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;在这&lt;/a&gt;。进去就可以创建一个Docker playground。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/newdee/BlogImage/master/20190325151723.png&quot; alt=&quot;docker&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;h3 id=&quot;利用docker运行cuda和tensorflow&quot;&gt;利用Docker运行CUDA和TensorFlow&lt;/h3&gt;
-&lt;p&gt;在电脑上配置CUDA或者TensorFlow啥的，经常因为各种版本不同导致一大堆问题，于是就想看看可不可以利用Docker去解决这个问题，每次直接打开封装好的镜像就行了，让Docker里的环境去使用GPU，不用去配环境，也不用在电脑上装啥别的软件。然后发现NVIDIA也在Docker上稍微封装了一下，弄了个Nvidia-docker命令，基本命令与docker命令一样，唯一的区别是普通的Docker无法使用GPU，所以&lt;code&gt;Nvidia-docker&lt;/code&gt;等效于命令&lt;code&gt;docker --runtime=nvidia&lt;/code&gt;。&lt;/p&gt;
-&lt;p&gt;要使用GPU，首先也要安装好显卡驱动，怎么安装这里不做赘述，通常安装成功是可以看到的。&lt;/p&gt;
-&lt;center&gt;
-&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/newdee/BlogImage/master/20190325151759.jpeg&quot; alt=&quot;&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;/center&gt;
-&lt;p&gt;当然，Docker肯定要先装好。&lt;/p&gt;
-&lt;h4 id=&quot;nvidia-docker&quot;&gt;Nvidia Docker&lt;/h4&gt;
-&lt;p&gt;然后就是安装Nvidia封装的Docker来调用GPU了，具体可以参照&lt;a href=&quot;NVIDIA/nvidia-docker&quot;&gt;NVIDIA/nvidia-docker&lt;/a&gt;页面。&lt;/p&gt;
-&lt;center&gt;
-&lt;p&gt;&lt;img src=&quot;https://cloud.githubusercontent.com/assets/3028125/12213714/5b208976-b632-11e5-8406-38d379ec46aa.png&quot; alt=&quot;&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;/center&gt;
-&lt;p&gt;如果之前有安装1.0版本的Nvidia-docker的，需要先卸载：&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;# If you have nvidia-docker 1.0 installed: we need to remove it and all existing GPU containers
-docker volume ls -q -f driver=nvidia-docker | xargs -r -I{} -n1 docker ps -q -a -f volume={} | xargs -r docker rm -f
-sudo apt-get purge -y nvidia-docker&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;没有的话可以直接略过。然后添加仓库地址重定向到镜像源文件中，再更新软件源。&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;# Add the package repositories
-curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | \
-  sudo apt-key add -
-  distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
-  curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | \
-    sudo tee /etc/apt/sources.list.d/nvidia-docker.list
-    sudo apt-get update&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;然后直接安装即可。&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;# Install nvidia-docker2 and reload the Docker daemon configuration
-sudo apt-get install -y nvidia-docker2
-sudo pkill -SIGHUP dockerd&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;h4 id=&quot;cuda测试&quot;&gt;CUDA测试&lt;/h4&gt;
-&lt;p&gt;首先运行一个cuda的镜像，进入bash中，&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt; docker run --runtime=nvidia -it --name cuda --rm nvidia/cuda:9.0-base /bin/bash
- root@c1d523d61051:/#
- root@c1d523d61051:/#&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;这里将容器命名为cuda方便操作，需要选择runtime为nvidia，或者直接使用&lt;code&gt;nvidia-docker&lt;/code&gt;命令。然后输入&lt;code&gt;nvidia-smi&lt;/code&gt;就可以看到是否成功调用显卡了。&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;root@c1d523d61051:/# nvidia-smi 
-Thu Oct 11 07:51:19 2018       
-+-----------------------------------------------------------------------------+
-| NVIDIA-SMI 384.130                Driver Version: 384.130                   |
-|-------------------------------+----------------------+----------------------+
-| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
-| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
-|===============================+======================+======================|
-|   0  GeForce GTX 1080    Off  | 00000000:01:00.0  On |                  N/A |
-|  0%   44C    P8    14W / 200W |    867MiB /  8110MiB |      0%      Default |
-+-------------------------------+----------------------+----------------------+
-                                                                               
-+-----------------------------------------------------------------------------+
-| Processes:                                                       GPU Memory |
-|  GPU       PID   Type   Process name                             Usage      |
-|=============================================================================|
-+-----------------------------------------------------------------------------+
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;h4 id=&quot;tensorflow测试&quot;&gt;TensorFlow测试&lt;/h4&gt;
-&lt;p&gt;刚刚也说了，如果要使用GPU，需要在docker命令中加上--runtime=nvidia或者直接使用&lt;code&gt;nvidia-docker&lt;/code&gt;命令。这里就直接使用&lt;code&gt;nvidia-docker&lt;/code&gt;命令了，&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt; $ ▶ nvidia-docker run -it -d --name tensor -p 8888:8888 tensorflow/tensorflow 
-9c7db93b36788acf61a20f52cb187f32e0d6018f7e8da031a30fa135252a4896
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;查看容器内信息，&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;docker logs tensor
-[I 08:01:55.452 NotebookApp] Writing notebook server cookie secret to /root/.local/share/jupyter/runtime/notebook_cookie_secret                                                                                                                              
-[I 08:01:55.465 NotebookApp] Serving notebooks from local directory: /notebooks
-[I 08:01:55.465 NotebookApp] The Jupyter Notebook is running at:
-[I 08:01:55.465 NotebookApp] http://(9c7db93b3678 or 127.0.0.1):8888/?token=64e73aaba8febd5539fae22201c7b7cea1b8578cc1413850
-[I 08:01:55.465 NotebookApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
-[C 08:01:55.466 NotebookApp]
-
-Copy/paste this URL into your browser when you connect for the first time,
-to login with a token:
-http://(9c7db93b3678 or 127.0.0.1):8888/?token=64e73aaba8febd5539fae22201c7b7cea1b8578cc1413850
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;打开浏览器窗口，输入&lt;code&gt;localhost:8888/?token=64e73aaba8febd5539fae22201c7b7cea1b8578cc1413850&lt;/code&gt;，可以看到一个Jupyter的界面。&lt;br&gt;
-&lt;img src=&quot;https://raw.githubusercontent.com/newdee/BlogImage/master/20190325151838.png&quot; alt=&quot;jupyter&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;p&gt;在里面可以编辑及运行python程序，或者使用终端操作：&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;$ ▶ docker exec -it tensor /bin/bash
-root@9c7db93b3678:/notebooks# ls
-1_hello_tensorflow.ipynb  2_getting_started.ipynb  3_mnist_from_scratch.ipynb  BUILD  LICENSE
-root@9c7db93b3678:/notebooks# python
-python            python2           python2.7         python3           python3.5m
-python-config     python2-config    python2.7-config  python3.5         python3m
-root@9c7db93b3678:/notebooks# python
-Python 2.7.12 (default, Dec  4 2017, 14:50:18)
-[GCC 5.4.0 20160609] on linux2
-Type &amp;quot;help&amp;quot;, &amp;quot;copyright&amp;quot;, &amp;quot;credits&amp;quot; or &amp;quot;license&amp;quot; for more information.
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;h4 id=&quot;关于docker的runtime&quot;&gt;关于Docker的Runtime&lt;/h4&gt;
-&lt;p&gt;一个容器运行需要制定规范、Runtime、管理和定义工具、镜像仓库、运行OS等环节。容器的Runtime是容器运行时的一些规范，主要任务是和操作系统的kernel协作来提供容器的运行环境，由&lt;a href=&quot;https://www.opencontainers.org/&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;OCI&lt;/a&gt;（Open Container Initiative,由Google，Docker、CoreOS、IBM、微软、红帽等于2015年联合发起的组织）维护。主要包括容器的文件系统包(Filesystem Bundle)，容器的运行和生存周期Runtime and Lifecycle)，容器配置文件(Container Configuration file)，以及Linux的运行和配置文件(Linux Runtime, Linux Container Configuration)等。目前Linux上最原始的容器Runtime是LXC，即Linux Container，最初Docker也是用LXC作为Runtime，后来Docker基于libcontainer开发了自己的Runtime，即runC。谷歌也基于Docker的Runtime发布了Kubernetes，后来CoreOS开发了独立的rkt作为运行容器的Runtime。&lt;br&gt;
-而与容器相对的就是虚拟机了，目前虚拟机的Runtime如runV，看名字就知道是要与runC分庭抗礼的。此外Intel也弄了一个Clear containers的Runtime，也可以对接容器。基于Hyper runV和Clear containers，Openstack又新起了一个&lt;a href=&quot;https://katacontainers.io/&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;Kata&lt;/a&gt; Containers，目前已经可以在snap商店看到了，才出来没多久，地址&lt;a href=&quot;https://snapcraft.io/blog/kata-containers-now-available-in-the-snap-store&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;在这&lt;/a&gt;。&lt;/p&gt;
-&lt;h3 id=&quot;利用docker搭建私有云盘&quot;&gt;利用Docker搭建私有云盘&lt;/h3&gt;
-&lt;h4 id=&quot;安装&quot;&gt;安装&lt;/h4&gt;
-&lt;p&gt;这里使用的是一个开源的云存储方案&lt;a href=&quot;https://store.docker.com/images/owncloud?tab=description&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;OwnCloud&lt;/a&gt;来搭建私有云盘。&lt;br&gt;
-首先可以搜一下Dockerhub中的镜像，&lt;code&gt;docker search owncloud&lt;/code&gt;可以看到结果：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/newdee/BlogImage/master/20190325151921.png&quot; alt=&quot;owncloud&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;p&gt;其中第一个就是官方的镜像了，直接&lt;code&gt;docker pull owncloud:8.1&lt;/code&gt;拉取就行。或者也可以直接&lt;code&gt;docker run&lt;/code&gt;，本地没有它会去Dockerhub下载。&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;docker run -d -p 80:80 owncloud:8.1&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;其中，&lt;code&gt;-d&lt;/code&gt;表示后台运行，&lt;code&gt;-p&lt;/code&gt;用来映射端口。也可以直接用&lt;code&gt;-it&lt;/code&gt;前台打开tty直接操作。&lt;br&gt;
-这时候可以在浏览器中看到了，输入&lt;code&gt;localhost&lt;/code&gt;就可以看到登陆界面，大致是下面的样子：
-&lt;img src=&quot;https://raw.githubusercontent.com/newdee/BlogImage/master/20190325151952.png&quot; alt=&quot;owncloud&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;h4 id=&quot;运行配置&quot;&gt;运行配置&lt;/h4&gt;
-&lt;p&gt;其中数据保存在&lt;code&gt;/var/www/html/data&lt;/code&gt;目录中，默认是使用SQLite用于数据存储，但对于较大的或者使用桌面客户端同步文件时，并不推荐SQLite，可以考虑最流行的MySQL。其他数据库需要外部安装。&lt;br&gt;
-在运行时可以使用&lt;code&gt;-v&lt;/code&gt;选项来将本地磁盘挂载到容器中数据保存的位置，即&lt;code&gt;/var/www/html/&lt;/code&gt;中。&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;-v /&amp;lt;mydatalocation&amp;gt;:/var/www/html&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;分的更细一点，可以添加三项，设置命令：&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;-v /&amp;lt;mydatalocation&amp;gt;/apps:/var/www/html/apps installed / modified apps
--v /&amp;lt;mydatalocation&amp;gt;/config:/var/www/html/config local configuration
--v /&amp;lt;mydatalocation&amp;gt;/data:/var/www/html/data the actual data of your ownCloud&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;h4 id=&quot;数据库配置&quot;&gt;数据库配置&lt;/h4&gt;
-&lt;p&gt;外部数据库配置有几种方法，第一个是使用Owncloud自己提供的OCC工具(OwnCloud Console)来配置，使用&lt;code&gt;docker exec执行&lt;/code&gt;:&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;docker exec -u www-data some-owncloud php occ status&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;另外的就是用Docker的工具了，Docker Stack或者Docker Compose来配置。首先需要编辑一个yml配置文件，如&lt;code&gt;stack.yml&lt;/code&gt;或&lt;code&gt;compose.yml&lt;/code&gt;，名字随便起，然后加入数据库配置:&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;# ownCloud with MariaDB/MySQL
-#
-# Access via &amp;quot;http://localhost:8080&amp;quot; (or &amp;quot;http://$(docker-machine ip):8080&amp;quot; if using docker-machine)
-#
-# During initial ownCloud setup, select &amp;quot;Storage &amp;amp; database&amp;quot; --&amp;gt; &amp;quot;Configure the database&amp;quot; --&amp;gt; &amp;quot;MySQL/MariaDB&amp;quot;
-# Database user: root
-# Database password: example
-# Database name: pick any name
-# Database host: replace &amp;quot;localhost&amp;quot; with &amp;quot;mysql&amp;quot;
-version: &amp;#39;3.1&amp;#39;
-services:
-  owncloud:
-    image: owncloud:8.1
-    restart: always
-    ports:
-      - 8080:80
-    volumes: 
-      - &amp;quot;/home/newdee/Downloads/owncloud/:/var/www/html/&amp;quot;
-  mysql:
-    image: mysql:5.6
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: 123456
-      MYSQL_DATABASE: owncloud
-      MYSQL_USER: first
-      MYSQL_PASSWORD: 123456
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;最后运行&lt;code&gt;docker stack deploy -c stack.yml owncloud (or docker-compose -f compose.yml up) &lt;/code&gt;即可。&lt;br&gt;
-此时可以发现有两个容器正在运行:&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt; $ ▶ docker ps -a
-CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                  NAMES
-8499dc015bc8        owncloud:8.1        &amp;quot;/entrypoint.sh apac…&amp;quot;   15 minutes ago      Up 12 minutes       0.0.0.0:8080-&amp;gt;80/tcp   owncloud_owncloud_1
-6e145ebcca20        mysql:5.6           &amp;quot;docker-entrypoint.s…&amp;quot;   15 minutes ago      Up 12 minutes       3306/tcp               owncloud_mysql_1
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;然后在浏览器输入&lt;code&gt;http://localhost:8080&lt;/code&gt;可以看到登陆界面，登录信息填yml文件中的信息就行。&lt;br&gt;
-&lt;img src=&quot;https://raw.githubusercontent.com/newdee/BlogImage/master/20190325152024.png&quot; alt=&quot;owncloud&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;p&gt;登陆成功就可以看到登陆界面了。然后就可以网页上传下载了，还可以生成分享链接。上传下载地址位于挂载的目录中。没有机子也可以去试试VPS，自己搭一个私有云盘用来平时备份下载。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/newdee/BlogImage/master/20190325152113.png&quot; alt=&quot;owncloud&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-</content>
-  </entry>
-  <entry>
-    <title>不满就折腾小记</title>
-    <link href="https://dfine.tech/posts/9dfc9fe0/"/>
-    <id>https://dfine.tech/posts/9dfc9fe0/</id>
-    <published>2018-10-08T19:40:58+08:00</published>
-    <updated>2018-10-08T19:40:58+08:00</updated>
-    <category term="ubuntu"/>
-    <category term="Linux"/>
-    <category term="Docker"/>
-    <category term="Vim"/>
-    <content type="html">&lt;p&gt;又不记得有多久没来了。稀里糊涂的过着日子，稀里糊涂的毕了业。很多事都是历久愈艰，所以很多习惯才没法坚持下去，对于博客这种需要长期维护的事情来说也当是如此。&lt;br&gt;
-然而，还是又回来试图挣扎一下了。&lt;/p&gt;
-&lt;!---more---&gt;
-&lt;p&gt;其实这已经是第二篇博文了，第一篇写了很多废话，因为再重装系统换上了Ubuntu18.04之后，发现怎么都没法配好博客环境。很多东西都在变化，系统升级了，nodejs升级了，hexo升级了，连next啥的都升级了，当初在里面乱改插件的，现在对于重建是已经近乎绝望的心态了。&lt;/p&gt;
-&lt;p&gt;但是喜欢挣扎，删了该博客目录，重新从以前备份的博客仓库克隆下来重新搭建，还是搭不好，之前写好的文章，也不小心随着那个博客目录涅槃了。后来尝试了使用Docker来重现当时的博客环境，花了些时间，但好在成功了，以后也不必再因为博客环境再花费太多时间了。&lt;/p&gt;
-&lt;h3 id=&quot;暂别基佬紫&quot;&gt;暂别基佬紫&lt;/h3&gt;
-&lt;p&gt;笔记本重装了Ubuntu18.04，首先是改了下基佬紫的登陆界面，毕竟这种颜色陪伴了我太多年，学校的校花貌似都是这种颜色，毕竟一直看着也很无聊，其实这种小事，网上教程挺多的。因为Ubuntu18.04拥抱了Gnome，里面的很多登陆或者开机都是以样式文件存储，是挺方便改的了，但目前只想改这个，其余的以后再说。&lt;/p&gt;
-&lt;p&gt;由于gnome的缘故，采用了css样式文件保存登陆界面样式，所以只需要简单修改&lt;code&gt;/etc/alternatives/gdm3.css&lt;/code&gt;或者&lt;code&gt;/usr/share/gnome-shell/theme/.ubuntu.css&lt;/code&gt;文件即可。这两个字虽然位置不同，实际上是一个文件，对其中一个的修改会立刻反映到另一个文件上，如果同时打开，则会有下面的警告:&lt;/p&gt;
-&lt;center&gt;
-&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/newdee/BlogImage/master/20190325152358.png&quot; alt=&quot;theme&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;/center&gt;
-&lt;p&gt;主要就是修改&lt;code&gt;#lockDialogGroup&lt;/code&gt;的样式了，可以改成想要的颜色，也可以换成喜欢的图片，随便都行。&lt;/p&gt;
-&lt;center&gt;
-&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/newdee/BlogImage/master/20190325152429.png&quot; alt=&quot;theme&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;/center&gt;
-&lt;p&gt;另外就是安装输入法了，还是习惯用的搜狗输入法，毕竟Linux下没几个好用的，安装完之后再语言管理栏添加以下语言和输入法就可以用了，没太多要说的。
-记得取消Only Show那个选项，然后添加就行。&lt;br&gt;
-然后安装主题，还是用tweak工具，去gnome主题页面选择喜欢的下载下来应用就行了。&lt;/p&gt;
-&lt;p&gt;还有个小问题就是，安装了Ubuntu 18.04之后，截图工具有点问题了，每次截完图直接保存了，没有跳出复制还是保存的窗口，不过好在也不是什么大问题，以后用快捷键就可以解决。&lt;/p&gt;
-&lt;center&gt;
-&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/newdee/BlogImage/master/20190325152457.png&quot; alt=&quot;screenshot&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;/center&gt;
-&lt;h4 id=&quot;统计计数不蒜子&quot;&gt;统计计数不蒜子&lt;/h4&gt;
-&lt;p&gt;回来发现站点统计也挂了，后来去不蒜子页面看了下，发现了这样一段话：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;因七牛强制过期『dn-lbstatics.qbox.me』域名，与客服沟通无果，只能更换域名到『busuanzi.ibruce.info』！&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;那没办法了，只好将原来不蒜子插件里的js源地址改一下。&lt;br&gt;
-还有Vim手动编译以支持Python，Tmux手动编译，Powerline设置，等等，还是重复以往的工作，都挺无聊的，不过好在发现了一个有趣的网址，&lt;a href=&quot;http://www.xyzgate.com/&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;数字之门&lt;/a&gt;，可以免费提供各种云端镜像，有点像Docker，比如想学习Linux，各种化学分子软件，以及TensorFlow之类的软件，里面都有现成的镜像，不用自己配环境，适用于练习。&lt;/p&gt;
-&lt;h3 id=&quot;关于gnome-shell扩展&quot;&gt;关于Gnome-shell扩展&lt;/h3&gt;
-&lt;p&gt;具体扩展部分可以参看Gnome的&lt;a href=&quot;https://wiki.gnome.org/Projects/GnomeShell/Extensions&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;wiki&lt;/a&gt;页面,主要了解了一下它的透明效果:LookingGlass。可以使用JavaScript语言控制gnome-shell的界面。&lt;br&gt;
-Ubuntu 18.04 Gnome支持Alt F2快速启动命令，&lt;/p&gt;
-&lt;center&gt;
-&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/newdee/BlogImage/master/20190325152525.png&quot; alt=&quot;lookingglass&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;/center&gt;
-&lt;p&gt;然后输入lg即可打开界面。&lt;br&gt;
-&lt;img src=&quot;https://raw.githubusercontent.com/newdee/BlogImage/master/20190325152552.png&quot; alt=&quot;lookingglass&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;p&gt;其中第一个是Evaluator，就是脚本执行界面，里面可以直接运行JavaScript，可以使用tab补全。第二个是Windows，里面会显示当前电脑里的所有窗口，用鼠标点击可以看到。剩下一个就是它的扩展了，里面会列出当前系统所安装的所有扩展，有错的话也会显示出来。&lt;/p&gt;
-&lt;h3 id=&quot;外网问题&quot;&gt;外网问题&lt;/h3&gt;
-&lt;p&gt;另一个问题就是使用Google学术以及其他完全不相关的事了。目前ss安全性已经大不如前了，主要还是ssr，有两种方式安装。&lt;/p&gt;
-&lt;h4 id=&quot;简洁版&quot;&gt;简洁版&lt;/h4&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;wget https://newdee.cf/ssr
-sudo chmod +x ssr
-sudo mv ssr /usr/local/bin
-ssr install
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;配置&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;sudo vim /usr/local/share/shadowsocksr/config.json&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;里面填上服务器的信息，然后使用&lt;code&gt;ssr start&lt;/code&gt;，再在系统或者浏览器中配置代理端口即可。&lt;/p&gt;
-&lt;h4 id=&quot;gui版&quot;&gt;GUI版&lt;/h4&gt;
-&lt;p&gt;去项目页面&lt;a href=&quot;https://github.com/erguotou520/electron-ssr/releases&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;安装&lt;/a&gt;
-然后使用dpkg安装，再用apt修复一下，基本是可以打开的，和win版本的操作类似，可以添加订阅地址。&lt;/p&gt;
-&lt;h4 id=&quot;v2ray&quot;&gt;V2ray&lt;/h4&gt;
-&lt;p&gt;现在兴起的另一种加密方式，可见其项目&lt;a href=&quot;https://github.com/v2ray/v2ray-core/releases&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;页面&lt;/a&gt;，下载解压&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;sudo mkdir /etc/v2ray/
-sudo cp vpoint_vmess_freedom.json  /etc/v2ray/config.json
-sudo mkdir -p /var/log/v2ray&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;编辑config.json文件，之后&lt;a href=&quot;https://yuan.ga/v2ray-complete-tutorial/&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;运行&lt;/a&gt;&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;sudo ./v2ray&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;直接运行程序，V2Ray默认会在当前文件夹寻找名为 config.json 的配置文件并运行。
-或者移动到系统文件夹下运行:&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;sudo mkdir /etc/v2ray /usr/v2ray /var/log/v2ray # 创建目录
-sudo mv v2ray v2ctl geoip.dat geosite.dat -t /usr/bin/ # 移动文件
-touch /etc/v2ray/config.json # 仅创建配置文件的空文件
-sudo mv systemd/v2ray.service /etc/systemd/system/
-sudo systemctl enable v2ray&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;不过我放弃了，不知道是不是系统版本原因，目前该项目问题也比较多，暂时求稳。&lt;/p&gt;
-&lt;h4 id=&quot;其他&quot;&gt;其他&lt;/h4&gt;
-&lt;p&gt;其他的&lt;code&gt;vpn&lt;/code&gt;主要如Windscribe，跨平台vpn，Linux版本下载&lt;a href=&quot;https://chn.windscribe.com/guides/linux&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;地址&lt;/a&gt;&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key FDC247B7
-
-echo &amp;#39;deb https://repo.windscribe.com/ubuntu zesty main&amp;#39; | sudo tee /etc/apt/sources.list.d/windscribe-repo.list
-sudo apt-get update
-
-sudo apt-get update
-windscribe login
-windscribe connect
-
-windscribe --help&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;不过免费的速度都不怎么样，试过也放弃了。&lt;br&gt;
-如果有账号的话，直接安装openvpn就可以了：&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;sudo apt-get install openvpn network-manager-openvpn network-manager-openvpn-gnome&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;另外，对于有IPv6的代理来说，可以设置浏览器的优先级。如Firefox设置IPv6优先：&lt;br&gt;
-输入&lt;code&gt;about:config&lt;/code&gt;，并找到以下两项做相应修改：&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;network.dns.disableIPv6 设置成 false
-network.http.fast-fallback-to-IPv4 设置成 false&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;h3 id=&quot;snap软件包管理&quot;&gt;Snap软件包管理&lt;/h3&gt;
-&lt;p&gt;Ubuntu里新起的一种软件包管理方式，好像在16.04中开始引入。命令方式与apt类似，管理方式与docker容器类似，各个应用程序之间相对独立。与apt管理方式相比，s可以较好解决了应用之间的依赖问题便于管理，另一方面会占用较多磁盘空间，当apt方式无法下载所需的应用时，也可以选择使用snap方式下载。&lt;/p&gt;
-&lt;h3 id=&quot;docker重建&quot;&gt;Docker重建&lt;/h3&gt;
-&lt;p&gt;最后说说被博客折腾得心力交瘁时候的救星，Docker是一个容器技术已经不想多说，主要是环境隔离且独立的特点，非常适用于各种项目的平台迁移。已经不用再在自己电脑上安装nodejs和nvm来惹这些麻烦了，毕竟是好事。&lt;/p&gt;
-&lt;p&gt;主要方式是通过努力回忆，记起当时的各个软件的版本，然后用同样的系统去重建一遍，基本可以成功。由于npm和各个插件的版本已经在&lt;code&gt;package.json&lt;/code&gt;和&lt;code&gt;package-lock.json&lt;/code&gt;文件里了，按照里面的版本，利用nvm安装，然后删掉&lt;code&gt;node_modules&lt;/code&gt;文件夹，使用npm重新安装即可跑起来。&lt;br&gt;
-关于Docker的镜像构建，可以通过&lt;code&gt;Docker commit&lt;/code&gt;和Dockerfile文件两种方式完成，前者可以直接从tty中构建，后者则可以实现自动部署。Docker教程网上太多，官方的也简明易上手，不知道有没有再写一篇关于Docker的笔记，而且网上也有很多已经写好了的镜像，是可以直接用的。&lt;br&gt;
-最后，使用&lt;code&gt;-p&lt;/code&gt;映射端口后，用&lt;code&gt;-v&lt;/code&gt;挂载博客目录，然后写了这篇文章来做个测试。&lt;/p&gt;
-&lt;p&gt;终于找到家了~&lt;/p&gt;
-</content>
-  </entry>
-  <entry>
-    <title>GStreamer笔记五: Media Formats and Pad Capabilities</title>
-    <link href="https://dfine.tech/posts/79fb69ed/"/>
-    <id>https://dfine.tech/posts/79fb69ed/</id>
-    <published>2017-12-06T15:26:11+08:00</published>
-    <updated>2017-12-06T15:26:11+08:00</updated>
-    <category term="GStreamer"/>
-    <category term="TX1"/>
-    <category term="Linux"/>
-    <content type="html">&lt;p&gt;此次所述有关pad功能。关于pad，&lt;a href=&quot;/posts/413bb42a/&quot;&gt;前面&lt;/a&gt;已有简单介绍，pad功能是GStreamer的一个基本元素，由于框架会自动处理他们，所以大多数时候它们是不可见的。本次主要了解的是关于pad功能的检索。&lt;/p&gt;
-&lt;!--more--&gt;
-&lt;h3 id=&quot;基本概念&quot;&gt;基本概念&lt;/h3&gt;
-&lt;h4 id=&quot;pads&quot;&gt;Pads&lt;/h4&gt;
-&lt;p&gt;之前已经说过，pad相当于一个接口，允许信息通过或者离开一个元素。Pad的功能(Capabilities或者简写为Cap)指定哪种信息可以通过pad。例如“分辨率为320x200像素，每秒30帧的RGB视频”，或“每采样音频16位，每秒44100采样率的5.1声道”，甚至压缩格式如mp3或h264等。
-Pad可以支持多种功能(如一个video sink可以支持不同类型的RGB或者YUV格式的视频)，而且功能也可以指定范围(如一个audio sink可以支持每秒1-48000个采样的采样率)。但从pad到pad的实际信息必须仅有一个明确指定的类型。两个相连的pad通过一个协商过程达到一个共同的类型，从而使其pad功能变得固定(仅有一种类型，不包含范围)。&lt;br&gt;
-要让两个元素连接在一起，他们的能力必须有一个公共子集，否则不可能相互理解。这也是能力的主要目标。&lt;br&gt;
-应用程序开发人员通常会通过将元素连接到一起来构建管道（如果使用playbin之类的全部元素，则程度较低）。在这种情况下需要知道元素的Pad Caps，或者至少知道当GStreamer拒绝连接两个协商错误的元素时它们的Caps是什么。&lt;/p&gt;
-&lt;h4 id=&quot;pad-templates&quot;&gt;Pad templates&lt;/h4&gt;
-&lt;p&gt;Pad是从pad模板创建的，pad模板表示了pad可能具有的所有功能。模板可用于创建一些相似的pad，并且允许早期拒绝元素之间的连接：如果其pad模板的功能没有公共子集（相交为空），则无需进一步协商。&lt;br&gt;
-pad模板可视为协商过程第一步。随着过程的演变，实际的Pads被实例化并且其能力被提炼，直到它们被固定（或者协商失败）。&lt;/p&gt;
-&lt;h4 id=&quot;capabilities-examples&quot;&gt;Capabilities examples&lt;/h4&gt;
-&lt;p&gt;一个能力的例子如下:&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;SINK template: &amp;#39;sink&amp;#39;
-  Availability: Always
-  Capabilities:
-    audio/x-raw
-               format: S16LE
-                 rate: [ 1, 2147483647 ]
-             channels: [ 1, 2 ]
-    audio/x-raw
-               format: U8
-                 rate: [ 1, 2147483647 ]
-             channels: [ 1, 2 ]&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;如代码中所示，该pad是一个接收端(sink)，且一直可用。它支持两种媒体，包括整数格式的原始音频（audio/x-raw）：带符号的16位小端 &lt;sup class=&quot;footnote-ref&quot;&gt;&lt;a href=&quot;#fn1&quot; id=&quot;fnref1&quot;&gt;[1]&lt;/a&gt;&lt;/sup&gt;和无符号8位。 方括号表示一个范围：例如，通道数从1到2不等。&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;SRC template: &amp;#39;src&amp;#39;
-  Availability: Always
-  Capabilities:
-    video/x-raw
-                width: [ 1, 2147483647 ]
-               height: [ 1, 2147483647 ]
-            framerate: [ 0/1, 2147483647/1 ]
-               format: { I420, NV12, NV21, YV12, YUY2, Y42B, Y444, YUV9, YVU9, Y41B, Y800, Y8, GREY, Y16 , UYVY, YVYU, IYU1, v308, AYUV, A420 }&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;video/x-raw表示这个信号源输出原始视频。它支持多种尺寸和帧率，以及一组YUV格式（大括号列表表示）。所有这些格式都表示图像平面的不同的填充和下采样。&lt;/p&gt;
-&lt;h4 id=&quot;last-remarks&quot;&gt;Last remarks&lt;/h4&gt;
-&lt;p&gt;可以使用&lt;code&gt;gst-inspect-1.0&lt;/code&gt;工具了解所有GStreamer元素的Caps。&lt;br&gt;
-一些元素查询底层硬件支持的格式，并相应地提供他们的pad功能（通常进入READY或更高状态时在这样做）。 因此，显示的能力可能因平台而异，也可能从一次执行到下一次执行就变了（即使这种情况很少）。&lt;br&gt;
-本次将会实例化两个元素（这次通过其工厂函数），显示其pad模板，连接它们并设置管道播放。 在每次状态改变时，sink元素的Pad的功能会被显示，所以可以观察到协商如何进行直到Pad Caps固定。&lt;/p&gt;
-&lt;h3 id=&quot;pad功能实例&quot;&gt;Pad功能实例&lt;/h3&gt;
-&lt;p&gt;一个普通的有关pad caps的例子如下:&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;#include &amp;lt;gst/gst.h&amp;gt;
-
-/* Functions below print the Capabilities in a human-friendly format */
-static gboolean print_field (GQuark field, const GValue * value, gpointer pfx) {
-  gchar *str = gst_value_serialize (value);
-
-  g_print (&amp;quot;%s  %15s: %s\n&amp;quot;, (gchar *) pfx, g_quark_to_string (field), str);
-  g_free (str);
-  return TRUE;
-}
-
-static void print_caps (const GstCaps * caps, const gchar * pfx) {
-  guint i;
-
-  g_return_if_fail (caps != NULL);
-
-  if (gst_caps_is_any (caps)) {
-    g_print (&amp;quot;%sANY\n&amp;quot;, pfx);
-    return;
-  }
-  if (gst_caps_is_empty (caps)) {
-    g_print (&amp;quot;%sEMPTY\n&amp;quot;, pfx);
-    return;
-  }
-
-  for (i = 0; i &amp;lt; gst_caps_get_size (caps); i++) {
-    GstStructure *structure = gst_caps_get_structure (caps, i);
-
-    g_print (&amp;quot;%s%s\n&amp;quot;, pfx, gst_structure_get_name (structure));
-    gst_structure_foreach (structure, print_field, (gpointer) pfx);
-  }
-}
-
-/* Prints information about a Pad Template, including its Capabilities */
-static void print_pad_templates_information (GstElementFactory * factory) {
-  const GList *pads;
-  GstStaticPadTemplate *padtemplate;
-
-  g_print (&amp;quot;Pad Templates for %s:\n&amp;quot;, gst_element_factory_get_longname (factory));
-  if (!gst_element_factory_get_num_pad_templates (factory)) {
-    g_print (&amp;quot;  none\n&amp;quot;);
-    return;
-  }
-
-  pads = gst_element_factory_get_static_pad_templates (factory);
-  while (pads) {
-    padtemplate = pads-&amp;gt;data;
-    pads = g_list_next (pads);
-
-    if (padtemplate-&amp;gt;direction == GST_PAD_SRC)
-      g_print (&amp;quot;  SRC template: &amp;#39;%s&amp;#39;\n&amp;quot;, padtemplate-&amp;gt;name_template);
-    else if (padtemplate-&amp;gt;direction == GST_PAD_SINK)
-      g_print (&amp;quot;  SINK template: &amp;#39;%s&amp;#39;\n&amp;quot;, padtemplate-&amp;gt;name_template);
-    else
-      g_print (&amp;quot;  UNKNOWN!!! template: &amp;#39;%s&amp;#39;\n&amp;quot;, padtemplate-&amp;gt;name_template);
-
-    if (padtemplate-&amp;gt;presence == GST_PAD_ALWAYS)
-      g_print (&amp;quot;    Availability: Always\n&amp;quot;);
-    else if (padtemplate-&amp;gt;presence == GST_PAD_SOMETIMES)
-      g_print (&amp;quot;    Availability: Sometimes\n&amp;quot;);
-    else if (padtemplate-&amp;gt;presence == GST_PAD_REQUEST) {
-      g_print (&amp;quot;    Availability: On request\n&amp;quot;);
-    } else
-      g_print (&amp;quot;    Availability: UNKNOWN!!!\n&amp;quot;);
-
-    if (padtemplate-&amp;gt;static_caps.string) {
-      GstCaps *caps;
-      g_print (&amp;quot;    Capabilities:\n&amp;quot;);
-      caps = gst_static_caps_get (&amp;amp;padtemplate-&amp;gt;static_caps);
-      print_caps (caps, &amp;quot;      &amp;quot;);
-      gst_caps_unref (caps);
-
-    }
-
-    g_print (&amp;quot;\n&amp;quot;);
-  }
-}
-
-/* Shows the CURRENT capabilities of the requested pad in the given element */
-static void print_pad_capabilities (GstElement *element, gchar *pad_name) {
-  GstPad *pad = NULL;
-  GstCaps *caps = NULL;
-
-  /* Retrieve pad */
-  pad = gst_element_get_static_pad (element, pad_name);
-  if (!pad) {
-    g_printerr (&amp;quot;Could not retrieve pad &amp;#39;%s&amp;#39;\n&amp;quot;, pad_name);
-    return;
-  }
-
-  /* Retrieve negotiated caps (or acceptable caps if negotiation is not finished yet) */
-  caps = gst_pad_get_current_caps (pad);
-  if (!caps)
-    caps = gst_pad_query_caps (pad, NULL);
-
-  /* Print and free */
-  g_print (&amp;quot;Caps for the %s pad:\n&amp;quot;, pad_name);
-  print_caps (caps, &amp;quot;      &amp;quot;);
-  gst_caps_unref (caps);
-  gst_object_unref (pad);
-}
-
-int main(int argc, char *argv[]) {
-  GstElement *pipeline, *source, *sink;
-  GstElementFactory *source_factory, *sink_factory;
-  GstBus *bus;
-  GstMessage *msg;
-  GstStateChangeReturn ret;
-  gboolean terminate = FALSE;
-
-  /* Initialize GStreamer */
-  gst_init (&amp;amp;argc, &amp;amp;argv);
-
-  /* Create the element factories */
-  source_factory = gst_element_factory_find (&amp;quot;audiotestsrc&amp;quot;);
-  sink_factory = gst_element_factory_find (&amp;quot;autoaudiosink&amp;quot;);
-  if (!source_factory || !sink_factory) {
-    g_printerr (&amp;quot;Not all element factories could be created.\n&amp;quot;);
-    return -1;
-  }
-
-  /* Print information about the pad templates of these factories */
-  print_pad_templates_information (source_factory);
-  print_pad_templates_information (sink_factory);
-
-  /* Ask the factories to instantiate actual elements */
-  source = gst_element_factory_create (source_factory, &amp;quot;source&amp;quot;);
-  sink = gst_element_factory_create (sink_factory, &amp;quot;sink&amp;quot;);
-
-  /* Create the empty pipeline */
-  pipeline = gst_pipeline_new (&amp;quot;test-pipeline&amp;quot;);
-
-  if (!pipeline || !source || !sink) {
-    g_printerr (&amp;quot;Not all elements could be created.\n&amp;quot;);
-    return -1;
-  }
-
-  /* Build the pipeline */
-  gst_bin_add_many (GST_BIN (pipeline), source, sink, NULL);
-  if (gst_element_link (source, sink) != TRUE) {
-    g_printerr (&amp;quot;Elements could not be linked.\n&amp;quot;);
-    gst_object_unref (pipeline);
-    return -1;
-  }
-
-  /* Print initial negotiated caps (in NULL state) */
-  g_print (&amp;quot;In NULL state:\n&amp;quot;);
-  print_pad_capabilities (sink, &amp;quot;sink&amp;quot;);
-
-  /* Start playing */
-  ret = gst_element_set_state (pipeline, GST_STATE_PLAYING);
-  if (ret == GST_STATE_CHANGE_FAILURE) {
-    g_printerr (&amp;quot;Unable to set the pipeline to the playing state (check the bus for error messages).\n&amp;quot;);
-  }
-
-  /* Wait until error, EOS or State Change */
-  bus = gst_element_get_bus (pipeline);
-  do {
-    msg = gst_bus_timed_pop_filtered (bus, GST_CLOCK_TIME_NONE, GST_MESSAGE_ERROR | GST_MESSAGE_EOS |
-        GST_MESSAGE_STATE_CHANGED);
-
-    /* Parse message */
-    if (msg != NULL) {
-      GError *err;
-      gchar *debug_info;
-
-      switch (GST_MESSAGE_TYPE (msg)) {
-        case GST_MESSAGE_ERROR:
-          gst_message_parse_error (msg, &amp;amp;err, &amp;amp;debug_info);
-          g_printerr (&amp;quot;Error received from element %s: %s\n&amp;quot;, GST_OBJECT_NAME (msg-&amp;gt;src), err-&amp;gt;message);
-          g_printerr (&amp;quot;Debugging information: %s\n&amp;quot;, debug_info ? debug_info : &amp;quot;none&amp;quot;);
-          g_clear_error (&amp;amp;err);
-          g_free (debug_info);
-          terminate = TRUE;
-          break;
-        case GST_MESSAGE_EOS:
-          g_print (&amp;quot;End-Of-Stream reached.\n&amp;quot;);
-          terminate = TRUE;
-          break;
-        case GST_MESSAGE_STATE_CHANGED:
-          /* We are only interested in state-changed messages from the pipeline */
-          if (GST_MESSAGE_SRC (msg) == GST_OBJECT (pipeline)) {
-            GstState old_state, new_state, pending_state;
-            gst_message_parse_state_changed (msg, &amp;amp;old_state, &amp;amp;new_state, &amp;amp;pending_state);
-            g_print (&amp;quot;\nPipeline state changed from %s to %s:\n&amp;quot;,
-                gst_element_state_get_name (old_state), gst_element_state_get_name (new_state));
-            /* Print the current capabilities of the sink element */
-            print_pad_capabilities (sink, &amp;quot;sink&amp;quot;);
-          }
-          break;
-        default:
-          /* We should not reach here because we only asked for ERRORs, EOS and STATE_CHANGED */
-          g_printerr (&amp;quot;Unexpected message received.\n&amp;quot;);
-          break;
-      }
-      gst_message_unref (msg);
-    }
-  } while (!terminate);
-
-  /* Free resources */
-  gst_object_unref (bus);
-  gst_element_set_state (pipeline, GST_STATE_NULL);
-  gst_object_unref (pipeline);
-  gst_object_unref (source_factory);
-  gst_object_unref (sink_factory);
-  return 0;
-}&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;所需要的库只有&lt;code&gt;gstreamer-1.0&lt;/code&gt;。&lt;/p&gt;
-&lt;h3 id=&quot;代码分析&quot;&gt;代码分析&lt;/h3&gt;
-&lt;p&gt;&lt;code&gt;print_field&lt;/code&gt;, &lt;code&gt;print_caps&lt;/code&gt;和&lt;code&gt;print_pad_templates&lt;/code&gt;简单的以友好的格式显示了caps的结构，更多的GstCaps内部结构组织可以阅读GStreamer的关于Pad Caps的文档。&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;/* Shows the CURRENT capabilities of the requested pad in the given element */
-static void print_pad_capabilities (GstElement *element, gchar *pad_name) {
-  GstPad *pad = NULL;
-  GstCaps *caps = NULL;
-
-  /* Retrieve pad */
-  pad = gst_element_get_static_pad (element, pad_name);
-  if (!pad) {
-    g_printerr (&amp;quot;Could not retrieve pad &amp;#39;%s&amp;#39;\n&amp;quot;, pad_name);
-    return;
-  }
-
-  /* Retrieve negotiated caps (or acceptable caps if negotiation is not finished yet) */
-  caps = gst_pad_get_current_caps (pad);
-  if (!caps)
-    caps = gst_pad_query_caps (pad, NULL);
-
-  /* Print and free */
-  g_print (&amp;quot;Caps for the %s pad:\n&amp;quot;, pad_name);
-  print_caps (caps, &amp;quot;      &amp;quot;);
-  gst_caps_unref (caps);
-  gst_object_unref (pad);
-}&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;&lt;code&gt;gst_element_get_static_pad&lt;/code&gt;函数从给定的元素中检索命名的pad。这个pad是静态的，因为它总是存在于元素中。有关Pad可用性的更多信息，可以阅读有关Pads的GStreamer文档。&lt;br&gt;
-然后调用&lt;code&gt;gst_pad_get_current_caps&lt;/code&gt;来检索pad的当前caps，它可以是固定的或不固定的，具体取决于协商过程的状态。甚至可能不存在，这种情况下调用&lt;code&gt;gst_pad_query_caps&lt;/code&gt;来检索当前可接受的pad caps。当前可接受的caps将成为处于NULL状态的pad模板的caps，但可能会在以后的状态中更改，因为可能会查询实际的硬件功能。&lt;br&gt;
-然后将这些功能打印出来:&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;/* Create the element factories */
-source_factory = gst_element_factory_find (&amp;quot;audiotestsrc&amp;quot;);
-sink_factory = gst_element_factory_find (&amp;quot;autoaudiosink&amp;quot;);
-if (!source_factory || !sink_factory) {
-  g_printerr (&amp;quot;Not all element factories could be created.\n&amp;quot;);
-  return -1;
-}
-
-/* Print information about the pad templates of these factories */
-print_pad_templates_information (source_factory);
-print_pad_templates_information (sink_factory);
-
-/* Ask the factories to instantiate actual elements */
-source = gst_element_factory_create (source_factory, &amp;quot;source&amp;quot;);
-sink = gst_element_factory_create (sink_factory, &amp;quot;sink&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;之前直接使用&lt;code&gt;gst_element_factory_make&lt;/code&gt;函数创建了元素，并跳过了关于工厂的讨论。GstElementFactory负责实例化由其工厂名称标识的特定类型的元素。&lt;br&gt;
-可以使用&lt;code&gt;gst_element_factory_find&lt;/code&gt;来创建一个类型为“videotestsrc”的工厂，然后通过&lt;code&gt;gst_element_factory_create&lt;/code&gt;使用它实例化多个“videotestsrc”元素。&lt;code&gt;gst_element_factory_make&lt;/code&gt;实际上是&lt;code&gt;gst_element_factory_find&lt;/code&gt;+&lt;code&gt;gst_element_factory_create&lt;/code&gt;的快捷方式。&lt;br&gt;
-Pad模板已经可以通过工厂来访问，所以一旦工厂被创建，它们就会被打印出来。&lt;br&gt;
-跳过管道的创建以及开始，转到State-Changed消息处理：&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;case GST_MESSAGE_STATE_CHANGED:
-  /* We are only interested in state-changed messages from the pipeline */
-  if (GST_MESSAGE_SRC (msg) == GST_OBJECT (pipeline)) {
-    GstState old_state, new_state, pending_state;
-    gst_message_parse_state_changed (msg, &amp;amp;old_state, &amp;amp;new_state, &amp;amp;pending_state);
-    g_print (&amp;quot;\nPipeline state changed from %s to %s:\n&amp;quot;,
-        gst_element_state_get_name (old_state), gst_element_state_get_name (new_state));
-    /* Print the current capabilities of the sink element */
-    print_pad_capabilities (sink, &amp;quot;sink&amp;quot;);
-  }
-  break;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;该段代码在每次Pipeline状态发生改变时简单的打印出当前的pad caps。可以在输出中看到初始caps（pad模板的caps）是如何逐步完善直至完全固定（包含无范围单一类型）。&lt;/p&gt;
-&lt;hr class=&quot;footnotes-sep&quot;&gt;
-&lt;section class=&quot;footnotes&quot;&gt;
-&lt;ol class=&quot;footnotes-list&quot;&gt;
-&lt;li id=&quot;fn1&quot; class=&quot;footnote-item&quot;&gt;&lt;p&gt;对于整型/长整型等数据类型，小端与大端相反，按照从低地址到高地址的顺序存放数据的高位字节到低位字节。 &lt;a href=&quot;#fnref1&quot; class=&quot;footnote-backref&quot;&gt;↩︎&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;/section&gt;
 </content>
   </entry>
 </feed>
