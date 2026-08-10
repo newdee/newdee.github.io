@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1520 840" role="img" aria-labelledby="archify-diagram-title archify-diagram-description" data-preset="classic" data-quality-profile="showcase" data-theme="light" width="1520" height="840">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1560 860" role="img" aria-labelledby="archify-diagram-title archify-diagram-description" data-preset="classic" data-quality-profile="showcase" data-theme="light" width="1560" height="860">
 <style type="text/css"><![CDATA[
 
     
@@ -402,11 +402,7 @@
 
     .t-muted   { fill: var(--text-muted); }
 
-    .t-frontend   { fill: var(--frontend-stroke); }
-
     .t-backend    { fill: var(--backend-stroke); }
-
-    .t-database   { fill: var(--database-stroke); }
 
     .t-cloud      { fill: var(--cloud-stroke); }
 
@@ -941,6 +937,8 @@
 
     svg[data-preset="blueprint"][data-chapter-preview] [data-node-id] { filter: none !important; }
 
+    .c-region         { fill: rgba(251, 191, 36, 0.05); stroke: var(--cloud-stroke); stroke-dasharray: 8,4; }
+
     svg[data-preset="signal-flow"][data-animation="trace"] [data-animate="edge"] {
       stroke-linecap: round;
       filter: drop-shadow(0 0 3px var(--arrow-emphasis));
@@ -1009,8 +1007,8 @@
     }
 ]]></style>
 
-        <title id="archify-diagram-title">prime-agent 部件与数据流</title>
-        <desc id="archify-diagram-description">四个终端入口汇到同一套提示词模板与同一个 SDK 封装；状态全在云端会话里，本机不落一行状态</desc>
+        <title id="archify-diagram-title">Prime Agent 的进程分层</title>
+        <desc id="archify-diagram-description">终端只是客户端；会话、内核、调度都活在常驻 worker 里，关掉终端不停止工作</desc>
         <!-- Definitions -->
         <defs>
           <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
@@ -1034,204 +1032,192 @@
         <rect width="100%" height="100%" fill="url(#grid)" />
 
         <!-- Boundaries (behind everything) -->
-
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="region" data-composition-frame-id="0" x="598" y="50" width="474" height="446" rx="12" class="c-region" stroke-width="1"/>
+        <text x="606" y="68" class="t-cloud" font-size="9" font-weight="600">session worker · 一棵会话树</text>
 
         <!-- Connection paths (before components for correct z-order) -->
-        <path data-edge-from="phasedocs" data-edge-to="phase7" data-edge-label="每 phase 附一份" data-edge-key="0" data-edge-id="docs-in" data-composition-points="160,110;184,110;184,126;378,126;378,103;402,103" d="M 160 110 L 176 110 Q 184 110 184 118 L 184 118 Q 184 126 192 126 L 370 126 Q 378 126 378 118 L 378 111 Q 378 103 386 103 L 402 103" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="config" data-edge-to="phase7" data-edge-label="指定目标仓库" data-edge-key="1" data-edge-id="conf-in" data-composition-points="160,450;281,450;281,117;402,117" d="M 160 450 L 273 450 Q 281 450 281 442 L 281 125 Q 281 117 289 117 L 402 117" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="phase7" data-edge-to="context" data-edge-key="2" data-edge-id="p7-ctx" data-composition-points="522,110;643,110;643,266;764,266" d="M 522 110 L 635 110 Q 643 110 643 118 L 643 258 Q 643 266 651 266 L 764 266" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
-        <path data-edge-from="kick" data-edge-to="context" data-edge-key="3" data-edge-id="kick-ctx" data-composition-points="522,280;546,280;546,296;740,296;740,275.3333333333333;764,275.3333333333333" d="M 522 280 L 538 280 Q 546 280 546 288 L 546 288 Q 546 296 554 296 L 732 296 Q 740 296 740 288 L 740 283.3333333333333 Q 740 275.3333333333333 748 275.3333333333333 L 764 275.3333333333333" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="review" data-edge-to="context" data-edge-key="4" data-edge-id="rev-ctx" data-composition-points="522,450;643,450;643,284.6666666666667;764,284.6666666666667" d="M 522 450 L 635 450 Q 643 450 643 442 L 643 292.6666666666667 Q 643 284.6666666666667 651 284.6666666666667 L 764 284.6666666666667" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="take" data-edge-to="context" data-edge-key="5" data-edge-id="take-ctx" data-composition-points="522,620;643,620;643,294;764,294" d="M 522 620 L 635 620 Q 643 620 643 612 L 643 302 Q 643 294 651 294 L 764 294" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="context" data-edge-to="agents" data-edge-label="成品提示词" data-edge-key="6" data-edge-id="ctx-agents" data-composition-points="824,310;824,420" d="M 824 310 L 824 420" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
-        <path data-edge-from="agents" data-edge-to="cloud" data-edge-label="create · prompt · 等结果" data-edge-key="7" data-edge-id="agents-cloud" data-composition-points="884,450;1005,450;1005,280;1126,280" d="M 884 450 L 997 450 Q 1005 450 1005 442 L 1005 288 Q 1005 280 1013 280 L 1126 280" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
-        <path data-edge-from="cloud" data-edge-to="github" data-edge-label="commit + PR 立即推" data-edge-key="8" data-edge-id="cloud-gh" data-composition-points="1186,310;1186,420" d="M 1186 310 L 1186 420" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="github" data-edge-to="cloud" data-edge-label="审查 agent 从 PR checkout" data-edge-key="9" data-edge-id="gh-cloud" data-composition-points="1246,450;1270,450;1270,280;1246,280" d="M 1246 450 L 1262 450 Q 1270 450 1270 442 L 1270 288 Q 1270 280 1262 280 L 1246 280" class="a-dashed" stroke-width="1.5" marker-end="url(#arrowhead-dashed)"/>
+        <path data-edge-from="tui" data-edge-to="supervisor" data-edge-label="本地 daemon 协议" data-edge-key="0" data-edge-id="c1" data-composition-points="160,110;247,110;247,271;334,271" d="M 160 110 L 239 110 Q 247 110 247 118 L 247 263 Q 247 271 255 271 L 334 271" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="headless" data-edge-to="supervisor" data-edge-label="同一协议" data-edge-key="1" data-edge-id="c2" data-composition-points="160,446;247,446;247,285;334,285" d="M 160 446 L 239 446 Q 247 446 247 438 L 247 293 Q 247 285 255 285 L 334 285" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="supervisor" data-edge-to="session" data-edge-label="路由到活跃会话" data-edge-key="2" data-edge-id="c3" data-composition-points="454,278;541,278;541,110;628,110" d="M 454 278 L 533 278 Q 541 278 541 270 L 541 118 Q 541 110 549 110 L 628 110" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="scheduler" data-edge-to="session" data-edge-label="到点提示入队" data-edge-key="3" data-edge-id="c4" data-composition-points="688,416;688,392;704,392;704,164;681,164;681,140" d="M 688 416 L 688 400 Q 688 392 696 392 L 696 392 Q 704 392 704 384 L 704 172 Q 704 164 696 164 L 689 164 Q 681 164 681 156 L 681 140" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="session" data-edge-to="kernel" data-edge-label="ipython 调用" data-edge-key="4" data-edge-id="c5" data-composition-points="748,103;772,103;772,126;898,126;898,110;922,110" d="M 748 103 L 764 103 Q 772 103 772 111 L 772 118 Q 772 126 780 126 L 890 126 Q 898 126 898 118 L 898 118 Q 898 110 906 110 L 922 110" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="session" data-edge-to="children" data-edge-label="rlm() 派生" data-edge-key="5" data-edge-id="c6" data-composition-points="748,117;835,117;835,446;922,446" d="M 748 117 L 827 117 Q 835 117 835 125 L 835 438 Q 835 446 843 446 L 922 446" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="kernel" data-edge-to="providers" data-edge-key="6" data-edge-id="c7" data-composition-points="1042,110;1066,110;1066,126;1192,126;1192,103;1216,103" d="M 1042 110 L 1058 110 Q 1066 110 1066 118 L 1066 118 Q 1066 126 1074 126 L 1184 126 Q 1192 126 1192 118 L 1192 111 Q 1192 103 1200 103 L 1216 103" class="a-dashed" stroke-width="0.5" marker-end="url(#arrowhead-dashed)"/>
+        <path data-edge-from="session" data-edge-to="providers" data-edge-label="模型流" data-edge-key="7" data-edge-id="c8" data-composition-points="688,80;688,56;1192,56;1192,117;1216,117" d="M 688 80 L 688 64 Q 688 56 696 56 L 1184 56 Q 1192 56 1192 64 L 1192 109 Q 1192 117 1200 117 L 1216 117" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="children" data-edge-to="storage" data-edge-label="各自转录" data-edge-key="8" data-edge-id="c9" data-composition-points="1042,446;1216,446" d="M 1042 446 L 1216 446" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="kernel" data-edge-to="session" data-edge-label="host request" data-edge-key="9" data-edge-id="c10" data-composition-points="982,140;982,164;695,164;695,140" d="M 982 140 L 982 156 Q 982 164 974 164 L 703 164 Q 695 164 695 156 L 695 140" class="a-dashed" stroke-width="1.5" marker-end="url(#arrowhead-dashed)"/>
 
         <!-- Components -->
-        <g id="node-phasedocs" data-node-id="phasedocs" data-node-label="phases/001–007.md" tabindex="0" role="button" aria-label="Focus phases/001–007.md, 七份阶段合同 · done criteria, Architecture component" aria-pressed="false" data-node-kind="database" data-node-sublabel="七份阶段合同 · done criteria" data-node-tag="187 行" data-node-context="Architecture component">
-          <title>phases/001–007.md · 七份阶段合同 · done criteria · Architecture component · 187 行</title>
+        <g id="node-tui" data-node-id="tui" data-node-label="交互 TUI" tabindex="0" role="button" aria-label="Focus 交互 TUI, 渲染 · 键盘 · 本地偏好, Architecture component" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="渲染 · 键盘 · 本地偏好" data-node-context="Architecture component">
+          <title>交互 TUI · 渲染 · 键盘 · 本地偏好 · Architecture component</title>
           <rect x="40" y="80" width="120" height="60" rx="6" class="c-mask"/>
-          <rect x="40" y="80" width="120" height="60" rx="6" class="c-database" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(46 86) scale(0.6875)">
-            <ellipse cx="8" cy="4" rx="5" ry="2"/>
-            <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
-          </g>
-          <text data-detail-anchor="" x="100" y="108" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">phases/001–007.md</text>
-        <text data-detail="context" x="100" y="124" class="t-muted" font-size="6.6" text-anchor="middle">七份阶段合同 · done criteria</text>
-        <text data-detail="fine" x="100" y="132" class="t-database" font-size="7" text-anchor="middle">187 行</text>
-        </g>
-
-        <g id="node-config" data-node-id="config" data-node-label=".prime-agent" tabindex="0" role="button" aria-label="Focus .prime-agent, project 仓库 + 常驻 context, Architecture component" aria-pressed="false" data-node-kind="database" data-node-sublabel="project 仓库 + 常驻 context" data-node-tag="每项目一份" data-node-context="Architecture component">
-          <title>.prime-agent · project 仓库 + 常驻 context · Architecture component · 每项目一份</title>
-          <rect x="40" y="420" width="120" height="60" rx="6" class="c-mask"/>
-          <rect x="40" y="420" width="120" height="60" rx="6" class="c-database" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(46 426) scale(0.6875)">
-            <ellipse cx="8" cy="4" rx="5" ry="2"/>
-            <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
-          </g>
-          <text data-detail-anchor="" x="100" y="448" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">.prime-agent</text>
-        <text data-detail="context" x="100" y="464" class="t-muted" font-size="6.9" text-anchor="middle">project 仓库 + 常驻 context</text>
-        <text data-detail="fine" x="100" y="472" class="t-database" font-size="7" text-anchor="middle">每项目一份</text>
-        </g>
-
-        <g id="node-phase7" data-node-id="phase7" data-node-label="phase-7.ts" tabindex="0" role="button" aria-label="Focus phase-7.ts, 七阶段流水线, Architecture component" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="七阶段流水线" data-node-tag="主入口" data-node-context="Architecture component">
-          <title>phase-7.ts · 七阶段流水线 · Architecture component · 主入口</title>
-          <rect x="402" y="80" width="120" height="60" rx="6" class="c-mask"/>
-          <rect x="402" y="80" width="120" height="60" rx="6" class="c-frontend" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(408 86) scale(0.6875)">
+          <rect x="40" y="80" width="120" height="60" rx="6" class="c-frontend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(46 86) scale(0.6875)">
             <rect x="2" y="3" width="12" height="10" rx="2"/>
             <path d="M2 6.5h12"/>
             <circle cx="4.1" cy="4.8" r=".7" class="sigil-fill"/>
             <circle cx="6.3" cy="4.8" r=".7" class="sigil-fill"/>
           </g>
-          <text data-detail-anchor="" x="462" y="108" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">phase-7.ts</text>
-        <text data-detail="context" x="462" y="124" class="t-muted" font-size="9" text-anchor="middle">七阶段流水线</text>
-        <text data-detail="fine" x="462" y="132" class="t-frontend" font-size="7" text-anchor="middle">主入口</text>
+          <text data-detail-anchor="" x="100" y="108" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">交互 TUI</text>
+        <text data-detail="context" x="100" y="124" class="t-muted" font-size="8.4" text-anchor="middle">渲染 · 键盘 · 本地偏好</text>
         </g>
 
-        <g id="node-kick" data-node-id="kick" data-node-label="kick-off.ts" tabindex="0" role="button" aria-label="Focus kick-off.ts, 单发任务, Architecture component" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="单发任务" data-node-context="Architecture component">
-          <title>kick-off.ts · 单发任务 · Architecture component</title>
-          <rect x="402" y="250" width="120" height="60" rx="6" class="c-mask"/>
-          <rect x="402" y="250" width="120" height="60" rx="6" class="c-frontend" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(408 256) scale(0.6875)">
+        <g id="node-headless" data-node-id="headless" data-node-label="print / JSON / RPC" tabindex="0" role="button" aria-label="Focus print / JSON / RPC, 无头客户端, Architecture component" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="无头客户端" data-node-context="Architecture component">
+          <title>print / JSON / RPC · 无头客户端 · Architecture component</title>
+          <rect x="40" y="416" width="120" height="60" rx="6" class="c-mask"/>
+          <rect x="40" y="416" width="120" height="60" rx="6" class="c-frontend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(46 422) scale(0.6875)">
             <rect x="2" y="3" width="12" height="10" rx="2"/>
             <path d="M2 6.5h12"/>
             <circle cx="4.1" cy="4.8" r=".7" class="sigil-fill"/>
             <circle cx="6.3" cy="4.8" r=".7" class="sigil-fill"/>
           </g>
-          <text data-detail-anchor="" x="462" y="278" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">kick-off.ts</text>
-        <text data-detail="context" x="462" y="294" class="t-muted" font-size="9" text-anchor="middle">单发任务</text>
+          <text data-detail-anchor="" x="100" y="444" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">print / JSON / RPC</text>
+        <text data-detail="context" x="100" y="460" class="t-muted" font-size="9" text-anchor="middle">无头客户端</text>
         </g>
 
-        <g id="node-review" data-node-id="review" data-node-label="review.ts" tabindex="0" role="button" aria-label="Focus review.ts, 手动对抗审查, Architecture component" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="手动对抗审查" data-node-context="Architecture component">
-          <title>review.ts · 手动对抗审查 · Architecture component</title>
-          <rect x="402" y="420" width="120" height="60" rx="6" class="c-mask"/>
-          <rect x="402" y="420" width="120" height="60" rx="6" class="c-frontend" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(408 426) scale(0.6875)">
-            <rect x="2" y="3" width="12" height="10" rx="2"/>
-            <path d="M2 6.5h12"/>
-            <circle cx="4.1" cy="4.8" r=".7" class="sigil-fill"/>
-            <circle cx="6.3" cy="4.8" r=".7" class="sigil-fill"/>
-          </g>
-          <text data-detail-anchor="" x="462" y="448" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">review.ts</text>
-        <text data-detail="context" x="462" y="464" class="t-muted" font-size="9" text-anchor="middle">手动对抗审查</text>
-        </g>
-
-        <g id="node-take" data-node-id="take" data-node-label="take-over.ts" tabindex="0" role="button" aria-label="Focus take-over.ts, 云端接手本地分支, Architecture component" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="云端接手本地分支" data-node-context="Architecture component">
-          <title>take-over.ts · 云端接手本地分支 · Architecture component</title>
-          <rect x="402" y="590" width="120" height="60" rx="6" class="c-mask"/>
-          <rect x="402" y="590" width="120" height="60" rx="6" class="c-frontend" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(408 596) scale(0.6875)">
-            <rect x="2" y="3" width="12" height="10" rx="2"/>
-            <path d="M2 6.5h12"/>
-            <circle cx="4.1" cy="4.8" r=".7" class="sigil-fill"/>
-            <circle cx="6.3" cy="4.8" r=".7" class="sigil-fill"/>
-          </g>
-          <text data-detail-anchor="" x="462" y="618" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">take-over.ts</text>
-        <text data-detail="context" x="462" y="634" class="t-muted" font-size="9" text-anchor="middle">云端接手本地分支</text>
-        </g>
-
-        <g id="node-context" data-node-id="context" data-node-label="context.ts" tabindex="0" role="button" aria-label="Focus context.ts, 三种提示词模板, Architecture component" aria-pressed="false" data-node-kind="backend" data-node-sublabel="三种提示词模板" data-node-tag="文件全文内联" data-node-context="Architecture component">
-          <title>context.ts · 三种提示词模板 · Architecture component · 文件全文内联</title>
-          <rect x="764" y="250" width="120" height="60" rx="6" class="c-mask"/>
-          <rect x="764" y="250" width="120" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(770 256) scale(0.6875)">
+        <g id="node-supervisor" data-node-id="supervisor" data-node-label="daemon supervisor" tabindex="0" role="button" aria-label="Focus daemon supervisor, 路由 · attach · 崩溃恢复, Architecture component" aria-pressed="false" data-node-kind="backend" data-node-sublabel="路由 · attach · 崩溃恢复" data-node-tag="常驻" data-node-context="Architecture component">
+          <title>daemon supervisor · 路由 · attach · 崩溃恢复 · Architecture component · 常驻</title>
+          <rect x="334" y="248" width="120" height="60" rx="6" class="c-mask"/>
+          <rect x="334" y="248" width="120" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(340 254) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-detail-anchor="" x="824" y="278" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">context.ts</text>
-        <text data-detail="context" x="824" y="294" class="t-muted" font-size="9" text-anchor="middle">三种提示词模板</text>
-        <text data-detail="fine" x="824" y="302" class="t-backend" font-size="7" text-anchor="middle">文件全文内联</text>
+          <text data-detail-anchor="" x="394" y="276" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">daemon supervisor</text>
+        <text data-detail="context" x="394" y="292" class="t-muted" font-size="7.7" text-anchor="middle">路由 · attach · 崩溃恢复</text>
+        <text data-detail="fine" x="394" y="300" class="t-backend" font-size="7" text-anchor="middle">常驻</text>
         </g>
 
-        <g id="node-agents" data-node-id="agents" data-node-label="agents.ts" tabindex="0" role="button" aria-label="Focus agents.ts, @cursor/sdk 封装 · 断流重连, Architecture component" aria-pressed="false" data-node-kind="backend" data-node-sublabel="@cursor/sdk 封装 · 断流重连" data-node-tag="create · resume · getPr" data-node-context="Architecture component">
-          <title>agents.ts · @cursor/sdk 封装 · 断流重连 · Architecture component · create · resume · getPr</title>
-          <rect x="764" y="420" width="120" height="60" rx="6" class="c-mask"/>
-          <rect x="764" y="420" width="120" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(770 426) scale(0.6875)">
+        <g id="node-session" data-node-id="session" data-node-label="根 AgentSession" tabindex="0" role="button" aria-label="Focus 根 AgentSession, 队列 · compaction · goal, session worker · 一棵会话树" aria-pressed="false" data-node-kind="backend" data-node-sublabel="队列 · compaction · goal" data-node-context="session worker · 一棵会话树">
+          <title>根 AgentSession · 队列 · compaction · goal · session worker · 一棵会话树</title>
+          <rect x="628" y="80" width="120" height="60" rx="6" class="c-mask"/>
+          <rect x="628" y="80" width="120" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(634 86) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-detail-anchor="" x="824" y="448" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">agents.ts</text>
-        <text data-detail="context" x="824" y="464" class="t-muted" font-size="6.9" text-anchor="middle">@cursor/sdk 封装 · 断流重连</text>
-        <text data-detail="fine" x="824" y="472" class="t-backend" font-size="7" text-anchor="middle">create · resume · getPr</text>
+          <text data-detail-anchor="" x="688" y="108" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">根 AgentSession</text>
+        <text data-detail="context" x="688" y="124" class="t-muted" font-size="7.7" text-anchor="middle">队列 · compaction · goal</text>
         </g>
 
-        <g id="node-cloud" data-node-id="cloud" data-node-label="Cursor 云端 agent" tabindex="0" role="button" aria-label="Focus Cursor 云端 agent, grok-4.5 · effort high, Architecture component" aria-pressed="false" data-node-kind="cloud" data-node-sublabel="grok-4.5 · effort high" data-node-tag="状态都在这" data-node-context="Architecture component">
-          <title>Cursor 云端 agent · grok-4.5 · effort high · Architecture component · 状态都在这</title>
-          <rect x="1126" y="250" width="120" height="60" rx="6" class="c-mask"/>
-          <rect x="1126" y="250" width="120" height="60" rx="6" class="c-cloud" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" transform="translate(1132 256) scale(0.6875)">
-            <path d="M4.3 12.5h7.3a2.4 2.4 0 0 0 .2-4.8 4 4 0 0 0-7.5-1.3A3.1 3.1 0 0 0 4.3 12.5Z"/>
+        <g id="node-scheduler" data-node-id="scheduler" data-node-label="Scheduler" tabindex="0" role="button" aria-label="Focus Scheduler, 心跳 · cron · 续跑策略, session worker · 一棵会话树" aria-pressed="false" data-node-kind="backend" data-node-sublabel="心跳 · cron · 续跑策略" data-node-context="session worker · 一棵会话树">
+          <title>Scheduler · 心跳 · cron · 续跑策略 · session worker · 一棵会话树</title>
+          <rect x="628" y="416" width="120" height="60" rx="6" class="c-mask"/>
+          <rect x="628" y="416" width="120" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(634 422) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-detail-anchor="" x="1186" y="278" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Cursor 云端 agent</text>
-        <text data-detail="context" x="1186" y="294" class="t-muted" font-size="8.4" text-anchor="middle">grok-4.5 · effort high</text>
-        <text data-detail="fine" x="1186" y="302" class="t-cloud" font-size="7" text-anchor="middle">状态都在这</text>
+          <text data-detail-anchor="" x="688" y="444" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Scheduler</text>
+        <text data-detail="context" x="688" y="460" class="t-muted" font-size="8.4" text-anchor="middle">心跳 · cron · 续跑策略</text>
         </g>
 
-        <g id="node-github" data-node-id="github" data-node-label="GitHub PR" tabindex="0" role="button" aria-label="Focus GitHub PR, 每 phase 一个检查点, Architecture component" aria-pressed="false" data-node-kind="external" data-node-sublabel="每 phase 一个检查点" data-node-context="Architecture component">
-          <title>GitHub PR · 每 phase 一个检查点 · Architecture component</title>
-          <rect x="1126" y="420" width="120" height="60" rx="6" class="c-mask"/>
-          <rect x="1126" y="420" width="120" height="60" rx="6" class="c-external" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="external" class="semantic-sigil s-external" transform="translate(1132 426) scale(0.6875)">
+        <g id="node-kernel" data-node-id="kernel" data-node-label="IPython 内核" tabindex="0" role="button" aria-label="Focus IPython 内核, 独立进程 · 状态常驻, session worker · 一棵会话树" aria-pressed="false" data-node-kind="backend" data-node-sublabel="独立进程 · 状态常驻" data-node-tag="唯一工具" data-node-context="session worker · 一棵会话树">
+          <title>IPython 内核 · 独立进程 · 状态常驻 · session worker · 一棵会话树 · 唯一工具</title>
+          <rect x="922" y="80" width="120" height="60" rx="6" class="c-mask"/>
+          <rect x="922" y="80" width="120" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(928 86) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-detail-anchor="" x="982" y="108" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">IPython 内核</text>
+        <text data-detail="context" x="982" y="124" class="t-muted" font-size="9" text-anchor="middle">独立进程 · 状态常驻</text>
+        <text data-detail="fine" x="982" y="132" class="t-backend" font-size="7" text-anchor="middle">唯一工具</text>
+        </g>
+
+        <g id="node-children" data-node-id="children" data-node-label="RLM 子会话" tabindex="0" role="button" aria-label="Focus RLM 子会话, 独立上下文 + 可选内核, session worker · 一棵会话树" aria-pressed="false" data-node-kind="external" data-node-sublabel="独立上下文 + 可选内核" data-node-context="session worker · 一棵会话树">
+          <title>RLM 子会话 · 独立上下文 + 可选内核 · session worker · 一棵会话树</title>
+          <rect x="922" y="416" width="120" height="60" rx="6" class="c-mask"/>
+          <rect x="922" y="416" width="120" height="60" rx="6" class="c-external" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="external" class="semantic-sigil s-external" transform="translate(928 422) scale(0.6875)">
             <rect x="2.5" y="5" width="8.5" height="8" rx="1.5"/>
             <path d="M8 2.5h5.5V8M13.5 2.5 7.5 8.5"/>
           </g>
-          <text data-detail-anchor="" x="1186" y="448" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">GitHub PR</text>
-        <text data-detail="context" x="1186" y="464" class="t-muted" font-size="9" text-anchor="middle">每 phase 一个检查点</text>
+          <text data-detail-anchor="" x="982" y="444" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">RLM 子会话</text>
+        <text data-detail="context" x="982" y="460" class="t-muted" font-size="8.8" text-anchor="middle">独立上下文 + 可选内核</text>
+        </g>
+
+        <g id="node-providers" data-node-id="providers" data-node-label="模型提供方" tabindex="0" role="button" aria-label="Focus 模型提供方, 父与子各自流式请求, Architecture component" aria-pressed="false" data-node-kind="cloud" data-node-sublabel="父与子各自流式请求" data-node-context="Architecture component">
+          <title>模型提供方 · 父与子各自流式请求 · Architecture component</title>
+          <rect x="1216" y="80" width="120" height="60" rx="6" class="c-mask"/>
+          <rect x="1216" y="80" width="120" height="60" rx="6" class="c-cloud" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" transform="translate(1222 86) scale(0.6875)">
+            <path d="M4.3 12.5h7.3a2.4 2.4 0 0 0 .2-4.8 4 4 0 0 0-7.5-1.3A3.1 3.1 0 0 0 4.3 12.5Z"/>
+          </g>
+          <text data-detail-anchor="" x="1276" y="108" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">模型提供方</text>
+        <text data-detail="context" x="1276" y="124" class="t-muted" font-size="9" text-anchor="middle">父与子各自流式请求</text>
+        </g>
+
+        <g id="node-storage" data-node-id="storage" data-node-label="JSONL 转录 + 工件" tabindex="0" role="button" aria-label="Focus JSONL 转录 + 工件, 重启后恢复会话与日程, Architecture component" aria-pressed="false" data-node-kind="database" data-node-sublabel="重启后恢复会话与日程" data-node-context="Architecture component">
+          <title>JSONL 转录 + 工件 · 重启后恢复会话与日程 · Architecture component</title>
+          <rect x="1216" y="416" width="120" height="60" rx="6" class="c-mask"/>
+          <rect x="1216" y="416" width="120" height="60" rx="6" class="c-database" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(1222 422) scale(0.6875)">
+            <ellipse cx="8" cy="4" rx="5" ry="2"/>
+            <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
+          </g>
+          <text data-detail-anchor="" x="1276" y="444" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">JSONL 转录 + 工件</text>
+        <text data-detail="context" x="1276" y="460" class="t-muted" font-size="9" text-anchor="middle">重启后恢复会话与日程</text>
         </g>
 
         <!-- Connection labels -->
-        <g data-detail="context" data-edge-from="phasedocs" data-edge-to="phase7" data-edge-label="每 phase 附一份" data-edge-key="0" data-edge-id="docs-in">
-          <rect x="143" y="66" width="82" height="14" rx="3" class="c-mask"/>
-          <text x="184" y="76" class="t-muted" font-size="8" text-anchor="middle">每 phase 附一份</text>
+        <g data-detail="context" data-edge-from="tui" data-edge-to="supervisor" data-edge-label="本地 daemon 协议" data-edge-key="0" data-edge-id="c1">
+          <rect x="203.6" y="144.5" width="86.8" height="14" rx="3" class="c-mask"/>
+          <text x="247" y="154.5" class="t-muted" font-size="8" text-anchor="middle">本地 daemon 协议</text>
         </g>
-        <g data-detail="context" data-edge-from="config" data-edge-to="phase7" data-edge-label="指定目标仓库" data-edge-key="1" data-edge-id="conf-in">
-          <rect x="247.2" y="263.5" width="67.6" height="14" rx="3" class="c-mask"/>
-          <text x="281" y="273.5" class="t-muted" font-size="8" text-anchor="middle">指定目标仓库</text>
+        <g data-detail="context" data-edge-from="headless" data-edge-to="supervisor" data-edge-label="同一协议" data-edge-key="1" data-edge-id="c2">
+          <rect x="222.8" y="369.5" width="48.4" height="14" rx="3" class="c-mask"/>
+          <text x="247" y="379.5" class="t-muted" font-size="8" text-anchor="middle">同一协议</text>
+        </g>
+        <g data-detail="context" data-edge-from="supervisor" data-edge-to="session" data-edge-label="路由到活跃会话" data-edge-key="2" data-edge-id="c3">
+          <rect x="502.4" y="148" width="77.2" height="14" rx="3" class="c-mask"/>
+          <text x="541" y="158" class="t-backend" font-size="8" text-anchor="middle">路由到活跃会话</text>
+        </g>
+        <g data-detail="context" data-edge-from="scheduler" data-edge-to="session" data-edge-label="到点提示入队" data-edge-key="3" data-edge-id="c4">
+          <rect x="662.2" y="372" width="67.6" height="14" rx="3" class="c-mask"/>
+          <text x="696" y="382" class="t-muted" font-size="8" text-anchor="middle">到点提示入队</text>
+        </g>
+        <g data-detail="context" data-edge-from="session" data-edge-to="kernel" data-edge-label="ipython 调用" data-edge-key="4" data-edge-id="c5">
+          <rect x="738.2" y="65.5" width="67.6" height="14" rx="3" class="c-mask"/>
+          <text x="772" y="75.5" class="t-backend" font-size="8" text-anchor="middle">ipython 调用</text>
+        </g>
+        <g data-detail="context" data-edge-from="session" data-edge-to="children" data-edge-label="rlm() 派生" data-edge-key="5" data-edge-id="c6">
+          <rect x="830" y="261.5" width="58" height="14" rx="3" class="c-mask"/>
+          <text x="859" y="271.5" class="t-muted" font-size="8" text-anchor="middle">rlm() 派生</text>
         </g>
 
-
-
-
-        <g data-detail="context" data-edge-from="context" data-edge-to="agents" data-edge-label="成品提示词" data-edge-key="6" data-edge-id="ctx-agents">
-          <rect x="795" y="314" width="58" height="14" rx="3" class="c-mask"/>
-          <text x="824" y="324" class="t-backend" font-size="8" text-anchor="middle">成品提示词</text>
+        <g data-detail="context" data-edge-from="session" data-edge-to="providers" data-edge-label="模型流" data-edge-key="7" data-edge-id="c8">
+          <rect x="920.6" y="18" width="38.8" height="14" rx="3" class="c-mask"/>
+          <text x="940" y="28" class="t-backend" font-size="8" text-anchor="middle">模型流</text>
         </g>
-        <g data-detail="context" data-edge-from="agents" data-edge-to="cloud" data-edge-label="create · prompt · 等结果" data-edge-key="7" data-edge-id="agents-cloud">
-          <rect x="942.4" y="345" width="125.19999999999999" height="14" rx="3" class="c-mask"/>
-          <text x="1005" y="355" class="t-backend" font-size="8" text-anchor="middle">create · prompt · 等结果</text>
+        <g data-detail="context" data-edge-from="children" data-edge-to="storage" data-edge-label="各自转录" data-edge-key="8" data-edge-id="c9">
+          <rect x="1104.8" y="426" width="48.4" height="14" rx="3" class="c-mask"/>
+          <text x="1129" y="436" class="t-muted" font-size="8" text-anchor="middle">各自转录</text>
         </g>
-        <g data-detail="context" data-edge-from="cloud" data-edge-to="github" data-edge-label="commit + PR 立即推" data-edge-key="8" data-edge-id="cloud-gh">
-          <rect x="1137.8" y="314" width="96.39999999999999" height="14" rx="3" class="c-mask"/>
-          <text x="1186" y="324" class="t-muted" font-size="8" text-anchor="middle">commit + PR 立即推</text>
-        </g>
-        <g data-detail="context" data-edge-from="github" data-edge-to="cloud" data-edge-label="审查 agent 从 PR checkout" data-edge-key="9" data-edge-id="gh-cloud">
-          <rect x="1205" y="345" width="130" height="14" rx="3" class="c-mask"/>
-          <text x="1270" y="355" class="t-messagebus" font-size="8" text-anchor="middle">审查 agent 从 PR checkout</text>
+        <g data-detail="context" data-edge-from="kernel" data-edge-to="session" data-edge-label="host request" data-edge-key="9" data-edge-id="c10">
+          <rect x="724.7" y="164" width="67.6" height="14" rx="3" class="c-mask"/>
+          <text x="758.5" y="174" class="t-messagebus" font-size="8" text-anchor="middle">host request</text>
         </g>
 
         <!-- Legend -->
         <g data-legend="" data-legend-bridge="">
-          <text x="40" y="804" class="t-primary" font-size="10" font-weight="600">Legend</text>
-          <g data-legend-semantic-kind="frontend" data-legend-kind="frontend" data-legend-label="Frontend" data-legend-x="40" data-legend-baseline="824" data-legend-width="82">
-            <rect x="40" y="816" width="14" height="9" rx="2" class="c-frontend" stroke-width="1"/>
-            <text x="61" y="824" class="t-muted" font-size="8">Frontend</text>
+          <text x="40" y="824" class="t-primary" font-size="10" font-weight="600">Legend</text>
+          <g data-legend-semantic-kind="frontend" data-legend-kind="frontend" data-legend-label="Frontend" data-legend-x="40" data-legend-baseline="844" data-legend-width="82">
+            <rect x="40" y="836" width="14" height="9" rx="2" class="c-frontend" stroke-width="1"/>
+            <text x="61" y="844" class="t-muted" font-size="8">Frontend</text>
           </g>
-          <g data-legend-semantic-kind="backend" data-legend-kind="backend" data-legend-label="Backend" data-legend-x="144" data-legend-baseline="824" data-legend-width="77">
-            <rect x="144" y="816" width="14" height="9" rx="2" class="c-backend" stroke-width="1"/>
-            <text x="165" y="824" class="t-muted" font-size="8">Backend</text>
+          <g data-legend-semantic-kind="backend" data-legend-kind="backend" data-legend-label="Backend" data-legend-x="144" data-legend-baseline="844" data-legend-width="77">
+            <rect x="144" y="836" width="14" height="9" rx="2" class="c-backend" stroke-width="1"/>
+            <text x="165" y="844" class="t-muted" font-size="8">Backend</text>
           </g>
-          <g data-legend-semantic-kind="database" data-legend-kind="database" data-legend-label="Database" data-legend-x="243" data-legend-baseline="824" data-legend-width="82">
-            <rect x="243" y="816" width="14" height="9" rx="2" class="c-database" stroke-width="1"/>
-            <text x="264" y="824" class="t-muted" font-size="8">Database</text>
+          <g data-legend-semantic-kind="database" data-legend-kind="database" data-legend-label="Database" data-legend-x="243" data-legend-baseline="844" data-legend-width="82">
+            <rect x="243" y="836" width="14" height="9" rx="2" class="c-database" stroke-width="1"/>
+            <text x="264" y="844" class="t-muted" font-size="8">Database</text>
           </g>
-          <g data-legend-semantic-kind="cloud" data-legend-kind="cloud" data-legend-label="Cloud" data-legend-x="347" data-legend-baseline="824" data-legend-width="67">
-            <rect x="347" y="816" width="14" height="9" rx="2" class="c-cloud" stroke-width="1"/>
-            <text x="368" y="824" class="t-muted" font-size="8">Cloud</text>
+          <g data-legend-semantic-kind="cloud" data-legend-kind="cloud" data-legend-label="Cloud" data-legend-x="347" data-legend-baseline="844" data-legend-width="67">
+            <rect x="347" y="836" width="14" height="9" rx="2" class="c-cloud" stroke-width="1"/>
+            <text x="368" y="844" class="t-muted" font-size="8">Cloud</text>
           </g>
-          <g data-legend-semantic-kind="external" data-legend-kind="external" data-legend-label="External" data-legend-x="436" data-legend-baseline="824" data-legend-width="82">
-            <rect x="436" y="816" width="14" height="9" rx="2" class="c-external" stroke-width="1"/>
-            <text x="457" y="824" class="t-muted" font-size="8">External</text>
+          <g data-legend-semantic-kind="external" data-legend-kind="external" data-legend-label="External" data-legend-x="436" data-legend-baseline="844" data-legend-width="82">
+            <rect x="436" y="836" width="14" height="9" rx="2" class="c-external" stroke-width="1"/>
+            <text x="457" y="844" class="t-muted" font-size="8">External</text>
           </g>
         </g>
       

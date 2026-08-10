@@ -4,9 +4,76 @@
   <subtitle>dfine's Blog</subtitle>
   <link href="https://dfine.tech/atom.xml" rel="self"/>
   <link href="https://dfine.tech/"/>
-  <updated>2026-08-10T22:10:00+08:00</updated>
+  <updated>2026-08-11T00:30:25+08:00</updated>
   <id>https://dfine.tech/</id>
   <author><name>dfine</name></author>
+  <entry>
+    <title>Prime Agent，只给模型一个工具的长跑 agent</title>
+    <link href="https://dfine.tech/posts/e728ebc0/"/>
+    <id>https://dfine.tech/posts/e728ebc0/</id>
+    <published>2026-08-11T00:30:25+08:00</published>
+    <updated>2026-08-11T00:30:25+08:00</updated>
+    <category term="Agent"/>
+    <category term="RLM"/>
+    <category term="IPython"/>
+    <content type="html">&lt;p&gt;文件夹还是那个文件夹，里面的 prime-agent 却换了物种：上一篇写的是 ThePrimeagen 那个驱动 Cursor 的七阶段编排脚本，如今同一个目录里躺着的是 PrimeIntellect 的同名项目，整篇对不上号，删了认错重写。&lt;br&gt;
+这回的正主是一个开源的 coding / research agent，TUI 与 agent 基座借自开源的 pi，MIT 协议。它跟满街的终端 agent 差别很清楚：模型手里只有一个工具，经验能落盘，关了终端会话也接着跑。&lt;/p&gt;
+&lt;!--more--&gt;
+&lt;h3 id=&quot;只有一个工具&quot;&gt;只有一个工具&lt;/h3&gt;
+&lt;p&gt;一般的 coding agent 给模型发一把工具：读文件、写文件、跑命令、搜索，各是各的调用。Prime Agent 只内建一个 &lt;code&gt;ipython&lt;/code&gt;——一个持久的 IPython 内核：读写文件、跑 shell（&lt;code&gt;%%bash&lt;/code&gt; 单元）、变换数据、调 skill、开子 agent，全部写成代码。&lt;/p&gt;
+&lt;p&gt;这套设计他们叫 RLM（Recursive Language Model）：上下文是变量（prompt-as-a-variable），子 agent 是函数调用，模型在一个常驻 REPL 里编程。直接的好处是 Python 状态跨工具调用、跨 compaction 存活——变量、import、解析到一半的结果、任务句柄都还在；几万行日志不必塞进上下文，存进变量切片查询就是。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;provider 调用、会话持久化、子 agent 生命周期、调度、安全策略全留在 TypeScript 宿主，IPython 只是模型面对的编程界面&lt;br&gt;
+Python 侧要动宿主状态（goal、消息、compaction）走类型化的 host request，宿主校验后执行，凭据与转录写入从不进内核&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;center&gt;
+&lt;p&gt;&lt;img src=&quot;/images/prime-agent-rlm.svg&quot; alt=&quot;RLM 循环&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
+&lt;/center&gt;
+&lt;h3 id=&quot;子-agent-是函数调用&quot;&gt;子 agent 是函数调用&lt;/h3&gt;
+&lt;p&gt;内核里预载了可调用的 &lt;code&gt;rlm&lt;/code&gt; 对象：&lt;/p&gt;
+&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;handle = await rlm(&amp;quot;Review the authentication flow for security issues&amp;quot;, name=&amp;quot;auth-reviewer&amp;quot;)&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;调用在任务受理后立刻返回句柄，&lt;strong&gt;从不返回子 agent 的答案&lt;/strong&gt;。子 agent 是一个完整的 AgentSession，独立上下文、独立会话目录，默认继承父的模型、provider、skill 与工具；结果只通过显式的 &lt;code&gt;agent_message&lt;/code&gt; 或文件回流。父上下文因此始终瘦着——子 agent 干了多少活，父这边只看到它主动汇报的部分。&lt;/p&gt;
+&lt;p&gt;子注册表活过 compaction、内核重启和父会话恢复，跑完的子 agent 仍留有地址可以追问：&lt;/p&gt;
+&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;children = await rlm.list_subagents()
+await agent_message.send(
+    &amp;quot;Check the newly added regression test.&amp;quot;,
+    receiver_role=&amp;quot;child&amp;quot;,
+    receiver_name=&amp;quot;api-reviewer&amp;quot;,
+)&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;消息不限父子：daemon 给活跃会话和保留的子 agent 之间路由直发消息，&lt;code&gt;auto&lt;/code&gt; 模式对忙碌目标转向注入、对空闲目标立即投递，也可以 &lt;code&gt;follow_up&lt;/code&gt; 等对方干完手头的活再说。发件人身份由 daemon 推定，消息大小、频率、待投队列都有上限。&lt;/p&gt;
+&lt;h3 id=&quot;常驻的四层&quot;&gt;常驻的四层&lt;/h3&gt;
+&lt;center&gt;
+&lt;p&gt;&lt;img src=&quot;/images/prime-agent-processes.svg&quot; alt=&quot;进程分层&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
+&lt;/center&gt;
+&lt;p&gt;终端 UI 只管渲染和键盘，不拥有执行。执行住在常驻 worker 进程里：本地 daemon supervisor 负责路由、attach 和崩溃恢复，每个 worker 拥有一棵会话树——根 AgentSession、调度器、IPython 内核、全部 RLM 子孙。关掉终端只是 detach，工作照常：&lt;/p&gt;
+&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;prime-agent agents                  # 看在跑的、闲置的、存过的会话
+prime-agent attach &amp;lt;agent&amp;gt;          # 接回一个在跑的会话
+prime-agent schedule add worker &amp;quot;0 9 * * 1-5&amp;quot; -- &amp;quot;Review open work&amp;quot;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;转录按 JSONL 落盘，worker 或 supervisor 重启后能恢复会话、日程，连保留的已完成子 agent 一起还魂。到点的定时任务先认领再投递，崩溃不会重放拿不准的提示；漏过的 tick 合并处理，不攒积压。&lt;/p&gt;
+&lt;p&gt;长跑的家当都在这一层：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;/heartbeat every 10m ...&lt;/code&gt;：当前会话一条可见的周期性指令；agent 自己还能用 &lt;code&gt;rlm_heartbeat&lt;/code&gt; 编程式地建多条内部心跳&lt;br&gt;
+&lt;code&gt;/goal&lt;/code&gt;：持久目标，跨回合一直顶着，直到 &lt;code&gt;goal.complete()&lt;/code&gt; 或用户清除；可设 token 预算&lt;br&gt;
+&lt;code&gt;/autonomous&lt;/code&gt;：无人值守的有界续跑，质量闸命令不过就把输出喂回去再来，工作区没变化不重复跑同一个闸；回合、token、墙钟都有上限&lt;br&gt;
+自动 compaction 总结旧上下文、保留近期消息，内核不死，goal、心跳、子会话也不受影响&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&quot;经验落盘&quot;&gt;经验落盘&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;/refine&lt;/code&gt; 是他们说的 Continual Harness：对当前轨迹做一次专门复盘，往持久状态里做小而有据的增删改——补充提示、记忆、可复用的 skill 描述、子 agent 规格。每次 refinement 记快照可回滚，基础 system prompt 永远不动。状态默认存在会话工件目录的 &lt;code&gt;harness/harness_state.json&lt;/code&gt;，明确标为全局的才进 &lt;code&gt;~/.prime/agent/harness/&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;skill 这边走 Agent Skills 标准，还多一层：Python-backed skill 在 &lt;code&gt;SKILL.md&lt;/code&gt; 之外带一个真 Python 包，装进内核虚拟环境后按 import 名直接调：&lt;/p&gt;
+&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;report = await release_audit(repository=&amp;quot;.&amp;quot;, target_version=&amp;quot;0.4.0&amp;quot;)&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;对模型来说 skill 不再是「读一篇说明照着做」，而是可以 &lt;code&gt;help()&lt;/code&gt;、可以传参、实现里还能再 &lt;code&gt;rlm(...)&lt;/code&gt; 递归委托的函数。内置的 skill-creator 会教 agent 自己打包新 skill；&lt;code&gt;~/.claude/skills&lt;/code&gt; 这类别家的 skill 目录也能直接挂进来用。&lt;/p&gt;
+&lt;h3 id=&quot;怎么用&quot;&gt;怎么用&lt;/h3&gt;
+&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;curl -fsSL https://app.primeintellect.ai/prime-agent/install.sh | sh
+cd /path/to/project
+prime-agent&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;首次 &lt;code&gt;/login&lt;/code&gt; 选认证：订阅有 Claude Pro/Max、ChatGPT Plus/Pro（Codex）、GitHub Copilot，API key 设环境变量或存 &lt;code&gt;auth.json&lt;/code&gt; 都行。一次性任务 &lt;code&gt;prime-agent -p &amp;quot;...&amp;quot;&lt;/code&gt;，另有 JSON 与 RPC 模式留给自动化管道。&lt;/p&gt;
+&lt;h3 id=&quot;边界&quot;&gt;边界&lt;/h3&gt;
+&lt;p&gt;worker 和内核的进程隔离是为了生命周期与故障遏制，&lt;strong&gt;不是安全沙箱&lt;/strong&gt;：模型生成的 Python 和项目命令拿着你的用户权限跑。不受信的仓库、指令、skill 请放进外部沙箱；skill 能指挥模型做任何事、还能携带可执行代码，装之前先过目。&lt;br&gt;
+&lt;code&gt;/refine&lt;/code&gt; 只维护描述性的持久状态，替代不了真正打包一个可执行 skill；质量闸通过只说明闸门查的那件事过了，摸到预算上限更不等于任务完成。&lt;br&gt;
+安装脚本只发 macOS / Linux；Windows 得从源码跑（node ≥ 22.8），还要备一个 bash，Git Bash 即可。&lt;/p&gt;
+&lt;p&gt;这回动笔前先 &lt;code&gt;git remote -v&lt;/code&gt; 看了一眼，同一个坑不掉第二次。&lt;/p&gt;
+</content>
+  </entry>
   <entry>
     <title>Skill Shelf: 给 agent 的 skill 仓库，兼做服务的配置中心</title>
     <link href="https://dfine.tech/posts/89ecf0d5/"/>
@@ -244,77 +311,6 @@ CLI —— &lt;code&gt;push / pull / search / route&lt;/code&gt;&lt;/p&gt;
 &lt;p&gt;另外 Postgres 那条路虽然跑通了 e2e，但 CAS 还在本地文件系统，多实例部署要先把对象库换成共享对象存储。&lt;/p&gt;
 &lt;p&gt;代码在 &lt;a href=&quot;https://github.com/newdee/skill-shelf&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;newdee/skill-shelf&lt;/a&gt;，MIT。设计细节在仓库的 &lt;code&gt;DESIGN.md&lt;/code&gt; 里，比这篇更啰嗦。&lt;/p&gt;
 &lt;p&gt;skill 这东西现在还处在「各人自己一个文件夹」的阶段，跟十几年前配置文件散在各台机器上是一个局面。所以这个项目真正想验证的不是某个功能，而是：&lt;strong&gt;skill 值不值得一个中心化的服务。&lt;/strong&gt; 我自己用了这些天，答案是值得——尤其是路由那部分，一旦 agent 能问「这活儿谁来干」，写 skill 的方式都跟着变了，description 会认真写成「什么时候用我」，而不是「我是什么」。&lt;/p&gt;
-</content>
-  </entry>
-  <entry>
-    <title>prime-agent，把大工程拆成七个阶段的编排器</title>
-    <link href="https://dfine.tech/posts/e728ebc0/"/>
-    <id>https://dfine.tech/posts/e728ebc0/</id>
-    <published>2026-08-10T20:41:35+08:00</published>
-    <updated>2026-08-10T20:41:35+08:00</updated>
-    <category term="Agent"/>
-    <category term="Cursor"/>
-    <category term="TypeScript"/>
-    <category term="工作流"/>
-    <content type="html">&lt;p&gt;把一个大 feature 整个丢给 coding agent，得到的多半是一个几千行的 PR：类型、接口、实现搅在一块，审无可审，错了也说不清从哪一步开始错的。&lt;br&gt;
-prime-agent 的解法是把开发强拆成七个阶段：每阶段一份 markdown 合同、一次 commit、一个 PR 检查点，重点阶段再拉一个全新 agent 做对抗审查。它本体是跑在 Bun 上的终端小工具，驱动 Cursor 云端 agent 干活；从合同里的 &lt;code&gt;prime@terminal.shop&lt;/code&gt; 和满篇 Odin 游戏路径看，应该就是 ThePrimeagen 自己每天在用的那套。&lt;br&gt;
-项目没有 README，这篇是通读源码后的笔记：合同怎么设计、流水线怎么转、断了怎么接。&lt;/p&gt;
-&lt;!--more--&gt;
-&lt;h3 id=&quot;七份合同&quot;&gt;七份合同&lt;/h3&gt;
-&lt;p&gt;核心设计不在 TypeScript 里，在 &lt;code&gt;phases/&lt;/code&gt; 的七份 markdown 里。每份是一个阶段的行为边界加一张 done criteria 清单，七份合计 187 行，第一条永远是「先追平 master」。分工：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;phase 1 侦查：读旧代码、挑或建 Linear 工单、写一页实现草稿，不写代码&lt;br&gt;
-phase 2 结构：只改 &lt;code&gt;objects/&lt;/code&gt; 下的类型定义。合同原话是不许 build——只做结构改动，按定义此刻就该有东西是坏的&lt;br&gt;
-phase 3 契约：只动函数签名、常量和模块级数据，新函数体一律 &lt;code&gt;unreachable()&lt;/code&gt; 占位；改已有函数的签名可以，函数体一个字不许动&lt;br&gt;
-phase 4 接线点：在运行路径上给每个要改的位置打 TODO，理由限两行内，不写任何代码&lt;br&gt;
-phase 5 试写审计：完整实现一遍 feature，验证 2-4 的契约够不够用，缺口按 phase 2/3/4 归类上报，然后把试写代码整体回滚&lt;br&gt;
-phase 6 断言：补 phase 5 报出的缺口，给不可能状态加负空间断言（合同还让 agent 去参考 NASA 的断言指南）&lt;br&gt;
-phase 7 实现：填掉全部 TODO，端到端跑通，验收脚本 &lt;code&gt;agent_task_finalize&lt;/code&gt; 必须过&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;这么拆的妙处是前四个阶段的 diff 都小而纯：只有类型、只有签名、只有 TODO 注释，人审起来几分钟一个。合同还把 Linear 工单当进度指针用：每阶段开工前先把工单挪到对应 Phase，流水线跑到哪，看板上一目了然。验收口径也定得很死：phase 5 和 7 都得用 JSON 驱动的 game 起一局验证 feature 真能跑，phase 7 的合同还明写不许拿录屏当证据。&lt;/p&gt;
-&lt;p&gt;最狠的一笔是 phase 5：花整整一轮做完整实现，唯一目的却是验证契约，做完即弃。听着奢侈，其实是笔明白账——&lt;strong&gt;agent 的算力时间不值钱，契约返工才值钱&lt;/strong&gt;。真实现写到一半才发现 phase 2 少个字段，和在注定扔掉的试写里发现同一件事，修正成本差着数量级。&lt;/p&gt;
-&lt;h3 id=&quot;流水线&quot;&gt;流水线&lt;/h3&gt;
-&lt;center&gt;
-&lt;p&gt;&lt;img src=&quot;/images/prime-agent-phase-loop.svg&quot; alt=&quot;一个 phase 的生命周期&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;/center&gt;
-&lt;p&gt;编排器是 &lt;code&gt;phase-7.ts&lt;/code&gt;，388 行，一条串行流水线。从 phase 1 起步全程 13 步：7 个执行步、5 个审查步、1 个 phase 5 之后的补漏步（回头补 2-4 阶段的契约改动）。跑起来就是 &lt;code&gt;bun phase-7.ts&lt;/code&gt;，敲一句 starting prompt，报完文件路径就可以去干别的，终端里只剩一个盲文小转轮在转。&lt;/p&gt;
-&lt;p&gt;每个阶段发给 agent 的任务提示词简单得过分，就一句 &lt;code&gt;start phase N&lt;/code&gt;，随行的是两块内联上下文：该阶段合同的全文，加起跑时交互式指定的常驻文件。规矩全部长在合同里，代码不重复一遍。用户敲的那句 starting prompt 只有 phase 1 见得到（跟在 &lt;code&gt;start 7 phase planning&lt;/code&gt; 后面），此后各阶段全凭合同和会话记忆推进。&lt;/p&gt;
-&lt;p&gt;起跑时它还会分两次问你要文件：一批随每个 phase 任务带上，一批只随审查带上——给审查者的上下文可以和给实现者的完全不同。&lt;/p&gt;
-&lt;p&gt;主 agent 在源码里就叫 Steve，带着完整会话历史从 phase 1 一路干到 phase 7，每阶段结束立即 commit 并开出或更新 PR——这是写进每份合同的硬性条目，PR 即检查点。&lt;/p&gt;
-&lt;p&gt;审查走另一路。phase 2/3/4/6/7 结束后，编排器用 &lt;code&gt;getPr&lt;/code&gt; 从 Steve 的 run 元数据里摸出 PR URL，再 &lt;code&gt;create&lt;/code&gt; 一个全新的云端 agent 从该 PR checkout，提示词直接摊牌：&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;You are to do an adversarial review of ${input.prUrl}.  You need to
-thoroughly check the code for quality and correctness.&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;审查 agent 手里同样有那份阶段合同，所以它审的不只是代码质量，还有违约：phase 3 的 PR 里混进了一行实现逻辑，就是该被抓出来的东西。审查报告原文灌回 Steve：&lt;code&gt;Fix the PR feedback from the phase N review&lt;/code&gt;。审查者与被审者零共享上下文，这是刻意的——让同一个会话里的 agent 审自己刚写的代码，多半是走过场。&lt;/p&gt;
-&lt;p&gt;phase 6 又进一步：断言不让 Steve 写，另开一个名为 &lt;code&gt;phase 6: invariance&lt;/code&gt; 的新 agent 从当前 PR checkout 来写。写实现者不自定不变量，此之谓也。&lt;/p&gt;
-&lt;h3 id=&quot;断了怎么办&quot;&gt;断了怎么办&lt;/h3&gt;
-&lt;p&gt;云端一个阶段动辄跑几十分钟，容错分两级。&lt;/p&gt;
-&lt;p&gt;第一级对付流断。SDK 的等待流挂掉时报 &lt;code&gt;stream is no longer available&lt;/code&gt;，&lt;code&gt;waitWithReconnect&lt;/code&gt; 只认这一种错误，拿 run id 调 &lt;code&gt;getRun&lt;/code&gt; 重连同一个 run 接着等，其余错误一律照抛。run 本身还在云上跑，本地网络抖一下不该拖垮整条流水线。&lt;/p&gt;
-&lt;p&gt;第二级对付进程挂。本机进程死了什么都不丢，因为会话状态全在 Cursor 云端。&lt;code&gt;--resume&lt;/code&gt; 列出云上 agent 供选，输入 phase 号，再选 &lt;code&gt;phase&lt;/code&gt; 还是 &lt;code&gt;review&lt;/code&gt; 模式，纯函数 &lt;code&gt;pipelineStepsFrom&lt;/code&gt; 推导出剩余步骤接着跑。phase 1/5 本就没有审查步，续跑时选 review 会被 &lt;code&gt;assertResumeMode&lt;/code&gt; 当场拒绝。&lt;/p&gt;
-&lt;h3 id=&quot;部件&quot;&gt;部件&lt;/h3&gt;
-&lt;center&gt;
-&lt;p&gt;&lt;img src=&quot;/images/prime-agent-components.svg&quot; alt=&quot;prime-agent 部件与数据流&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;/center&gt;
-&lt;p&gt;流水线之外还有四个小入口，&lt;code&gt;link&lt;/code&gt; 脚本把前三个连同 &lt;code&gt;phase-7&lt;/code&gt; 软链成 &lt;code&gt;prime-agent-*&lt;/code&gt; 全局命令：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;code&gt;kick-off&lt;/code&gt;：单发任务。读一句 prompt，带上常驻上下文丢给新开的 agent&lt;br&gt;
-&lt;code&gt;review&lt;/code&gt;：手动对抗审查。选一个云上 agent 自动摸它的 PR，或直接贴 PR 链接&lt;br&gt;
-&lt;code&gt;take-over&lt;/code&gt;：反向接力。读本机当前分支，让云端 agent「finish the work started on this branch」&lt;br&gt;
-&lt;code&gt;get&lt;/code&gt;：列出云上 agent，挑一个看详情&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;所有入口汇到同一套底层：&lt;code&gt;context.ts&lt;/code&gt; 出三种提示词模板，把文件全文以 &lt;code&gt;&amp;lt;File&amp;gt;&lt;/code&gt; 块内联进 &lt;code&gt;&amp;lt;Context&amp;gt;&lt;/code&gt;，不指望 agent 自己检索；&lt;code&gt;agents.ts&lt;/code&gt; 封装 &lt;code&gt;@cursor/sdk&lt;/code&gt;，模型写死 grok-4.5、effort high。方向键选择器和等待转轮都是手搓的，整个终端交互没引一个 UI 库。&lt;/p&gt;
-&lt;p&gt;每个项目的配置就一个 &lt;code&gt;.prime-agent&lt;/code&gt; 文件：&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;{ &amp;quot;project&amp;quot;: &amp;quot;owner/repo&amp;quot;, &amp;quot;context&amp;quot;: [&amp;quot;odin.md&amp;quot;] }&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;&lt;code&gt;project&lt;/code&gt; 是云端 agent checkout 的仓库；&lt;code&gt;context&lt;/code&gt; 数组是 &lt;code&gt;kick-off&lt;/code&gt; 每次自动附带的文件，流水线那边的上下文则全在起跑时交互式指定。&lt;/p&gt;
-&lt;h3 id=&quot;边界&quot;&gt;边界&lt;/h3&gt;
-&lt;blockquote&gt;
-&lt;p&gt;合同不通用。七份 phase 文档写满目标项目的私货：Odin 路径、Linear 工单流转、&lt;code&gt;agent_task_finalize&lt;/code&gt;。编排器通用，合同得按项目重写&lt;br&gt;
-串行无预算。一个阶段卡住整条停，没有超时，也没有重试上限&lt;br&gt;
-审查只有单轮。Steve 修完反馈不复审，修没修对，靠后续阶段的审查兜底&lt;br&gt;
-上下文全文内联，常驻文件一大就烧 token，没有任何截断逻辑&lt;br&gt;
-模型硬编码在源码里，换模型要改代码&lt;br&gt;
-测试全押在流水线步骤推导和断流重连这两处纯逻辑上，碰网络的部分一条没测&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;代码是编排，合同才是方法论——这一千多行代码里真正值得抄的，是那 187 行 markdown。至于主 agent 为什么叫 Steve，源码里没有答案，我也就不替他追究了。&lt;/p&gt;
 </content>
   </entry>
   <entry>
