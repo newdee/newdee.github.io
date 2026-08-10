@@ -311,15 +311,10 @@ thoroughly check the code for quality and correctness.&lt;/code&gt;&lt;/pre&gt;&
 串行无预算。一个阶段卡住整条停，没有超时，也没有重试上限&lt;br&gt;
 审查只有单轮。Steve 修完反馈不复审，修没修对，靠后续阶段的审查兜底&lt;br&gt;
 上下文全文内联，常驻文件一大就烧 token，没有任何截断逻辑&lt;br&gt;
-模型硬编码在源码里，换模型要改代码&lt;/p&gt;
+模型硬编码在源码里，换模型要改代码&lt;br&gt;
+测试全押在流水线步骤推导和断流重连这两处纯逻辑上，碰网络的部分一条没测&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;h3 id=&quot;几个数字&quot;&gt;几个数字&lt;/h3&gt;
-&lt;blockquote&gt;
-&lt;p&gt;源码 15 个文件 1277 行；测试 2 个文件 324 行、24 条用例&lt;br&gt;
-24 条测试全押在两处纯逻辑上：流水线步骤推导 15 条、断流重连 9 条，碰网络的部分一条没测&lt;br&gt;
-七份合同 187 行；运行时依赖只有 &lt;code&gt;@cursor/sdk&lt;/code&gt; 和 &lt;code&gt;dotenv&lt;/code&gt; 两个&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;代码是编排，合同才是方法论——这 1277 行里真正值得抄的，是那 187 行 markdown。至于主 agent 为什么叫 Steve，源码里没有答案，我也就不替他追究了。&lt;/p&gt;
+&lt;p&gt;代码是编排，合同才是方法论——这一千多行代码里真正值得抄的，是那 187 行 markdown。至于主 agent 为什么叫 Steve，源码里没有答案，我也就不替他追究了。&lt;/p&gt;
 </content>
   </entry>
   <entry>
@@ -449,15 +444,7 @@ FUSE 在大文件顺序 IO 上吃亏。官方 fs-bench 对 &lt;code&gt;cloudflar
 慢的根源在写路径每 512 KiB 就哈希一次进内容寻址库，换来的是按块增量同步和内容去重。&lt;br&gt;
 PREVIEW ONLY，不收 unsolicited PR，反馈走 issue 和 discussion。&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;h3 id=&quot;实测数字&quot;&gt;实测数字&lt;/h3&gt;
-&lt;p&gt;在仓库里自己数的（&lt;code&gt;Get-ChildItem&lt;/code&gt; 加 &lt;code&gt;Measure-Object&lt;/code&gt;，不含 node_modules）：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;5 个包：&lt;code&gt;computer&lt;/code&gt;、&lt;code&gt;dofs&lt;/code&gt;、&lt;code&gt;computerd&lt;/code&gt;、&lt;code&gt;rpc&lt;/code&gt;、&lt;code&gt;computer-computerd-linux-x64&lt;/code&gt;（最后一个只是 Docker 镜像上下文）；&lt;br&gt;
-TypeScript 源码 268 个文件、57507 行：computer 34446 行（144 文件）、dofs 13862 行（88 文件）、computerd 6536 行（27 文件）、rpc 2663 行（9 文件）；&lt;br&gt;
-同步协议本体 &lt;code&gt;dofs/src/sync&lt;/code&gt; 21 个文件 3305 行；三个后端 &lt;code&gt;computer/src/backends&lt;/code&gt; 32 个文件 7613 行；&lt;br&gt;
-规格文档 20 篇共 4902 行；可跑的 examples 8 个。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;4900 行规格配 5.7 万行实现，连「考虑过又放弃的编码方案」都写进了文档，这个密度在预览期项目里少见。&lt;/p&gt;
+&lt;p&gt;最后说一个印象：4900 行规格配 5.7 万行实现，连「考虑过又放弃的编码方案」都写进了文档，这个密度在预览期项目里少见。&lt;/p&gt;
 &lt;p&gt;写完有点手痒，想把自己博客的构建态也塞进 DO 里，转念一想静态站要什么权威态，睡了。&lt;/p&gt;
 </content>
   </entry>
@@ -506,14 +493,8 @@ Dangerous：不筛内容、不暂停。&lt;/p&gt;
 npm install&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;p&gt;初始化会物化一个部署技能，带着 agent 走完基础设施、Web 登录、连接器凭证、Slack 接入、部署与线上验证，全程不需要 checkout 源码。每个部署跑在运营方自己的云账号里（Fly 或 AWS）。&lt;br&gt;
 想把定制和核心放在一个仓库里读的组织，走&lt;strong&gt;私有 fork&lt;/strong&gt;：用裸克隆 mirror 出一个独立私有仓，而不是 GitHub 的 Fork 按钮——GitHub fork 会继承上游仓库的可见性，公共仓库的 fork 私有不了，这个坑文档里点得很清楚。&lt;/p&gt;
-&lt;h3 id=&quot;数字&quot;&gt;数字&lt;/h3&gt;
-&lt;blockquote&gt;
-&lt;p&gt;src 下 72,203 行 TypeScript，45 个子系统目录。&lt;br&gt;
-harness 实现四个（Pi / OpenCode / Codex / Claude Code）加一个 mock。&lt;br&gt;
-插件六个：admin、auth、chassis、onboarding、portal、web-ui。&lt;br&gt;
-测试文件 401 个，CI 分片并行跑全量。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;工程规范也值得一提：仓库标准是&lt;strong&gt;零注释&lt;/strong&gt;，意图全靠命名、结构和测试表达；合并前必须由没看过这个 diff 的新上下文做破坏性审查，作者自审不算数。贡献方式更特别——只收人写的文字（ADR），不收代码，对齐之后由维护方实现。&lt;/p&gt;
+&lt;h3 id=&quot;工程规范&quot;&gt;工程规范&lt;/h3&gt;
+&lt;p&gt;代码之外的规矩同样能看出这个项目的性格：仓库标准是&lt;strong&gt;零注释&lt;/strong&gt;，意图全靠命名、结构和测试表达；合并前必须由没看过这个 diff 的新上下文做破坏性审查，作者自审不算数，绿色的 CI 也不算审查；本地只跑受影响的测试，全量交给 CI 分片并行。贡献方式更特别——只收人写的文字（ADR），不收代码，对齐之后由维护方实现。&lt;/p&gt;
 &lt;h3 id=&quot;边界和取舍&quot;&gt;边界和取舍&lt;/h3&gt;
 &lt;p&gt;固定小工具面意味着放弃各 harness 自带的工具生态，换来的是四种 harness 行为一致、审计一致。&lt;br&gt;
 agent 以人的身份行事，是把「agent 做了什么」等同于「这个人做了什么」——审计因此简单，但也要求组织真的信任姿态与命令策略这两层闸门。&lt;br&gt;
