@@ -1,4 +1,10 @@
 {
-  "models": [["platelet", "platelet-2", "platelet-3"]],
-  "messages": ["血小板来啦～"]
+  "models": [
+    [
+      "platelet-gezi"
+    ]
+  ],
+  "messages": [
+    "血小板来啦～"
+  ]
 }
