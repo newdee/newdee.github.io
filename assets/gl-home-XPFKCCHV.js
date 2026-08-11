@@ -1,0 +1,1 @@
+import"./chunk-6ATBPRIA.js";function n(){let e=document.getElementById("ink-field");e&&document.documentElement.dataset.mode!=="acg"&&(e.querySelector("canvas")||e.dataset.glMounted||(e.dataset.glMounted="1",import("./chunk-3CT26E75.js").then(t=>t.mountPavilion(e))))}n();export{n as mountHome};
