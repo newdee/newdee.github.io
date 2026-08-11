@@ -98,6 +98,9 @@ main .gsc-loading-image {
   background-image: url("https://github.githubassets.com/images/mona-loading-dark.gif");
 }
 
-/* 阁子：隐藏 powered by giscus 尾注 */
+/* 阁子：隐藏「由 giscus 提供支持」整句 */
+em:has(a[href*='giscus.app']),
+p:has(> a[href*='giscus.app']),
+span:has(> a[href*='giscus.app']),
+div.gsc-comment-box-bottom > em,
 a.link-secondary[href*='giscus.app'] { display: none !important; }
-.gsc-comment-box-bottom a[href*='giscus.app'] { display: none !important; }
