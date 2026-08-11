@@ -90,7 +90,7 @@ Skill Shelf 是我按这个想法写的东西。给 agent 的那半边是 skill 
 后端 Rust，前端 React + Tauri，桌面和 Web 同一套。这篇把它的版本模型、路由取舍、反馈闭环和配置中心的设计逐个拆开讲。&lt;/p&gt;
 &lt;!--more--&gt;
 &lt;center&gt;
-&lt;p&gt;&lt;img src=&quot;/images/skill-shelf-skills.png&quot; alt=&quot;Skills 列表&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/images/skill-shelf-skills.png&quot; alt=&quot;Skills 列表&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; width=&quot;1440&quot; height=&quot;900&quot;&gt;&lt;/p&gt;
 &lt;/center&gt;
 &lt;h3 id=&quot;起因&quot;&gt;起因&lt;/h3&gt;
 &lt;p&gt;我先有的是 prompt-shelf——管 prompt 的小服务。后来开始大量写 &lt;a href=&quot;https://agentskills.io&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;Agent Skills&lt;/a&gt;，发现两件事撞在一起了。&lt;/p&gt;
@@ -193,7 +193,7 @@ WHERE skill_fts MATCH ?1 ORDER BY score LIMIT ?2&lt;/code&gt;&lt;/pre&gt;&lt;/fi
         .join(&amp;quot; OR &amp;quot;)
 }&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;center&gt;
-&lt;p&gt;&lt;img src=&quot;/images/skill-shelf-route.png&quot; alt=&quot;自然语言路由&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/images/skill-shelf-route.png&quot; alt=&quot;自然语言路由&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; width=&quot;1440&quot; height=&quot;900&quot;&gt;&lt;/p&gt;
 &lt;/center&gt;
 &lt;p&gt;界面上有个路由测试台：输入需求，实时看命中哪些 skill、分数多少。调 description 的措辞时很有用——skill 路由不准，八成是 description 没写清「什么时候用我」。&lt;/p&gt;
 &lt;h3 id=&quot;反馈闭环&quot;&gt;反馈闭环&lt;/h3&gt;
@@ -208,7 +208,7 @@ WHERE skill_fts MATCH ?1 ORDER BY score LIMIT ?2&lt;/code&gt;&lt;/pre&gt;&lt;/fi
 &lt;p&gt;关键是草稿落在 &lt;code&gt;refine/*&lt;/code&gt; 分支的一个新 commit 上，不直接动 main。人在多文件 diff 界面里逐文件看过才合并。skill 里可能有 &lt;code&gt;scripts/&lt;/code&gt; 这种可执行内容，让模型直接改主线是不可接受的——这条不是谨慎，是必须。&lt;/p&gt;
 &lt;p&gt;合并之后做三件事：路由索引对该 skill 重建、被采纳的反馈标记 &lt;code&gt;applied&lt;/code&gt;、下一次 route 命中的就是改进后的版本。环就闭上了。&lt;/p&gt;
 &lt;center&gt;
-&lt;p&gt;&lt;img src=&quot;/images/skill-shelf-skill-detail.png&quot; alt=&quot;Skill 详情：编辑 · 反馈 · 历史&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/images/skill-shelf-skill-detail.png&quot; alt=&quot;Skill 详情：编辑 · 反馈 · 历史&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; width=&quot;1440&quot; height=&quot;900&quot;&gt;&lt;/p&gt;
 &lt;/center&gt;
 &lt;h3 id=&quot;mcp让-agent-直接取用&quot;&gt;MCP：让 agent 直接取用&lt;/h3&gt;
 &lt;p&gt;前面那些都是「管理工具」。让它变成「服务」的是 MCP。&lt;/p&gt;
@@ -247,7 +247,7 @@ diff —— 逐字段对比 &lt;code&gt;draft&lt;/code&gt; 和已发布，added 
 &lt;/blockquote&gt;
 &lt;p&gt;回退要走一遍 publish 这点，是我觉得做对了的地方。回退本身也是一次变更，凭什么它不用复核。&lt;/p&gt;
 &lt;center&gt;
-&lt;p&gt;&lt;img src=&quot;/images/skill-shelf-config-center.png&quot; alt=&quot;配置中心：草稿 diff 与 secret 掩码&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/images/skill-shelf-config-center.png&quot; alt=&quot;配置中心：草稿 diff 与 secret 掩码&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; width=&quot;1440&quot; height=&quot;900&quot;&gt;&lt;/p&gt;
 &lt;/center&gt;
 &lt;h4 id=&quot;鉴权上的两个决定&quot;&gt;鉴权上的两个决定&lt;/h4&gt;
 &lt;p&gt;service token 只存 SHA-256 哈希，明文只在签发时展示一次。每个 grant 记录能读哪些 namespace。&lt;/p&gt;
@@ -255,7 +255,7 @@ diff —— 逐字段对比 &lt;code&gt;draft&lt;/code&gt; 和已发布，added 
 &lt;p&gt;还有一条已知限制，写在文档里没藏着：namespace 层的 &lt;code&gt;null&lt;/code&gt; 语义是「从本层删除这个 key」，所以无法覆盖式屏蔽 &lt;code&gt;_global&lt;/code&gt; 的某个 key——能覆盖值，暂时不能删。&lt;code&gt;_global&lt;/code&gt; 会合并进每一次 resolve，任何有效 token 都读得到，所以那里只该放非敏感的共享默认值。&lt;/p&gt;
 &lt;h4 id=&quot;env-导入&quot;&gt;.env 导入&lt;/h4&gt;
 &lt;center&gt;
-&lt;p&gt;&lt;img src=&quot;/images/skill-shelf-env-import.png&quot; alt=&quot;.env 一键导入&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/images/skill-shelf-env-import.png&quot; alt=&quot;.env 一键导入&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; width=&quot;1440&quot; height=&quot;900&quot;&gt;&lt;/p&gt;
 &lt;/center&gt;
 &lt;p&gt;迁移现有服务时最烦的一步是把 &lt;code&gt;.env&lt;/code&gt; 一行行敲进界面。所以做了导入：粘贴文本或选文件，前端解析（注释、&lt;code&gt;export&lt;/code&gt; 前缀、引号转义都认），导入前逐 key 预览新增 / 覆盖 / 跳过 / 无效行，确认后合并进草稿——发布前不影响任何消费方。&lt;/p&gt;
 &lt;p&gt;值一律按字符串导入，不做类型猜测。&lt;code&gt;PORT=8080&lt;/code&gt; 到底是数字还是字符串，猜错了比不猜更麻烦。&lt;/p&gt;
@@ -656,7 +656,7 @@ python tools/download_weights.py&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 Neon 是我写的一个更直接的东西：一个 Windows 11 上的虚拟摄像头服务，加一个桌面控制台。建几台虚拟相机，每台挂一个播放列表，Teams / OBS / 浏览器里直接选它出镜。&lt;br&gt;
 底层走 Media Foundation 的 &lt;code&gt;MFCreateVirtualCamera&lt;/code&gt;，不用 DirectShow，不用签名驱动，用户态就能跑。&lt;/p&gt;
 &lt;!--more--&gt;
-&lt;p&gt;&lt;img src=&quot;/images/neon-screenshot-main.jpg&quot; alt=&quot;Neon 主界面&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/images/neon-screenshot-main.jpg&quot; alt=&quot;Neon 主界面&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; width=&quot;1568&quot; height=&quot;681&quot;&gt;&lt;/p&gt;
 &lt;h3 id=&quot;它解决什么&quot;&gt;它解决什么&lt;/h3&gt;
 &lt;p&gt;Windows 上做虚拟摄像头，历史上只有 DirectShow 一条路：注册一个 COM filter，指望消费方还认这套老 API。问题是现代应用早就迁到 Media Foundation 了，Teams、新版 Edge、UWP 相机应用都不吃 DirectShow 的虚拟设备。&lt;br&gt;
 Windows 11 22000 之后 Microsoft 补上了正经的入口 —— &lt;code&gt;MFCreateVirtualCamera&lt;/code&gt;。注册进去的相机是系统级的、Frame Server 托管的真设备，任何走标准相机枚举的软件都能看见，不需要装驱动，也不需要给内核签名。&lt;br&gt;
@@ -721,9 +721,9 @@ Neon 的做法是把视频音轨渲染到你选的输出设备（注意是输出
 不优雅，但这是用户态方案的天花板。写清楚比假装没这回事好。&lt;/p&gt;
 &lt;h3 id=&quot;neon-控制台&quot;&gt;Neon 控制台&lt;/h3&gt;
 &lt;p&gt;后端全功能都有 HTTP API，界面是 Tauri 2 加 React 19 写的一个客户端，默认打 &lt;code&gt;http://127.0.0.1:8686&lt;/code&gt;。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;/images/neon-screenshot-create.jpg&quot; alt=&quot;新建虚拟相机&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/images/neon-screenshot-create.jpg&quot; alt=&quot;新建虚拟相机&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; width=&quot;1264&quot; height=&quot;681&quot;&gt;&lt;/p&gt;
 &lt;p&gt;拖拽文件入窗、点条目弹小窗预览（静音起播，不干扰推流音频）、进度条本地插值所以不会逐秒跳、800ms 轮询、服务掉线自动重连并在离线屏显示底层原因。安装版离线时点&amp;quot;立即重试&amp;quot;会顺手拉起捆绑的后端，不用开终端。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;/images/neon-screenshot-idle.jpg&quot; alt=&quot;服务离线&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/images/neon-screenshot-idle.jpg&quot; alt=&quot;服务离线&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; width=&quot;1568&quot; height=&quot;681&quot;&gt;&lt;/p&gt;
 &lt;p&gt;关窗行为可以配：每次询问、最小化到通知栏托盘、只退界面服务继续、退出并停服务。深浅双主题默认跟随系统。&lt;/p&gt;
 &lt;p&gt;HTTP API 的完整参考在仓库 &lt;code&gt;docs/http-api.md&lt;/code&gt;。命令类接口是异步的，返回 200 只表示命令入队，实际效果轮询 &lt;code&gt;GET /cameras/{id}&lt;/code&gt; 看 &lt;code&gt;playback.state&lt;/code&gt; 和 &lt;code&gt;last_error&lt;/code&gt;。&lt;/p&gt;
 &lt;p&gt;默认免认证只听回环。要暴露到局域网，在 &lt;code&gt;config.json&lt;/code&gt; 填 &lt;code&gt;auth&lt;/code&gt; 节就启用 JWT，HS256 手写实现，签名密钥每次启动随机生成，所以服务重启后所有旧 token 失效、界面会自动回到登录屏。&lt;/p&gt;
@@ -766,7 +766,7 @@ Neon 的做法是把视频音轨渲染到你选的输出设备（注意是输出
 本来只想看看它怎么调模型的，结果被它的工程组织方式吸引了，索性做个笔记。主要记录它的流水线结构、agent的关进笼子的方式，以及几处让我后背发凉的坑。&lt;/p&gt;
 &lt;!--more--&gt;
 &lt;center&gt;
-&lt;p&gt;&lt;img src=&quot;/images/litereality-demo.jpg&quot; alt=&quot;RGBD扫描与重建结果&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/images/litereality-demo.jpg&quot; alt=&quot;RGBD扫描与重建结果&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; width=&quot;1440&quot; height=&quot;810&quot;&gt;&lt;/p&gt;
 &lt;/center&gt;
 &lt;h3 id=&quot;先说问题在哪&quot;&gt;先说问题在哪&lt;/h3&gt;
 &lt;p&gt;手机扫房间在2026年已经不难了，Apple的RoomPlan走一圈就能给出一串RGB帧、深度、ARKit相机位姿，以及一个&lt;code&gt;room.usdz&lt;/code&gt;，里面有墙面、门窗洞口和一组粗糙的物体包围盒。&lt;br&gt;
