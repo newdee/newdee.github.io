@@ -98,9 +98,7 @@ main .gsc-loading-image {
   background-image: url("https://github.githubassets.com/images/mona-loading-default.gif");
 }
 
-/* 阁子：隐藏「由 giscus 提供支持」整句 */
+/* 阁子：隐藏「– 由 giscus 提供支持」整句（源码里是 gsc-header 的 em.color-text-secondary） */
+.gsc-header em.color-text-secondary,
 em:has(a[href*='giscus.app']),
-p:has(> a[href*='giscus.app']),
-span:has(> a[href*='giscus.app']),
-div.gsc-comment-box-bottom > em,
 a.link-secondary[href*='giscus.app'] { display: none !important; }
