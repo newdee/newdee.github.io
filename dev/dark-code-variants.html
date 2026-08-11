@@ -1,0 +1,179 @@
+<title>暗色代码框六选一</title>
+<style>
+  /* 单主题评审页：刻意锁死在博客的墨夜底上看暗色代码框，不跟随系统主题 */
+  :root {
+    --ground: #121212;
+    --ink: #e8e6e1;
+    --soft: #a5a29a;
+    --faint: #6d6b64;
+    --accent: #d05450;
+    --line: #2b2a28;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+    line-height: 1.7;
+    padding: 2.2rem 1.1rem 4rem;
+  }
+  .wrap { max-width: 46rem; margin: 0 auto; }
+  h1 {
+    font-size: 1.35rem;
+    letter-spacing: 0.04em;
+    margin: 0 0 0.3rem;
+  }
+  .sub { color: var(--faint); font-size: 0.9rem; margin: 0 0 2.2rem; }
+  .variant { margin: 0 0 2.6rem; }
+  .vhead {
+    display: flex;
+    align-items: baseline;
+    gap: 0.65rem;
+    margin: 0 0 0.6rem;
+  }
+  .vnum {
+    font-family: ui-monospace, Consolas, monospace;
+    color: var(--accent);
+    font-size: 1.05rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .vname { font-weight: 600; }
+  .vwhy { color: var(--faint); font-size: 0.84rem; }
+
+  /* ---- 板体骨架：变量驱动，六个变体只换 token ---- */
+  .board {
+    border-radius: var(--radius, 12px);
+    border: var(--bw, 5px) solid var(--frame, #32312d);
+    box-shadow: var(--lift, 0 0 0 1px rgb(0 0 0 / 0.08));
+    overflow: hidden;
+  }
+  .rail {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.42rem 1rem;
+    background: var(--rail, #262624);
+    border-bottom: var(--railline, 1px solid rgb(0 0 0 / 0.16));
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: 0.7rem;
+  }
+  .chip {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    background: #d0545026;
+    border-radius: 4px;
+    padding: 0.02rem 0.45rem;
+  }
+  .fname { color: var(--railink, #b5b1a7); }
+  .copy { margin-left: auto; color: var(--railink, #b5b1a7); font-size: 0.72rem; }
+  .pane {
+    background: var(--surface, #191a18);
+    padding: 0.95rem 1.15rem;
+    overflow-x: auto;
+    box-shadow: var(--inset, inset 0 2px 10px rgb(0 0 0 / 0.3));
+  }
+  pre {
+    margin: 0;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    font-size: 0.82rem;
+    line-height: 1.75;
+    color: #dbd7ca;
+  }
+  /* vitesse-dark 手排高亮 */
+  .k { color: #cb7676; } /* 关键字 */
+  .s { color: #c98a7d; } /* 字符串 */
+  .f { color: #80a665; } /* 函数 */
+  .c { color: #758575; } /* 注释 */
+  .n { color: #4c9a91; } /* 数值/常量 */
+  .p { color: #666666; } /* 标点 */
+
+  /* ---- 六个变体 ---- */
+  .v1 { } /* 现状即默认变量 */
+  .v2 { --bw: 1px; --frame: var(--line); --surface: #161614; --rail: #1c1b19; --radius: 10px; --lift: none; --inset: inset 0 1px 4px rgb(0 0 0 / 0.25); }
+  .v3 { --bw: 0px; --frame: transparent; --surface: #1e1e1c; --rail: #252523; --radius: 12px; --lift: 0 10px 28px rgb(0 0 0 / 0.55); --inset: none; }
+  .v4 { --bw: 1px; --frame: var(--line); --surface: #171716; --rail: transparent; --railline: 1px solid var(--line); --radius: 10px; --lift: none; --inset: none; border-top: 2px solid var(--accent); }
+  .v5 { --bw: 1px; --frame: #3a3f47; --surface: #15171a; --rail: #1a1d21; --railink: #9aa3ad; --radius: 8px; --lift: none; --inset: inset 0 1px 6px rgb(0 0 0 / 0.35); }
+  .v6 { --bw: 1px; --frame: #242320; --surface: #0e0e0d; --rail: #161514; --radius: 10px; --lift: none; --inset: inset 0 3px 14px rgb(0 0 0 / 0.55); }
+
+  .foot { color: var(--faint); font-size: 0.86rem; border-top: 1px solid var(--line); padding-top: 1.1rem; }
+</style>
+<div class="wrap">
+  <h1>暗色代码框，六选一</h1>
+  <p class="sub">同一段代码、同一块墨夜页面底（#121212），只有框的做法不同。回个编号即落地；也可以混搭（如「6 的板面 + 4 的题签」）。</p>
+
+  <div class="variant">
+    <div class="vhead"><span class="vnum">1</span><span class="vname">墨漆厚框</span><span class="vwhy">现状——5px 同族厚框保留「板」的比喻</span></div>
+    <figure class="board v1">
+      <figcaption class="rail"><span class="chip">ts</span><span class="fname">deploy.ts</span><span class="copy">复制</span></figcaption>
+      <div class="pane"><pre><span class="c">// 推送三个 pages 远端</span>
+<span class="k">const</span> remotes <span class="p">=</span> <span class="p">[</span><span class="s">'github'</span><span class="p">,</span> <span class="s">'gitee'</span><span class="p">,</span> <span class="s">'bitbucket'</span><span class="p">]</span>
+<span class="k">for</span> <span class="p">(</span><span class="k">const</span> r <span class="k">of</span> remotes<span class="p">)</span> <span class="p">{</span>
+  <span class="k">await</span> <span class="f">push</span><span class="p">(</span>r<span class="p">,</span> <span class="p">{</span> force<span class="p">:</span> <span class="n">true</span> <span class="p">})</span>
+<span class="p">}</span></pre></div>
+    </figure>
+  </div>
+
+  <div class="variant">
+    <div class="vhead"><span class="vnum">2</span><span class="vname">沉板细线</span><span class="vwhy">放弃厚框，1px 毛边线 + 比页面深半档，编辑部式安静</span></div>
+    <figure class="board v2">
+      <figcaption class="rail"><span class="chip">ts</span><span class="fname">deploy.ts</span><span class="copy">复制</span></figcaption>
+      <div class="pane"><pre><span class="c">// 推送三个 pages 远端</span>
+<span class="k">const</span> remotes <span class="p">=</span> <span class="p">[</span><span class="s">'github'</span><span class="p">,</span> <span class="s">'gitee'</span><span class="p">,</span> <span class="s">'bitbucket'</span><span class="p">]</span>
+<span class="k">for</span> <span class="p">(</span><span class="k">const</span> r <span class="k">of</span> remotes<span class="p">)</span> <span class="p">{</span>
+  <span class="k">await</span> <span class="f">push</span><span class="p">(</span>r<span class="p">,</span> <span class="p">{</span> force<span class="p">:</span> <span class="n">true</span> <span class="p">})</span>
+<span class="p">}</span></pre></div>
+    </figure>
+  </div>
+
+  <div class="variant">
+    <div class="vhead"><span class="vnum">3</span><span class="vname">悬浮亮板</span><span class="vwhy">板面比页面亮半档、无框、投影抬起——代码「浮」在夜里</span></div>
+    <figure class="board v3">
+      <figcaption class="rail"><span class="chip">ts</span><span class="fname">deploy.ts</span><span class="copy">复制</span></figcaption>
+      <div class="pane"><pre><span class="c">// 推送三个 pages 远端</span>
+<span class="k">const</span> remotes <span class="p">=</span> <span class="p">[</span><span class="s">'github'</span><span class="p">,</span> <span class="s">'gitee'</span><span class="p">,</span> <span class="s">'bitbucket'</span><span class="p">]</span>
+<span class="k">for</span> <span class="p">(</span><span class="k">const</span> r <span class="k">of</span> remotes<span class="p">)</span> <span class="p">{</span>
+  <span class="k">await</span> <span class="f">push</span><span class="p">(</span>r<span class="p">,</span> <span class="p">{</span> force<span class="p">:</span> <span class="n">true</span> <span class="p">})</span>
+<span class="p">}</span></pre></div>
+    </figure>
+  </div>
+
+  <div class="variant">
+    <div class="vhead"><span class="vnum">4</span><span class="vname">朱砂题签</span><span class="vwhy">顶缘一道 2px 朱砂线，呼应 h3 题签与印章——最「阁子」的一版</span></div>
+    <figure class="board v4">
+      <figcaption class="rail"><span class="chip">ts</span><span class="fname">deploy.ts</span><span class="copy">复制</span></figcaption>
+      <div class="pane"><pre><span class="c">// 推送三个 pages 远端</span>
+<span class="k">const</span> remotes <span class="p">=</span> <span class="p">[</span><span class="s">'github'</span><span class="p">,</span> <span class="s">'gitee'</span><span class="p">,</span> <span class="s">'bitbucket'</span><span class="p">]</span>
+<span class="k">for</span> <span class="p">(</span><span class="k">const</span> r <span class="k">of</span> remotes<span class="p">)</span> <span class="p">{</span>
+  <span class="k">await</span> <span class="f">push</span><span class="p">(</span>r<span class="p">,</span> <span class="p">{</span> force<span class="p">:</span> <span class="n">true</span> <span class="p">})</span>
+<span class="p">}</span></pre></div>
+    </figure>
+  </div>
+
+  <div class="variant">
+    <div class="vhead"><span class="vnum">5</span><span class="vname">钢框终端</span><span class="vwhy">冷灰蓝钢框——好看但引入第三个色族，出格与否您定</span></div>
+    <figure class="board v5">
+      <figcaption class="rail"><span class="chip">ts</span><span class="fname">deploy.ts</span><span class="copy">复制</span></figcaption>
+      <div class="pane"><pre><span class="c">// 推送三个 pages 远端</span>
+<span class="k">const</span> remotes <span class="p">=</span> <span class="p">[</span><span class="s">'github'</span><span class="p">,</span> <span class="s">'gitee'</span><span class="p">,</span> <span class="s">'bitbucket'</span><span class="p">]</span>
+<span class="k">for</span> <span class="p">(</span><span class="k">const</span> r <span class="k">of</span> remotes<span class="p">)</span> <span class="p">{</span>
+  <span class="k">await</span> <span class="f">push</span><span class="p">(</span>r<span class="p">,</span> <span class="p">{</span> force<span class="p">:</span> <span class="n">true</span> <span class="p">})</span>
+<span class="p">}</span></pre></div>
+    </figure>
+  </div>
+
+  <div class="variant">
+    <div class="vhead"><span class="vnum">6</span><span class="vname">深井</span><span class="vwhy">板面比页面更深、强内凹——代码「刻」进纸里，对比最大</span></div>
+    <figure class="board v6">
+      <figcaption class="rail"><span class="chip">ts</span><span class="fname">deploy.ts</span><span class="copy">复制</span></figcaption>
+      <div class="pane"><pre><span class="c">// 推送三个 pages 远端</span>
+<span class="k">const</span> remotes <span class="p">=</span> <span class="p">[</span><span class="s">'github'</span><span class="p">,</span> <span class="s">'gitee'</span><span class="p">,</span> <span class="s">'bitbucket'</span><span class="p">]</span>
+<span class="k">for</span> <span class="p">(</span><span class="k">const</span> r <span class="k">of</span> remotes<span class="p">)</span> <span class="p">{</span>
+  <span class="k">await</span> <span class="f">push</span><span class="p">(</span>r<span class="p">,</span> <span class="p">{</span> force<span class="p">:</span> <span class="n">true</span> <span class="p">})</span>
+<span class="p">}</span></pre></div>
+    </figure>
+  </div>
+
+  <p class="foot">粉笔灰噪点、行高亮、行号、折叠这些机制六版通用，选型只关乎框与面。选定后亮色白板不动，只换暗色。</p>
+</div>
