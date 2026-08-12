@@ -22,7 +22,7 @@
 装在自己电脑上，资料是自己的，记忆看得见摸得着。这篇按模块拆开讲讲它到底是怎么运转的。&lt;/p&gt;
 &lt;!--more--&gt;
 &lt;h3 id=&quot;它是什么&quot;&gt;它是什么&lt;/h3&gt;
-&lt;p&gt;一句话：一个装在你自己机器上的 AI 家教，Apache 2.0 开源，&lt;code&gt;pip install deeptutor&lt;/code&gt; 就能起。&lt;br&gt;
+&lt;p&gt;简单来说就是一个装在你自己机器上的 AI 家教，Apache 2.0 开源，&lt;code&gt;pip install deeptutor&lt;/code&gt; 就能起。&lt;br&gt;
 它自己不带「脑子」——大模型用你配的（OpenAI、Claude、Gemini，或者本机跑的 Ollama 都行），&lt;br&gt;
 它提供的是脑子之外的所有东西：资料库、记忆、出题、批改、写作、画图、找人帮忙的路子，全在一处。&lt;br&gt;
 和网页版聊天机器人的根本区别有三条：资料存在本地自己管；AI 对你的了解是可以打开检查的文件，不是黑箱；&lt;br&gt;
@@ -254,7 +254,7 @@ SPARQL 注入、SSRF。响应速度不错，但也说明 Explorer 和 REST 这�
 整个系统是单进程的：HTTP 层、语义引擎、向量索引、响应缓存、嵌入式存储全在一个地址空间里，&lt;br&gt;
 唯一的外部依赖就是 LLM 提供商本身（embedding、灰区仲裁、未命中生成，三种调用都打给它）。&lt;/p&gt;
 &lt;h3 id=&quot;双阈值判定&quot;&gt;双阈值判定&lt;/h3&gt;
-&lt;p&gt;核心机制一句话：一次相似度检索，卡两道阈值。&lt;br&gt;
+&lt;p&gt;核心机制说起来很简单：一次相似度检索，卡两道阈值。&lt;br&gt;
 top-1 余弦相似度 ≥ high（默认 0.70）直接命中；&amp;lt; low（默认 0.30）判未命中；落在两者之间的「灰区」，再花一次小模型调用做语义仲裁。&lt;/p&gt;
 &lt;center&gt;
 &lt;p&gt;&lt;span class=&quot;img-fig&quot;&gt;&lt;img src=&quot;/images/prompt-cache-decision.svg&quot; alt=&quot;一次请求的判定路径&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;span class=&quot;img-cap&quot;&gt;一次请求的判定路径：三个出口——直接命中、灰区仲裁后命中、转发上游并回写&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;
