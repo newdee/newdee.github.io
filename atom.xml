@@ -4,9 +4,127 @@
   <subtitle>dfine's Blog</subtitle>
   <link href="https://dfine.tech/atom.xml" rel="self"/>
   <link href="https://dfine.tech/"/>
-  <updated>2026-08-11T00:30:25+08:00</updated>
+  <updated>2026-08-12T10:40:05+08:00</updated>
   <id>https://dfine.tech/</id>
   <author><name>dfine</name></author>
+  <entry>
+    <title>PromptCache：LLM 语义缓存网关的架构与实现</title>
+    <link href="https://dfine.tech/posts/589593b6/"/>
+    <id>https://dfine.tech/posts/589593b6/</id>
+    <published>2026-08-12T10:40:05+08:00</published>
+    <updated>2026-08-12T10:40:05+08:00</updated>
+    <category term="LLM"/>
+    <category term="Cache"/>
+    <category term="Go"/>
+    <content type="html">&lt;p&gt;线上的 LLM 调用看多了，会发现请求高度重复：客服机器人翻来覆去就那几问，RAG 内部问答也扎堆。&lt;br&gt;
+按 token 计费的上游对着重复问题一遍遍生成，钱白烧，延迟也压不下来。&lt;br&gt;
+传统精确匹配缓存在自然语言面前几乎无命中——「怎么退货」和「退货流程是什么」字面不同、语义相同。&lt;br&gt;
+把 &lt;a href=&quot;https://github.com/messkan/prompt-cache&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;prompt-cache&lt;/a&gt; 这个 Go 项目的源码通读了一遍，架构、每个模块的做法、以及它没说透的风险，都记在这里。&lt;/p&gt;
+&lt;!--more--&gt;
+&lt;h3 id=&quot;它是什么&quot;&gt;它是什么&lt;/h3&gt;
+&lt;p&gt;PromptCache 是一个自托管的语义缓存网关：单个 Go 二进制，横在应用和 LLM 提供商之间，&lt;br&gt;
+对外暴露 OpenAI 兼容的 &lt;code&gt;/v1/chat/completions&lt;/code&gt;，SDK 把 &lt;code&gt;base_url&lt;/code&gt; 一改就算接入，业务代码零改动。&lt;br&gt;
+它不做字面匹配，而是把 prompt 变成向量，在缓存里找语义最近的一条；判定命中就直接回放缓存响应，上游一次生成请求都不发。&lt;/p&gt;
+&lt;center&gt;
+&lt;p&gt;&lt;span class=&quot;img-fig&quot;&gt;&lt;img src=&quot;/images/prompt-cache-arch.svg&quot; alt=&quot;PromptCache 组件架构&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;span class=&quot;img-cap&quot;&gt;PromptCache 组件架构：单进程、嵌入式存储，右侧上游只在未命中时才被触达&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;
+&lt;/center&gt;
+&lt;p&gt;图是静态的，&lt;a href=&quot;/diagrams/prompt-cache-arch.html&quot;&gt;交互版在这里&lt;/a&gt;（archify 生成，可缩放、可播放调用轨迹、明暗主题）。&lt;br&gt;
+整个系统是单进程的：HTTP 层、语义引擎、向量索引、响应缓存、嵌入式存储全在一个地址空间里，&lt;br&gt;
+唯一的外部依赖就是 LLM 提供商本身（embedding、灰区仲裁、未命中生成，三种调用都打给它）。&lt;/p&gt;
+&lt;h3 id=&quot;双阈值判定&quot;&gt;双阈值判定&lt;/h3&gt;
+&lt;p&gt;核心机制一句话：一次相似度检索，卡两道阈值。&lt;br&gt;
+top-1 余弦相似度 ≥ high（默认 0.70）直接命中；&amp;lt; low（默认 0.30）判未命中；落在两者之间的「灰区」，再花一次小模型调用做语义仲裁。&lt;/p&gt;
+&lt;center&gt;
+&lt;p&gt;&lt;span class=&quot;img-fig&quot;&gt;&lt;img src=&quot;/images/prompt-cache-decision.svg&quot; alt=&quot;一次请求的判定路径&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;span class=&quot;img-cap&quot;&gt;一次请求的判定路径：三个出口——直接命中、灰区仲裁后命中、转发上游并回写&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;
+&lt;/center&gt;
+&lt;p&gt;（&lt;a href=&quot;/diagrams/prompt-cache-decision.html&quot;&gt;交互版&lt;/a&gt;）判定主干在 &lt;code&gt;SemanticEngine.FindSimilar&lt;/code&gt; 里，删掉度量代码后骨架就这十几行：&lt;/p&gt;
+&lt;figure class=&quot;code&quot; data-lang=&quot;go&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;go&lt;/span&gt;&lt;span class=&quot;code-title&quot;&gt;semantic.go&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;if&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; bestSim&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt; &gt;=&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; se&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt;HighThreshold&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; {&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;    return&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; bestKey&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;,&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; bestSim&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;,&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt; nil&lt;/span&gt;&lt;span style=&quot;color:#A0ADA0;--shiki-dark:#758575DD&quot;&gt; // 直接命中&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;}&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;if&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; bestSim&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt; &amp;#x3C;&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; se&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt;LowThreshold&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; {&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;    return&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt; &quot;&quot;&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;,&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; bestSim&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;,&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt; nil&lt;/span&gt;&lt;span style=&quot;color:#A0ADA0;--shiki-dark:#758575DD&quot;&gt; // 干脆未命中&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;}&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#A0ADA0;--shiki-dark:#758575DD&quot;&gt;// 灰区：取出缓存条目的原始 prompt，交给小模型仲裁&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt;originalPrompt&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;,&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; err&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; :=&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; se&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt;Store&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;GetPrompt&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;(&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt;ctx&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;,&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; hashKey&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;)&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt;isMatch&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;,&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; err&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; :=&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; verifier&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;CheckSimilarity&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;(&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt;ctx&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;,&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; text&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;,&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; originalPrompt&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;)&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;if&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; isMatch&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; {&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;    return&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; bestKey&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;,&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; bestSim&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;,&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt; nil&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;}&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;return&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt; &quot;&quot;&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;,&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; bestSim&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;,&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt; nil&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;为什么要两道阈值：单阈值调高会漏掉大量换了说法的同义问题，调低又会把「北京天气」和「上海天气」这种高相似不同义的对子误判成命中。&lt;br&gt;
+灰区仲裁用的是提供商最便宜的模型（&lt;code&gt;gpt-4o-mini&lt;/code&gt; / &lt;code&gt;mistral-small&lt;/code&gt; / &lt;code&gt;claude-3-haiku&lt;/code&gt;），system prompt 只让它回答 YES 或 NO——&lt;br&gt;
+拿一次廉价调用换掉一次昂贵生成，同时把误命中率压下去。这个权衡是整个项目里最值得借鉴的设计。&lt;/p&gt;
+&lt;h3 id=&quot;模块与实现&quot;&gt;模块与实现&lt;/h3&gt;
+&lt;h4 id=&quot;http-入口与中间件&quot;&gt;HTTP 入口与中间件&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;gin&lt;/code&gt; 起服务，中间件洋葱从外到内是 Recovery、RequestID、Logger、Metrics、RequestSizeLimit（默认 1MB 请求体上限）。&lt;br&gt;
+RequestID 层顺手把 &lt;code&gt;X-Cache-Namespace&lt;/code&gt; 头哈希成分区 ID 塞进 &lt;code&gt;context&lt;/code&gt;，后面所有存取都按它加前缀——这是多租户分区的全部入口。&lt;br&gt;
+推理端点从请求里只取最后一条 user 消息作为判定和缓存的依据，这个决定后面风险一节还要再说。&lt;br&gt;
+响应带 &lt;code&gt;X-Cache: HIT/MISS&lt;/code&gt;、&lt;code&gt;X-Similarity-Score&lt;/code&gt;、&lt;code&gt;X-Provider&lt;/code&gt; 几个头，观测命中情况不用翻日志。&lt;/p&gt;
+&lt;h4 id=&quot;语义引擎&quot;&gt;语义引擎&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;SemanticEngine&lt;/code&gt; 聚合了 embedding、检索、仲裁、转发四件事，阈值和开关用 &lt;code&gt;RWMutex&lt;/code&gt; 保护，&lt;br&gt;
+所以 &lt;code&gt;/v1/config&lt;/code&gt; 的 PATCH 能在不重启的情况下热更 high/low 阈值（校验 &lt;code&gt;0 &amp;lt;= low &amp;lt; high &amp;lt;= 1&lt;/code&gt;）。&lt;br&gt;
+提供商也能热切换：&lt;code&gt;POST /v1/config/provider&lt;/code&gt; 直接换掉引擎里的 Provider 实现。&lt;/p&gt;
+&lt;h4 id=&quot;向量索引&quot;&gt;向量索引&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;internal/ann&lt;/code&gt; 名字叫 ANN，实现其实是精确的暴力扫描：全部向量驻内存 map，查询时逐条算余弦再排序。&lt;br&gt;
+单次 1536 维余弦在仓库自带 benchmark 里是 441ns、零分配；千条量级一次全扫不到半毫秒，对单机缓存的常见规模够用，&lt;br&gt;
+作者也就没引 HNSW 之类的近似索引。代价在规模上限那头，风险一节再算这笔账。&lt;br&gt;
+索引不落盘，进程启动时从存储扫全部 &lt;code&gt;emb:&lt;/code&gt; 键重建。&lt;/p&gt;
+&lt;h4 id=&quot;存储与键布局&quot;&gt;存储与键布局&lt;/h4&gt;
+&lt;p&gt;持久层是嵌入式的 BadgerDB（LSM，纯 Go），一条缓存记录拆成三个键：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;&amp;lt;sha256(prompt)&amp;gt;&lt;/code&gt;：完整的上游 JSON 响应，带 &lt;code&gt;created_at&lt;/code&gt; 和 TTL 包一层&lt;br&gt;
+&lt;code&gt;prompt:&amp;lt;hash&amp;gt;&lt;/code&gt;：原始 prompt 文本，灰区仲裁时取出来给小模型对照用&lt;br&gt;
+&lt;code&gt;emb:&amp;lt;hash&amp;gt;&lt;/code&gt;：embedding 向量，float32 小端序列化，1536 维一条约 6KB&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;带命名空间的请求，三类键都插入 &lt;code&gt;ns:&amp;lt;sha256(namespace)&amp;gt;:&lt;/code&gt; 段做物理隔离。&lt;/p&gt;
+&lt;h4 id=&quot;响应缓存治理&quot;&gt;响应缓存治理&lt;/h4&gt;
+&lt;p&gt;TTL 默认 24 小时，读到过期条目惰性删除，另有每小时一轮的后台清扫兜底；&lt;br&gt;
+容量到 10 万条上限时按访问序淘汰最久未用的。灰区仲裁依赖的 &lt;code&gt;prompt:&lt;/code&gt; 键和向量键随响应一起写、一起删。&lt;/p&gt;
+&lt;h4 id=&quot;提供商适配&quot;&gt;提供商适配&lt;/h4&gt;
+&lt;p&gt;OpenAI、Mistral、Anthropic/Claude 三家实现同一个接口：&lt;code&gt;Embed&lt;/code&gt;、&lt;code&gt;CheckSimilarity&lt;/code&gt;、&lt;code&gt;ForwardChatCompletion&lt;/code&gt; 加流式变体。&lt;br&gt;
+Claude 没有自家 embedding 接口，向量走 Voyage AI（&lt;code&gt;voyage-3&lt;/code&gt;），所以选它要配两把 key。&lt;br&gt;
+出口 HTTP 统一走一个重试客户端：429/5xx 指数退避加抖动，最多 3 次，基础等待 500ms，封顶 30 秒。&lt;br&gt;
+流式是两头都支持的：未命中时把上游 SSE 边转发边缓冲，收满再落缓存；命中时反过来，把缓存的完整 JSON 合成三段 OpenAI 兼容的 SSE chunk 吐给客户端——调用方感知不到自己拿的是缓存。&lt;/p&gt;
+&lt;h4 id=&quot;管理面&quot;&gt;管理面&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;/metrics&lt;/code&gt;（Prometheus 文本格式）、&lt;code&gt;/v1/stats&lt;/code&gt;、&lt;code&gt;/v1/config&lt;/code&gt;、&lt;code&gt;/v1/cache&lt;/code&gt;（列出/清空/删单条）、&lt;code&gt;/v1/cache/warm&lt;/code&gt;（批量预热）&lt;br&gt;
+全部挂在 Bearer token 后面，比较用 &lt;code&gt;crypto/subtle&lt;/code&gt; 常量时间实现。&lt;code&gt;API_AUTH_TOKEN&lt;/code&gt; 不设则管理面裸奔，启动时只打一行警告——生产环境务必设上。&lt;br&gt;
+预热接口值得一提：导入历史「问答对」时同步算 embedding 入索引，embedding 失败会回滚已写的响应，不留半截数据。&lt;/p&gt;
+&lt;h3 id=&quot;怎么用&quot;&gt;怎么用&lt;/h3&gt;
+&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt;export&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; EMBEDDING_PROVIDER&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt;openai&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt;export&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; OPENAI_API_KEY&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt;your-key&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt;export&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; API_AUTH_TOKEN&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt;your-secret&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;docker-compose&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; up&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -d&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;客户端只改一行：&lt;/p&gt;
+&lt;figure class=&quot;code&quot; data-lang=&quot;python&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;python&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;client &lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; OpenAI&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;(&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt;base_url&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;http://localhost:8080/v1&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;,&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; api_key&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;your-key&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;)&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;第一次问「Explain quantum physics」走上游，换个说法再问，看响应头里的 &lt;code&gt;X-Cache: HIT&lt;/code&gt; 和相似分就知道生效了。&lt;/p&gt;
+&lt;h3 id=&quot;能做什么&quot;&gt;能做什么&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;语义命中：双阈值 + 可选灰区小模型仲裁，阈值运行时可调&lt;br&gt;
+OpenAI 兼容：非流式与 SSE 流式都支持，命中时合成流式响应&lt;br&gt;
+三家提供商：OpenAI / Mistral / Claude(+Voyage)，运行时热切换&lt;br&gt;
+持久化：BadgerDB 嵌入式存储，重启不丢缓存，索引自动重建&lt;br&gt;
+缓存治理：TTL、容量淘汰、单条删除、整体清空、批量预热&lt;br&gt;
+观测：Prometheus 指标、结构化日志、请求级 X-Cache 头&lt;br&gt;
+分区：X-Cache-Namespace 头做哈希前缀隔离（注意事项见下节）&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&quot;边界与风险&quot;&gt;边界与风险&lt;/h3&gt;
+&lt;p&gt;这类工具的风险比收益更值得写清楚，逐条数：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;语义相似不是语义等价。&lt;/strong&gt; 余弦分数是概率信号，0.70 的阈值挡不住所有高相似不同义的对子，灰区仲裁也只是降险不是保险。&lt;br&gt;
+对答案正确性敏感的场景（数值、时效、法务），要么把 high 阈值调到 0.9 以上，要么干脆别在这条链路上做缓存。&lt;/p&gt;
+&lt;p&gt;判定和缓存键都只看「最后一条 user 消息」：system prompt、多轮历史、&lt;code&gt;model&lt;/code&gt;、&lt;code&gt;temperature&lt;/code&gt; 全都不参与。&lt;br&gt;
+这意味着同一个问题带不同上下文会串答案，请求 &lt;code&gt;gpt-4o&lt;/code&gt; 的调用方可能拿到 &lt;code&gt;gpt-4o-mini&lt;/code&gt; 生成的缓存——&lt;br&gt;
+部署前提基本上是「单应用、单模型、单轮问答」，README 没有把这条约束讲透，读源码才看得出来。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;它不是授权边界。&lt;/strong&gt; 缓存进程级共享，&lt;code&gt;X-Cache-Namespace&lt;/code&gt; 依赖调用方自觉带头，网关自己不做认证映射；&lt;br&gt;
+项目文档也明说：多租户数据不能靠语义匹配隔离，要么分部署，要么在它前面加一层可信的分区代理。&lt;br&gt;
+另外显式命名空间会退化成过滤后的线性扫描（ANN 索引只覆盖默认分区），分区越多退化越明显。&lt;/p&gt;
+&lt;p&gt;延迟有下限：&lt;strong&gt;命中也要先付一次 embedding 网络调用&lt;/strong&gt;（几十到一两百毫秒），省掉的是生成时间和 token 费，不是全部往返。&lt;br&gt;
+灰区再多付一次小模型调用。命中率低的负载装上它反而变慢，先测重复率再决定。&lt;/p&gt;
+&lt;p&gt;暴力扫描是 O(n·d)：10 万条 1536 维就是每查约 1.5 亿次乘加，几十毫秒的 CPU 尖峰，容量上限不是摆设。&lt;/p&gt;
+&lt;p&gt;读源码还撞见一处实打实的簿记缺陷：访问序列表在中段删除后不回写其余键的下标缓存，&lt;br&gt;
+之后按下标删除会错删别的键——量小无感，量大时淘汰谁基本靠缘分。工程成熟度大概就在这个位置，选型时心里要有数。&lt;/p&gt;
+&lt;p&gt;哪天真要部署，第一件事大概是先把那个下标簿记修掉，第二件是把 model 名拼进缓存键——顺手的事，就当过路费了。&lt;/p&gt;
+</content>
+  </entry>
   <entry>
     <title>Prime Agent，只给模型一个工具的长跑 agent</title>
     <link href="https://dfine.tech/posts/e728ebc0/"/>
@@ -3563,138 +3681,6 @@ Stopped: Thu Mar 14 00:05:50 2019
 &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;p&gt;从表中可以看出，大调与同主音的主要区别在三级音，将大调三级音降半音，可以得到旋律小调，再将六级音降半音可以得到和声小调，再将七级音降半音就可以得到自然小调了。&lt;/p&gt;
-</content>
-  </entry>
-  <entry>
-    <title>LXD搭设服务器</title>
-    <link href="https://dfine.tech/posts/325daa6a/"/>
-    <id>https://dfine.tech/posts/325daa6a/</id>
-    <published>2018-10-12T07:11:47+08:00</published>
-    <updated>2018-10-12T07:11:47+08:00</updated>
-    <category term="Linux"/>
-    <category term="LXD"/>
-    <category term="容器"/>
-    <content type="html">&lt;p&gt;主要是想搭设几台服务器，希望用户环境能隔离，相互安装和配置环境不影响，也希望不至于发生有了sudo权限就把别人的都删了的情况。同时也希望所有用户都能使用服务器上的硬件设备如GPU，且都能上网。&lt;/p&gt;
-&lt;!--more--&gt;
-&lt;p&gt;如果采用虚拟机技术，则硬件只能独占，不能共享，且开销大，另外一旦确定了所需分配的资源就成了固定开销，无论虚拟机中资源利用率如何。而另一方面，容器技术的特点则是资源共享，基本不占用硬件资源，所以考虑使用容器技术来实现用户环境隔离。&lt;br&gt;
-目前最流行的容器技术还是Docker，但Docker更适合于单个应用环境的部署，对于用户来说，希望在相互隔离时候也能用到服务器资源，更希望是一个虚拟机，而不是一个应用环境。目前Linux上主要有LXC和LXD，Docker以前就是用的LXC的Runtime，而LXD也只是一个提供了REST API的LXC容器管理器而已，其仓库地址&lt;a href=&quot;https://github.com/lxc/lxd&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;在此&lt;/a&gt;。因此打算使用LXD来搭建这个服务器。&lt;/p&gt;
-&lt;center&gt;
-&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/newdee/BlogImage/master/20190325151518.png&quot; alt=&quot;&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;/center&gt;
-&lt;h3 id=&quot;初始化&quot;&gt;初始化&lt;/h3&gt;
-&lt;p&gt;首先是下载LXD容器，如果是Ubuntu16.04里的apt软件仓库，最高应该是2.x的版本，如果要支持LXD容器内GPU的数据处理，至少版本为3.0.好在从16.04时候引进了另一个软件包管理工具，之前一篇&lt;a href=&quot;/posts/9dfc9fe0/&quot;&gt;文章&lt;/a&gt;有所介绍，即使用snap软件包管理工具。&lt;br&gt;
-查看版本：&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt; $&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; ▶&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; snap&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; find&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; lxd&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt; Name&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;             Version&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;        Publisher&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;       Notes&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;  Summary&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt; lxd-demo-server&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;  0+git.f3532e3&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;  stgraber&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;        -&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;      Online&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; software&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; demo&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; sessions&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; using&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; LXD&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt; lxd&lt;/span&gt;&lt;span style=&quot;color:#2F798A;--shiki-dark:#4C9A91&quot;&gt;              3.6&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;            canonical✓&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;      -&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;      System&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; container&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; manager&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; and&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; API&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt; nova&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;             ocata&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;          james-page&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;      -&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;      OpenStack&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; Compute&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; Service&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; (nova)&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt; satellite&lt;/span&gt;&lt;span style=&quot;color:#2F798A;--shiki-dark:#4C9A91&quot;&gt;        0.1.2&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;          alanzanattadev&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;  -&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;      Advanced&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; scalable&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; Open&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; source&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; intelligence&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; platform&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt; nova-hypervisor&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;  ocata&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;          james-page&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;      -&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;      OpenStack&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; Compute&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; Service&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; -&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; KVM&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; Hypervisor&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; (nova)&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;可以看到已经到3.6了，直接下载就行&lt;code&gt;snap install lxd&lt;/code&gt;。&lt;br&gt;
-安装好后应该就可以直接使用了,第一部是初始化LXD的环境，使用&lt;code&gt;lxd init&lt;/code&gt;。如果出现&lt;code&gt;permission denied&lt;/code&gt;之类的问题，可以加&lt;code&gt;sudo&lt;/code&gt;，嫌麻烦可以将当前用户加入LXD组内：&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;sudo&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; usermod&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; add&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -aG&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; lxd&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; ${&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt;USER&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;}&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;然后注销重新登录就行了。&lt;br&gt;
-在初始化之前，需要安装几个工具，一个是ZFS，是LXD默认的后端存储工具，另一个是Bridge管理工具，LXD自身也带网桥创建功能，默认创建网桥会自动创建局域网私有地址并分配DHCP地址至虚拟网卡。&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;sudo&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; apt&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; install&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; zfsutils-linux&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; bridge-utils&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;初始化过程如下：&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;lxd&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; init&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;所有提示注意一下是否创建网桥时候选择no就行，其余基本可以使用默认配置。如果不用管外网远程登录，可以直接全选默认。&lt;br&gt;
-然后拉取一个镜像，如：&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;lxc&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; launch&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; ubuntu:16.04&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; test&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;拉取成功启动了就可以使用&lt;code&gt;lxc list&lt;/code&gt;看到容器了。使用&lt;code&gt;lxc exec test -- ${command}&lt;/code&gt;命令在容器内执行命令。如:&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;lxc&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; exec&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; test&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; bash&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;这时可以进入容器内的bash。
-然后通过配置好第一个容器，将其作为模板，制作出多个虚拟主机。&lt;/p&gt;
-&lt;h3 id=&quot;显卡配置&quot;&gt;显卡配置&lt;/h3&gt;
-&lt;p&gt;在此之前，需要宿主机上安装显卡驱动和CUDA，具体过程不做赘述。&lt;br&gt;
-先关闭容器&lt;code&gt;lxc stop test&lt;/code&gt;，然后将显卡设备添加到容器中：&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;lxc&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; config&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; device&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; add&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; test&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; gpu&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; gpu&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;该命令是添加所有显卡，也可以手动指定显卡id。&lt;br&gt;
-然后启动容器，安装显卡驱动：&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;lxc&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; exec&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; test&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; bash&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;apt&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; update&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;可以直接参考宿主机的显卡驱动，查看一下宿主机显卡驱动版本，可以使用&lt;code&gt;nvidia-smi&lt;/code&gt;或者&lt;code&gt;sudo dpkg -l |grep nvidia&lt;/code&gt;查看，然后回到容器，使用&lt;code&gt;apt install nvidia-XXX-dev&lt;/code&gt;安装。&lt;br&gt;
-如果安装成功，即可以使用nvidia命令查看显卡。&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;nvidia-smi
-
-+-----------------------------------------------------------------------------+
-| NVIDIA-SMI 390.30                 Driver Version: 390.30                    |
-|-------------------------------+----------------------+----------------------+
-| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
-| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
-|===============================+======================+======================|
-|   0  Quadro P4000        Off  | 00000000:02:00.0 Off |                  N/A |
-| 46%   37C    P0    28W / 105W |      0MiB /  8118MiB |      0%      Default |
-+-------------------------------+----------------------+----------------------+
-|   1  Quadro P4000        Off  | 00000000:03:00.0 Off |                  N/A |
-| 46%   40C    P0    28W / 105W |      0MiB /  8119MiB |      0%      Default |
-+-------------------------------+----------------------+----------------------+
-|   2  Quadro P4000        Off  | 00000000:82:00.0 Off |                  N/A |
-| 46%   40C    P0    28W / 105W |      0MiB /  8119MiB |      0%      Default |
-+-------------------------------+----------------------+----------------------+
-                                                                           
-+-----------------------------------------------------------------------------+
-| Processes:                                                       GPU Memory |
-|  GPU       PID   Type   Process name                             Usage      |
-|=============================================================================|
-|  No running processes found                                                 |
-+-----------------------------------------------------------------------------+
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;CUDA版本和TensorFlow版本由用户自己选择，默认不安装。&lt;/p&gt;
-&lt;h3 id=&quot;网络配置&quot;&gt;网络配置&lt;/h3&gt;
-&lt;p&gt;这个是最麻烦的，如果需要访问外网的话。目前个人方法如下：&lt;/p&gt;
-&lt;h4 id=&quot;lxc创建网桥&quot;&gt;lxc创建网桥&lt;/h4&gt;
-&lt;p&gt;先使用lxc创建一个网桥，网桥地址应该与本地电脑在一个网段，这样桥接后本地其他电脑才可以远程访问该容器。假如本地各电脑IP为&lt;code&gt;192.168.1.xxx&lt;/code&gt;，则：&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;lxc&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; network&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; create&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; lxd0&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; ipv4.address=192.168.1.10/24&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;其他可使用默认配置，具体各项参数见官方&lt;a href=&quot;https://lxd.readthedocs.io/en/latest/&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;说明&lt;/a&gt;。&lt;br&gt;
-然后使用bridge管理工具将网桥连接至本地网卡，假如本地网卡为enp1s0，则：&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;sudo&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; brctl&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; addif&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; lxd0&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; enp1s0&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;添加之后可以使用&lt;code&gt;brctl show&lt;/code&gt;命令查看。&lt;/p&gt;
-&lt;h4 id=&quot;宿主机路由&quot;&gt;宿主机路由&lt;/h4&gt;
-&lt;p&gt;这时可能出现宿主机无法上网的问题，原因是访问网络时，数据包都默认转发到新建网桥地址，而不是默认网关地址，所以需要添加一条路由表：&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;sudo&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; route&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; add&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; default&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; gw&lt;/span&gt;&lt;span style=&quot;color:#2F798A;--shiki-dark:#4C9A91&quot;&gt; 192.168.1.1&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;可以解决本地宿主机上网问题。&lt;/p&gt;
-&lt;h4 id=&quot;重新初始化&quot;&gt;重新初始化&lt;/h4&gt;
-&lt;p&gt;关闭容器后再次使用&lt;code&gt;lxd init&lt;/code&gt;初始化容器环境，主要是为容器选择默认网桥，这时只用修改一项配置&lt;code&gt;Would you like to configure LXD to use an existing bridge or host interface? (yes/no) [default=no]&lt;/code&gt;，改为yes，然后输入新建网桥名&lt;code&gt;lxd0&lt;/code&gt;即可。&lt;/p&gt;
-&lt;h4 id=&quot;分配静态地址&quot;&gt;分配静态地址&lt;/h4&gt;
-&lt;p&gt;然后重新启动容器并进入bash，修改网络配置文件：&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;vim&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; /etc/network/interfaces&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;添加&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;auto eth0
-iface eth0 inet static
-address 192.168.1.11
-gateway 192.168.1.1
-netmask 255.255.255.0&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;重启网络服务&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;/etc/init.d/networking restart&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;如果IP还不变，那就重启宿主机。&lt;/p&gt;
-&lt;h4 id=&quot;修改dns&quot;&gt;修改DNS&lt;/h4&gt;
-&lt;p&gt;通常到上一步已经可以上网了，默认域名解析服务地址是网桥地址，你也可以改为自定义的DNS地址，如&lt;code&gt;114.114.114.114&lt;/code&gt;。最通常的方法是修改&lt;code&gt;/etc/resolv.conf&lt;/code&gt;文件中的&lt;code&gt;nameserver&lt;/code&gt;。但重启后会失效。以下是永久修改DNS的方法，通常在搭建过程中不需要用到。&lt;/p&gt;
-&lt;h5 id=&quot;修改resolvconf配置&quot;&gt;修改Resolvconf配置&lt;/h5&gt;
-&lt;p&gt;修改&lt;code&gt;/etc/resolvconf/resolv.conf.d&lt;/code&gt;目录下的base，在里面修改DNS服务器地址即可。&lt;/p&gt;
-&lt;h5 id=&quot;修改dhcp配置&quot;&gt;修改DHCP配置&lt;/h5&gt;
-&lt;p&gt;另一个方法是修改DHCP配置文件，&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;vim&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; /etc/dhcp/dhclient.conf&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;可以看到，&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;#supersede domain-name &amp;quot;fugue.com home.vix.com&amp;quot;;
- #prepend domain-name-servers 127.0.0.1;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;去掉前面的#，将域名服务器改成自己的就可以了。&lt;/p&gt;
-&lt;h3 id=&quot;ssh配置&quot;&gt;ssh配置&lt;/h3&gt;
-&lt;p&gt;如果希望用户能远程访问容器，除了网络配置之外，还需要修改一下ssh配置。默认禁止root用户登录，容器创建默认用户也是root用户，里面有个ubuntu用户，未初始化。既然虚拟主机交给用户，即把root也给用户了，所以先设置允许root用户登录，如不需要可以让用户自行更改。&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;vim&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; /etc/ssh/sshd_config&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;将其中的&lt;code&gt;PermitRootLogin prohibit-password&lt;/code&gt;改为&lt;code&gt;PermitRootLogin yes&lt;/code&gt;，以及&lt;code&gt;ChallengeResponseAuthentication no&lt;/code&gt;改为&lt;code&gt;ChallengeResponseAuthentication yes&lt;/code&gt;。
-然后为root用户设置密码：&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;passwd&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; root&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;另外可以编辑ssh登录用户的欢迎信息，通过编辑&lt;code&gt;/etc/update-motd.d/&lt;/code&gt;目录下的&lt;code&gt;00-header&lt;/code&gt;和&lt;code&gt;01-hepler-text&lt;/code&gt;中的内容即可完成。&lt;br&gt;
-最后，重启ssh服务，&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;/etc/init.d/ssh restart&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;h3 id=&quot;挂载共享目录&quot;&gt;挂载共享目录&lt;/h3&gt;
-&lt;p&gt;最后需要在主机上创建一个文件夹，用于各个容器与主机共享，文件传输之类，虽然主机lxc已经有pull和push方法从主机和容器之间拷贝文件，但共享目录会显得更为方便，即便在容器之间也可以相互访问。&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;lxc&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; config&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; device&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; add&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; mycontainer&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; sharedtmp&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; disk&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;  path=/tmp/share_on_lxc&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; source=/tmp/share_on_host&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;其中，&lt;code&gt;path&lt;/code&gt;和&lt;code&gt;source&lt;/code&gt;的地址可以自己定义。&lt;br&gt;
-到这里，基本结束。&lt;/p&gt;
 </content>
   </entry>
 </feed>
