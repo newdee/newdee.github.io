@@ -1,9 +1,9 @@
 /* 阁子 service worker —— 构建生成，勿手改 */
-const V = '8c05224bb6'
+const V = '89101c1dee'
 const STATIC = 'static-' + V
 const PAGES = 'pages-v1'
 const MEDIA = 'media-v1'
-const PRECACHE = ["/assets/main-GR7W3A4Q.css","/assets/main-UX7DBEYV.js","/assets/gl-home-UZK65F5R.js","/assets/gl-404-6LQNHIAS.js","/assets/chunk-6ATBPRIA.js","/assets/katex/katex.min.css","/assets/fonts/serif-400-46d9ed8d.woff2","/assets/fonts/serif-700-aa4387e0.woff2","/assets/fonts/cao-400-06bf223f.woff2"]
+const PRECACHE = ["/assets/main-QHMQZR5U.css","/assets/main-FRB43ETF.js","/assets/gl-home-2THMHVNM.js","/assets/gl-404-L2OXET7T.js","/assets/chunk-6ATBPRIA.js","/assets/katex/katex.min.css","/assets/fonts/serif-400-46d9ed8d.woff2","/assets/fonts/serif-700-aa4387e0.woff2","/assets/fonts/cao-400-06bf223f.woff2"]
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(STATIC).then((c) => c.addAll(PRECACHE)).then(() => self.skipWaiting()))
@@ -66,7 +66,7 @@ self.addEventListener('fetch', (e) => {
     e.respondWith(cacheFirst(req, STATIC))
     return
   }
-  if (p.startsWith('/images/') || p.startsWith('/emoji/')) {
+  if (p.startsWith('/images/') || p.startsWith('/emoji/') || p.startsWith('/pet/')) {
     e.respondWith(cacheFirst(req, MEDIA, 300))
     return
   }
