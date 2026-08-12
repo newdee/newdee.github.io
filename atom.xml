@@ -4,9 +4,130 @@
   <subtitle>dfine's Blog</subtitle>
   <link href="https://dfine.tech/atom.xml" rel="self"/>
   <link href="https://dfine.tech/"/>
-  <updated>2026-08-12T11:30:00+08:00</updated>
+  <updated>2026-08-12T12:20:00+08:00</updated>
   <id>https://dfine.tech/</id>
   <author><name>dfine</name></author>
+  <entry>
+    <title>DeepTutor：开源的 AI 私人家教工作台</title>
+    <link href="https://dfine.tech/posts/87dbedbe/"/>
+    <id>https://dfine.tech/posts/87dbedbe/</id>
+    <published>2026-08-12T12:20:00+08:00</published>
+    <updated>2026-08-12T12:20:00+08:00</updated>
+    <category term="LLM"/>
+    <category term="Agent"/>
+    <category term="教育"/>
+    <content type="html">&lt;p&gt;用聊天窗口学东西有个通病：金鱼记忆。今天讲明白的概念，下周开个新会话又得从头解释一遍；&lt;br&gt;
+错过的题、读到一半的资料、积累的笔记，散落在各个网页里，谁也不认识谁。&lt;br&gt;
+&lt;a href=&quot;https://github.com/HKUDS/DeepTutor&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;DeepTutor&lt;/a&gt; 是港大 HKUDS 实验室开源的学习工作台，想把这些串成一个整体——&lt;br&gt;
+装在自己电脑上，资料是自己的，记忆看得见摸得着。这篇按模块拆开讲讲它到底是怎么运转的。&lt;/p&gt;
+&lt;!--more--&gt;
+&lt;h3 id=&quot;它是什么&quot;&gt;它是什么&lt;/h3&gt;
+&lt;p&gt;一句话：一个装在你自己机器上的 AI 家教，Apache 2.0 开源，&lt;code&gt;pip install deeptutor&lt;/code&gt; 就能起。&lt;br&gt;
+它自己不带「脑子」——大模型用你配的（OpenAI、Claude、Gemini，或者本机跑的 Ollama 都行），&lt;br&gt;
+它提供的是脑子之外的所有东西：资料库、记忆、出题、批改、写作、画图、找人帮忙的路子，全在一处。&lt;br&gt;
+和网页版聊天机器人的根本区别有三条：资料存在本地自己管；AI 对你的了解是可以打开检查的文件，不是黑箱；&lt;br&gt;
+所有学习模式共用一套上下文，聊天里建的资料库，出题、写书、做研究时都认识。&lt;/p&gt;
+&lt;center&gt;
+&lt;p&gt;&lt;span class=&quot;img-fig&quot;&gt;&lt;img src=&quot;/images/deeptutor-arch.svg&quot; alt=&quot;DeepTutor 整体结构&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;span class=&quot;img-cap&quot;&gt;DeepTutor 整体结构：浏览器和命令行两个入口，一个引擎，数据全在本地 data/ 目录&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;
+&lt;/center&gt;
+&lt;p&gt;（&lt;a href=&quot;/diagrams/deeptutor-arch.html&quot;&gt;交互版&lt;/a&gt;，可缩放、可播放调用轨迹。）&lt;/p&gt;
+&lt;h3 id=&quot;一个引擎跑所有模式&quot;&gt;一个引擎跑所有模式&lt;/h3&gt;
+&lt;p&gt;DeepTutor 有六种玩法：聊天、出题（Quiz）、深度研究（Research）、可视化（Visualize）、解题（Solve）、学习路径（Mastery Path）。&lt;br&gt;
+传统做法是六个功能六套代码，它的做法是全部跑在同一个循环上——换模式换的是目标，不是引擎。&lt;/p&gt;
+&lt;p&gt;这个循环说穿了很朴素：模型一轮一轮地想，觉得需要查资料、算个数、搜个网，就调对应的工具，&lt;br&gt;
+看到结果接着想，直到给出一条不带任何工具调用的消息，这轮才算答完。&lt;br&gt;
+有个设计值得单独夸：&lt;code&gt;ask_user&lt;/code&gt;。模型拿不准你想要什么的时候，可以暂停这一轮，正经问你一个问题，等你答了再继续——&lt;br&gt;
+不瞎猜，这在「家教」这个场景里比什么都重要。&lt;/p&gt;
+&lt;center&gt;
+&lt;p&gt;&lt;span class=&quot;img-fig&quot;&gt;&lt;img src=&quot;/images/deeptutor-loop.svg&quot; alt=&quot;一轮对话在引擎里怎么走&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;span class=&quot;img-cap&quot;&gt;一轮对话在引擎里怎么走：要用工具就调，拿不准先问你，想清楚了才作答&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;
+&lt;/center&gt;
+&lt;p&gt;（&lt;a href=&quot;/diagrams/deeptutor-loop.html&quot;&gt;交互版&lt;/a&gt;）好处是实打实的：你在聊天里选好的资料库、人设、模型，切到出题或研究模式时原样跟过去，&lt;br&gt;
+不用在六个功能里各配一遍。&lt;/p&gt;
+&lt;h3 id=&quot;模块逐个说&quot;&gt;模块逐个说&lt;/h3&gt;
+&lt;h4 id=&quot;聊天一切的起点&quot;&gt;聊天：一切的起点&lt;/h4&gt;
+&lt;p&gt;打开就是聊天，但这个聊天窗比一般的能干得多。工具分两类：&lt;br&gt;
+一类是你手动开关的——头脑风暴、网页搜索、论文搜索、深度推理、几何分析，配好生成模型后还有画图和生视频；&lt;br&gt;
+另一类是「看情况自动上桌」的——你选了资料库它就带上检索，你贴了文件它就能读，聊到代码它能跑，随时能记笔记、翻记忆。&lt;br&gt;
+上下文也分两种：「粘性的」（资料库、人设、模型这些，选一次整个会话都带着）和「一次性的」（&lt;code&gt;+&lt;/code&gt; 菜单里临时引用某个文件、某段历史、某本书、某道错题，只管这一轮）。&lt;/p&gt;
+&lt;h4 id=&quot;知识库先翻资料再回答&quot;&gt;知识库：先翻资料再回答&lt;/h4&gt;
+&lt;p&gt;原理不神秘：AI 回答之前，先在你给的资料里检索相关段落，把找到的内容连同问题一起交给模型——行话叫 RAG，说白了就是开卷考试。&lt;br&gt;
+DeepTutor 的特点是「开卷的方式」可以挑，七种检索引擎各有脾气：&lt;br&gt;
+默认的 LlamaIndex 在本地建向量索引，通用稳妥；PageIndex 能给出精确到页码的引用；&lt;br&gt;
+GraphRAG 和 LightRAG 先把资料织成知识网再检索，适合概念之间关系复杂的教材；&lt;br&gt;
+还能外接独立的 LightRAG 服务、腾讯 IMA 的在线资料库，或者直接把你的 Obsidian 笔记库挂进来读写。&lt;br&gt;
+工程细节也照顾到了：重建索引时新索引写进新目录，旧的完好保留，不会重建到一半两头空；&lt;br&gt;
+某个 PDF 解析失败，可以单独把它删掉，不用整库推倒重来。&lt;/p&gt;
+&lt;h4 id=&quot;记忆三层账本句句有出处&quot;&gt;记忆：三层账本，句句有出处&lt;/h4&gt;
+&lt;p&gt;这是 DeepTutor 最有辨识度的设计。AI 对你的了解不是藏在向量库里的一团数字，而是三层纯文本文件：&lt;br&gt;
+L1 是流水账——每个界面上发生的每件事，一条条按日期记着；&lt;br&gt;
+L2 是摘要卡——每个学习场景（聊天、笔记、做题、读书……）各一份提炼过的要点；&lt;br&gt;
+L3 是总评——跨场景综合出来的你：什么水平、最近在学什么、偏好什么讲法。&lt;br&gt;
+关键在引用链：L2 的每条摘要注明来自 L1 的哪几条流水，L3 的每句判断注明来自 L2 的哪几条摘要。&lt;br&gt;
+界面里有一张记忆图谱，总评在圆心、摘要在中环、流水在外圈，任何一句「它认为你怎样」都能一路点回当天的原始事件。&lt;br&gt;
+觉得它记错了？直接改文件，或者 &lt;code&gt;deeptutor memory clear&lt;/code&gt; 清掉重来。&lt;/p&gt;
+&lt;h4 id=&quot;出题错题本与学习路径&quot;&gt;出题、错题本与学习路径&lt;/h4&gt;
+&lt;p&gt;出题模式按你指定的范围和数量生成题目，答完给批改和讲解；&lt;br&gt;
+做错的题进题库，你的答案、参考答案、讲解一起存档，之后能在任何聊天里 &lt;code&gt;@&lt;/code&gt; 出来复盘。&lt;br&gt;
+学习路径（Mastery Path）更进一步：给一个目标，它排出一条带关卡的练习计划，每类题型有掌握度门槛，没过关不放行——&lt;br&gt;
+不是刷完就算，是刷会才算。&lt;/p&gt;
+&lt;h4 id=&quot;深度研究与解题&quot;&gt;深度研究与解题&lt;/h4&gt;
+&lt;p&gt;研究模式产出带引用的报告，深度和形式可调，来源可以是你的资料库加上网络搜索；&lt;br&gt;
+解题模式把一道题拆成一步步的推演过程写给你看，配合几何分析工具还能处理作图题。&lt;/p&gt;
+&lt;h4 id=&quot;可视化与数学动画&quot;&gt;可视化与数学动画&lt;/h4&gt;
+&lt;p&gt;图表、SVG 示意图、可交互的 HTML 小组件都能生成；&lt;br&gt;
+数学动画用的是 Manim——3Blue1Brown 那些丝滑数学视频背后的同一个引擎，讲傅里叶级数时让波形自己动起来。&lt;/p&gt;
+&lt;h4 id=&quot;书能长大的教材&quot;&gt;书：能长大的教材&lt;/h4&gt;
+&lt;p&gt;选一批材料（资料库、笔记、题库、聊天记录都行），它先给你一份章节大纲过目，你点头它才动笔——&lt;br&gt;
+不是一锤子买卖的生成。产出的「书」由一块块类型化的内容拼成：正文、测验卡、闪卡、时间线、代码、交互组件、动画、概念图，&lt;br&gt;
+每一块都能单独重写、挪动、换类型，每一页还带一个页内聊天，读到哪问到哪。&lt;br&gt;
+源材料更新之后，&lt;code&gt;deeptutor book health&lt;/code&gt; 能检查出哪些章节已经跟资料脱节了。&lt;/p&gt;
+&lt;h4 id=&quot;co-writer改哪句选哪句&quot;&gt;Co-Writer：改哪句选哪句&lt;/h4&gt;
+&lt;p&gt;分屏的写作台，左边写右边实时预览。它的规矩是&lt;strong&gt;改动必须经你的手&lt;/strong&gt;：&lt;br&gt;
+选中一段，说「扩写」「精简」「换个讲法」，AI 给出的修改以红绿对照的形式摆出来，你点接受才落进文档；&lt;br&gt;
+改写之前它还可以先去资料库或网上找证据，改动的依据全程留痕。&lt;/p&gt;
+&lt;h4 id=&quot;partners有性格有联系方式的分身&quot;&gt;Partners：有性格、有联系方式的分身&lt;/h4&gt;
+&lt;p&gt;Partner 是常驻的伙伴：一份 &lt;code&gt;SOUL.md&lt;/code&gt; 写人设，配自己的资料库、自己的记忆，然后接到你常用的聊天软件里——&lt;br&gt;
+飞书、Telegram、Slack、Discord、钉钉、QQ、企业微信、WhatsApp、Teams 等十几种渠道。&lt;br&gt;
+它读得到主人的记忆，但只往自己的记忆里写；给孩子配一个耐心的讲题伙伴、给自己配一个论文陪读，互不串味。&lt;/p&gt;
+&lt;h4 id=&quot;my-agents把别的-ai-请来当顾问&quot;&gt;My Agents：把别的 AI 请来当顾问&lt;/h4&gt;
+&lt;p&gt;两件事。一是现场咨询：你机器上装的 Claude Code、Codex、Gemini 等编码助手，能在聊天中途被请来干活，&lt;br&gt;
+它的操作过程实时流进活动面板，干完把结论带回对话。二是导入旧账：把 Claude Code、Codex 攒下的历史会话导进来，&lt;br&gt;
+变成可搜索、可引用的档案——引用时它保持「别人的对话」的身份，不会被冒充成 DeepTutor 自己说的话。&lt;/p&gt;
+&lt;h4 id=&quot;技能市场与安全闸&quot;&gt;技能市场与安全闸&lt;/h4&gt;
+&lt;p&gt;技能就是一份写给 AI 看的玩法说明书（&lt;code&gt;SKILL.md&lt;/code&gt;），教它按某个套路做事：苏格拉底式提问、闪卡制作、作文点评。&lt;br&gt;
+社区市场 EduHub 里一条命令安装，也可以发布自己的。装之前有一道闸：&lt;br&gt;
+被举报的包直接拒装；压缩包防炸弹防越界解压；只放行文本类文件，二进制进不了工作区；&lt;br&gt;
+说明书里「强制每次都生效」的字段会被剥掉——装来的技能没资格塞进每一条系统提示词。&lt;/p&gt;
+&lt;h4 id=&quot;沙箱让-ai-写的代码有地方跑&quot;&gt;沙箱：让 AI 写的代码有地方跑&lt;/h4&gt;
+&lt;p&gt;要生成 Word、PDF、PPT、Excel 这类文件，模型的做法是现写一段 Python 脚本然后执行。&lt;br&gt;
+执行发生在受限的子进程沙箱里；多容器部署时更进一步，代码被送到一个专门的低权限容器里跑。&lt;br&gt;
+单机默认是开的——让 AI 在你机器上跑它自己写的代码终归是个信任决定，配置里一个开关就能关掉，代价是这类文件生成不了。&lt;/p&gt;
+&lt;h4 id=&quot;多用户一家人或一个班&quot;&gt;多用户：一家人或一个班&lt;/h4&gt;
+&lt;p&gt;默认单用户免登录。打开认证后，第一个注册的人是管理员，之后每个用户各有隔离的工作区；&lt;br&gt;
+模型、资料库、技能由管理员按人派发，普通用户拿到的是「能用」的授权，看不到 API key 本体。&lt;/p&gt;
+&lt;h4 id=&quot;命令行给人用也给-ai-用&quot;&gt;命令行：给人用，也给 AI 用&lt;/h4&gt;
+&lt;p&gt;网页上有的功能命令行全有：&lt;code&gt;deeptutor chat&lt;/code&gt; 是交互式对话，&lt;code&gt;deeptutor run deep_question &amp;quot;热力学&amp;quot; --config num_questions=5&lt;/code&gt; 一条命令出五道题。&lt;br&gt;
+加 &lt;code&gt;--format json&lt;/code&gt; 后输出变成一行一个事件的机器可读流——这是特意给「别的 AI 操作它」留的口子，&lt;br&gt;
+仓库里备着一份交接文档，丢给任何会用工具的模型读一遍，它就会驱动整个 DeepTutor。&lt;/p&gt;
+&lt;h3 id=&quot;怎么装&quot;&gt;怎么装&lt;/h3&gt;
+&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;mkdir&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; my-deeptutor&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; &amp;#x26;&amp;#x26;&lt;/span&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt; cd&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; my-deeptutor&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;pip&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; install&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -U&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; deeptutor&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;deeptutor&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; init&lt;/span&gt;&lt;span style=&quot;color:#A0ADA0;--shiki-dark:#758575DD&quot;&gt;     # 问你端口、模型服务商、API key&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;deeptutor&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; start&lt;/span&gt;&lt;span style=&quot;color:#A0ADA0;--shiki-dark:#758575DD&quot;&gt;    # 打开 http://127.0.0.1:3782&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;不想装 Python 环境就 Docker 一行：&lt;/p&gt;
+&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;docker&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; run&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; --rm&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -p&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; 127.0.0.1:3782:3782&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -v&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; deeptutor-data:/app/data&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; ghcr.io/hkuds/deeptutor:latest&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;需要 Python 3.11+ 和 Node 20+（网页版），资料、设置、记忆全在启动目录的 &lt;code&gt;data/&lt;/code&gt; 下面，备份就是拷这个目录。&lt;/p&gt;
+&lt;h3 id=&quot;边界与提醒&quot;&gt;边界与提醒&lt;/h3&gt;
+&lt;p&gt;它是工作台不是模型，聪明程度取决于你接的是什么：接顶级模型体验顶级，接本地小模型就得接受本地小模型的水平，&lt;br&gt;
+而且资料在本地不等于数据不出门——聊天内容和资料片段会发给你配置的模型服务商，真要全程离线，模型也得本地跑。&lt;/p&gt;
+&lt;p&gt;功能面这么大，代价是两头的：学习曲线不平，以及成熟度不均。&lt;br&gt;
+这项目迭代快得吓人，半年发了六十多个版本，翻 release notes 能看到每周都在修上一批的漏——&lt;br&gt;
+活跃是真活跃，追新也真要有心理准备，重要场景钉住一个用着稳的版本比天天升级明智。&lt;/p&gt;
+&lt;p&gt;让模型写代码再执行，是全篇最需要清醒的地方。沙箱和低权限容器是缓冲，不是保票，&lt;br&gt;
+单机用默认开着图方便，多人部署务必走容器方案，或者干脆关掉换个安心。&lt;/p&gt;
+&lt;p&gt;翻它 release notes 的时候总想起自己书架上那本只翻到第三章的高数——工具是一代比一代好了，剩下的事还是得人来。&lt;/p&gt;
+</content>
+  </entry>
   <entry>
     <title>Semantica：面向可审计 AI 的图原生基础设施</title>
     <link href="https://dfine.tech/posts/b1fa57c7/"/>
@@ -129,7 +250,7 @@ SPARQL 注入、SSRF。响应速度不错，但也说明 Explorer 和 REST 这�
 &lt;center&gt;
 &lt;p&gt;&lt;span class=&quot;img-fig&quot;&gt;&lt;img src=&quot;/images/prompt-cache-arch.svg&quot; alt=&quot;PromptCache 组件架构&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;span class=&quot;img-cap&quot;&gt;PromptCache 组件架构：单进程、嵌入式存储，右侧上游只在未命中时才被触达&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;
 &lt;/center&gt;
-&lt;p&gt;图是静态的，&lt;a href=&quot;/diagrams/prompt-cache-arch.html&quot;&gt;交互版在这里&lt;/a&gt;（archify 生成，可缩放、可播放调用轨迹、明暗主题）。&lt;br&gt;
+&lt;p&gt;图是静态的，&lt;a href=&quot;/diagrams/prompt-cache-arch.html&quot;&gt;交互版在这里&lt;/a&gt;（可缩放、可播放调用轨迹、明暗主题）。&lt;br&gt;
 整个系统是单进程的：HTTP 层、语义引擎、向量索引、响应缓存、嵌入式存储全在一个地址空间里，&lt;br&gt;
 唯一的外部依赖就是 LLM 提供商本身（embedding、灰区仲裁、未命中生成，三种调用都打给它）。&lt;/p&gt;
 &lt;h3 id=&quot;双阈值判定&quot;&gt;双阈值判定&lt;/h3&gt;
@@ -2947,134 +3068,6 @@ Stopped: Thu Mar 14 00:05:50 2019
 &lt;p&gt;最后大概半天吧，跑出来结果如下:&lt;/p&gt;
 &lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;$office$*2013*100000*256*16*c22b0421a0051b4f2d268877b43d01ab*64c32a1fa342eb1a67b07f33057b5fc8*984713574ebad9ffd4d7e9e774ab018aff8bfc2b00bac6f0f92a3ea40e20f130:semicjj&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;p&gt;冒号后面的就是密码。&lt;/p&gt;
-</content>
-  </entry>
-  <entry>
-    <title>Docker博客环境封装及自动化部署</title>
-    <link href="https://dfine.tech/posts/6b278ddb/"/>
-    <id>https://dfine.tech/posts/6b278ddb/</id>
-    <published>2019-03-05T15:25:21+08:00</published>
-    <updated>2019-03-05T15:25:21+08:00</updated>
-    <category term="Docker"/>
-    <category term="Linux"/>
-    <category term="Blog"/>
-    <content type="html">&lt;p&gt;说来惭愧，也不记得有几次立flag要把博客坚持下去的，看看上一篇的时间，一拖又是这么久了。&lt;br&gt;
-为了不至于彻底沦落成上班摸鱼，下班看剧的MADAO（并非在说长谷川先生），还是想去舒适区外面逛逛。自动化部署并不是什么难事，记得以前网上就可以找到一堆TravisCI的教程。不过记得去年暑假时候使用Docker封装了博客环境，以便能在新系统上使用(Ubuntu 16.04 =&amp;gt; 18.04)，同时也是为了防止博客插件以及npm的更新引起问题。&lt;/p&gt;
-&lt;!--more--&gt;
-&lt;h3 id=&quot;容器内构建环境&quot;&gt;容器内构建环境&lt;/h3&gt;
-&lt;p&gt;关于Docker容器的储存结构以及基本介绍，之前貌似有一篇&lt;a href=&quot;/posts/a0c49a8e/&quot;&gt;文章&lt;/a&gt;已经说了一些了，这里不再赘述。&lt;br&gt;
-通过镜像构建容器很简单，&lt;code&gt;docker run imagename&lt;/code&gt;即可，由于是博客，可以把本地的blog目录挂在进去，并映射里面的端口，即加上&lt;code&gt;-v /Blog:/Blog&lt;/code&gt; 和&lt;code&gt;-p 4000:4000&lt;/code&gt;，其他设置自己怎么喜欢怎么来。&lt;br&gt;
-个人是直接从Docker Hub官方仓库中的ubuntu:16.04镜像来启动容器的，可以使用&lt;code&gt;docker pull&lt;/code&gt;，也可以使用&lt;code&gt;docker run&lt;/code&gt;命令来启动容器。&lt;br&gt;
-然后是安装一些必要的软件：&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;apt&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; update&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; &amp;#x26;&amp;#x26;&lt;/span&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt; apt&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; install&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -y&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; vim&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; git&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; python&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; wget&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; gcc&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; g++&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;wget&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -qO-&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; https://raw.github.com/creationix/nvm/v0.33.11/install.sh&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt; |&lt;/span&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt; sh&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;git&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; config&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; --global&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; user.email&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt; &quot;&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;ABCDEFG@qq.com&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; &amp;#x26;&amp;#x26;&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;git&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; config&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; --global&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; user.name&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt; &quot;&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;username&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; &amp;#x26;&amp;#x26;&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt;source&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; ~/.profile&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;nvm&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; install&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; v9.2.1&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; &amp;#x26;&amp;#x26;&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;npm&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; install&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; hexo-cli&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -g&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; &amp;#x26;&amp;#x26;&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;npm&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; install&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; gulp&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -g&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;首先安装必要的环境，然后安装npm的包管理工具nvm，然后配置git账号，并安装特定版本的node，在安装之前先确认之前可以运行的时候的node版本即可。剩下的就是安装hexo和gulp（博客资源压缩工具，&lt;a href=&quot;/posts/6d87f1ac/&quot;&gt;优化&lt;/a&gt;用）。&lt;br&gt;
-为了hexo能够直接deploy，配置免密登录密钥并添加到github中。&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;ssh-keygen&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -t&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; rsa&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -P&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt; &quot;&quot;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;拷贝&lt;code&gt;/root/.ssh/id_rsa.pub&lt;/code&gt;文件中内容到github的SSH-KEY中即可。
-然后删掉博客中的&lt;code&gt;node_modules/&lt;/code&gt;文件夹和&lt;code&gt;db.json&lt;/code&gt;文件，重新安装。&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;npm&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; install&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;之后便可以正常在本地访问博客了。&lt;/p&gt;
-&lt;h3 id=&quot;构建镜像&quot;&gt;构建镜像&lt;/h3&gt;
-&lt;h4 id=&quot;容器直接构建&quot;&gt;容器直接构建&lt;/h4&gt;
-&lt;p&gt;在之前环境配置好之后，退出容器，将该容器打包成镜像。&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;docker&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; commit&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; [OPTIONS] CONTAINER &lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;[&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;REPOSITORY&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;[&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;:TAG&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;]]&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;可加参数有&lt;code&gt;-a authorname&lt;/code&gt; 添加作者信息，&lt;code&gt;-m message&lt;/code&gt;添加说明文字，如:&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;docker&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; commit&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -a&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt; &quot;&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;Lilei &amp;#x26;&amp;#x26; Hanmeimei&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -m&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt; &quot;&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;blog image&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; CONTAINER_ID&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; REPOSITORY:TAG&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;后面添加容器ID或者容器名都可以，然后添加你要上传到DockerHub的仓库名以及版本标签(TAG如果为空，默认为latest)&lt;/p&gt;
-&lt;h4 id=&quot;通过dockerfile构建&quot;&gt;通过Dockerfile构建&lt;/h4&gt;
-&lt;p&gt;将之前的指令写入Dockerfile文件，然后建立镜像即可。&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;dockerfile&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;dockerfile&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;FROM&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; ubuntu:16.04&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;MAINTAINER&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; gitever&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;RUN&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; apt update &amp;#x26;&amp;#x26; apt install -y vim git python wget gcc g++ make &amp;#x26;&amp;#x26; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;    wget -qO- https://raw.github.com/creationix/nvm/v0.33.11/install.sh | sh &lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;ENV&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; NVM_DIR /root/.nvm&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;COPY&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; ssh /root/.ssh&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;RUN&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; git config --global user.email &lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;&quot;ABCDEFG@qq.com&quot;&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; &amp;#x26;&amp;#x26; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;    git config --global user.name &lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;&quot;username&quot;&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; &amp;#x26;&amp;#x26; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;    . $NVM_DIR/nvm.sh &amp;#x26;&amp;#x26; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;    nvm install v9.2.1 &amp;#x26;&amp;#x26; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;    npm install hexo-cli -g &amp;#x26;&amp;#x26; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;    npm install gulp -g &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;其中&lt;code&gt;MAINTAINER&lt;/code&gt;是作者名字，&lt;code&gt;FROM&lt;/code&gt;是使用的镜像来源，然后安装环境，和之前一样。最后使用&lt;code&gt;Docker build&lt;/code&gt;命令构建镜像。
-需要说一点的是，通过Dockerfile构建的镜像不能直接使用&lt;code&gt;ssh-keygen&lt;/code&gt;命令生成免密密钥，因为每次构建镜像时都会执行一次生成指令，如果之后版本需要修改，Dockerfile中需要加入其他指令，那么原来可以免密的镜像，生成后会变的无法登陆。最明显的就是使用ssh的方式的hexo deploy和github 仓库的访问，故而将已经可以免密的&lt;code&gt;.ssh/&lt;/code&gt;文件夹直接拷贝进来。&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;docker&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; build&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -t&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; gitever/blog:ci&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;  .&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;使用&lt;code&gt;-t&lt;/code&gt;指令是指定之后要上传到Docker Hub的镜像仓库名。&lt;br&gt;
-然后等待一会，会显示构建完成，使用&lt;code&gt;docker images&lt;/code&gt;便可以查看之前直接在容器中构建的镜像和使用Dockerfile构建的镜像。通常使用Dockerfile构建镜像体积会更小，因为Docker的分层存储方式，由于在容器内通常会做很多多余的无用指令，所以直接commit构建的体积很容易变得臃肿。&lt;br&gt;
-之后就是上传镜像：&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;docker&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; push&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; gitever/blog:ci&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;h3 id=&quot;docker自动化部署&quot;&gt;Docker自动化部署&lt;/h3&gt;
-&lt;p&gt;其实在镜像制作完成后，即可以使用镜像启动容器，然后使用博客环境了。上传镜像之后，可以在不同电脑上使用该博客环境，也不会有环境冲突的问题。但是每次都要挂载本地目录到容器中(因为博客目录体积较大，直接放入容器中体积太大，而且博客会更新，容器不能保存，只能重新制作镜像，使得效率低下)。也许是觉得在不同电脑上都要下载镜像启动容器显得麻烦，或者觉得每次都要手动generate、push和deploy显得麻烦，便开始打算使用Docker自动化部署。&lt;br&gt;
-首先去DockerHub创建一个仓库用来自动化部署，仓库创建需要绑定github账号，然后将博客的源文件仓库链接至该镜像仓库，如下图所示。&lt;/p&gt;
-&lt;center&gt;
-&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/newdee/BlogImage/master/20190325150413.png&quot; alt=&quot;Docker CI&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;/center&gt;
-&lt;p&gt;不过也不一定要链接至博客源文件仓库，可以新建一个仓库，将Dockerfile上传至该仓库，每次push该仓库触发博客自动更新也可以。直接使用博客源文件仓库则是每次写好文章push上去便直接触发更新了。&lt;br&gt;
-然后在本地的博客源文件（或新仓库）添加一个Dockerfile记录要自动更新的指令。&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;dockerfile&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;dockerfile&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;FROM&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; gitever/blog:ci&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;MAINTAINER&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; gitever&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;ADD&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; .git/ /.git/&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;RUN&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; git clone YourRepoUrl /Blog &amp;#x26;&amp;#x26;\&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;    . $NVM_DIR/nvm.sh &amp;#x26;&amp;#x26; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;    cd /Blog   &amp;#x26;&amp;#x26; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;    npm install &amp;#x26;&amp;#x26; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;    hexo cle &amp;#x26;&amp;#x26; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;    gulp &amp;#x26;&amp;#x26; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;    hexo d&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;然后&lt;code&gt;git add .&lt;/code&gt;以及使用&lt;code&gt;commit&lt;/code&gt;和&lt;code&gt;push&lt;/code&gt;上传至git仓库即可触发。&lt;br&gt;
-其中，&lt;code&gt;ADD&lt;/code&gt;一个变化的值，保证之后的构建不使用缓存，不然即使仓库更新了，容器里的仓库也不会更新。&lt;br&gt;
-其实不用每次&lt;code&gt;git clone&lt;/code&gt;，git的优点就是差异性存储，所以可以之前依然可以使用缓存，节省时间，将后续操作设置成不使用缓存。&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;dockerfile&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;dockerfile&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;FROM&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; gitever/blog:ci&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;MAINTAINER&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; gitever&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;RUN&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; git clone YourRepoUrl /Blog &amp;#x26;&amp;#x26;\&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;    . $NVM_DIR/nvm.sh &amp;#x26;&amp;#x26; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;    npm install &amp;#x26;&amp;#x26; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;ADD&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; .git/ /.git/&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;RUN&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; cd /Blog   &amp;#x26;&amp;#x26; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;    . $NVM_DIR/nvm.sh &amp;#x26;&amp;#x26; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;    git pull &amp;#x26;&amp;#x26; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;    hexo cle &amp;#x26;&amp;#x26; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;    gulp &amp;#x26;&amp;#x26; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;    hexo d&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;另一种方式，直接将当前仓库中的文件添加到容器中:&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;dockerfile&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;dockerfile&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;FROM&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; gitever/blog:ci&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;MAINTAINER&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; gitever&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;RUN&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; mkdir /Blog &lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;COPY&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; _config.yml /Blog&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;COPY&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; package* /Blog/&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;COPY&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; gulpfile.js /Blog&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;COPY&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; scaffolds/ /Blog/scaffolds&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;RUN&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; cd /Blog &amp;#x26;&amp;#x26; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;    . $NVM_DIR/nvm.sh &amp;#x26;&amp;#x26; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;    npm install &lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;ADD&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; themes/ /Blog/themes&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;ADD&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; source/ /Blog/source&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;ADD&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; .git/ /Blog/.git/&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;RUN&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; cd /Blog &amp;#x26;&amp;#x26; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;    . $NVM_DIR/nvm.sh &amp;#x26;&amp;#x26; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;    git pull &amp;#x26;&amp;#x26; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;    hexo cle &amp;#x26;&amp;#x26; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;    gulp &amp;#x26;&amp;#x26; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;    hexo d&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;这种方式，每次修改文件后都将整个文件夹添加到容器中，文件夹比较大的话会花比较多的时间。另一方面，因为Docker层层有缓存，所以第一种方式也只有第一次较慢。&lt;br&gt;
-&lt;img src=&quot;https://raw.githubusercontent.com/newdee/BlogImage/master/20190325150459.png&quot; alt=&quot;Docker CI&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;
-&lt;img src=&quot;https://raw.githubusercontent.com/newdee/BlogImage/master/20190325150525.png&quot; alt=&quot;日志&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;
-最后观察触发是否成功以及最后输出结果是否在预期内。&lt;br&gt;
-上述涉及到&lt;code&gt;ADD&lt;/code&gt;和&lt;code&gt;COPY&lt;/code&gt;区别，COPY只是简单的复制，ADD支持下载URL，并支持解压，并具有判断其&lt;code&gt;ADD&lt;/code&gt;的&lt;code&gt;src&lt;/code&gt;功能。因此，在没有特殊需求时，尽量使用COPY提高效率，上述使用&lt;code&gt;ADD .git/&lt;/code&gt;是为了让Docker Daemon判断git仓库是否更新了，如果更新了，则不使用缓存，这样，后续的&lt;code&gt;git pull&lt;/code&gt;才能真正获取更新并最终更新到网站上。&lt;/p&gt;
-&lt;center&gt;
-&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/newdee/BlogImage/master/20190325150550.png&quot; alt=&quot;取消缓存&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;/center&gt;
-&lt;p&gt;此外，还可以添加&lt;code&gt;.dockerignore&lt;/code&gt;文件来忽略一些容器中你不用的文件以提高速度。容器加载时会默认将当前目录下所有文件打包传给Docker Daemon，比如就是&lt;code&gt;node_modules&lt;/code&gt;文件夹。
-没有写的太细，长篇累牍容易给看客压力，&lt;code&gt;step by step&lt;/code&gt;操作一番，不填坑也不会有印象，也并不会达到对容器熟悉的效果。&lt;br&gt;
-因为容器的方便性，我曾不断向人安利，但也许是推荐的对象不适合，用的人貌似不多，记得以前也答应过人把Docker封装环境的详细过程写写，现在算是应诺了，希望还能帮人节省一点时间。&lt;/p&gt;
 </content>
   </entry>
 </feed>
