@@ -4,9 +4,81 @@
   <subtitle>dfine's Blog</subtitle>
   <link href="https://dfine.tech/atom.xml" rel="self"/>
   <link href="https://dfine.tech/"/>
-  <updated>2026-08-12T14:10:00+08:00</updated>
+  <updated>2026-08-12T15:20:00+08:00</updated>
   <id>https://dfine.tech/</id>
   <author><name>dfine</name></author>
+  <entry>
+    <title>Agency Agents：一座 AI 角色库的分发工程</title>
+    <link href="https://dfine.tech/posts/fcfab9cc/"/>
+    <id>https://dfine.tech/posts/fcfab9cc/</id>
+    <published>2026-08-12T15:20:00+08:00</published>
+    <updated>2026-08-12T15:20:00+08:00</updated>
+    <category term="LLM"/>
+    <category term="Agent"/>
+    <category term="Prompt"/>
+    <content type="html">&lt;p&gt;给编码助手装「子人格」这件事，各家工具都支持，但角色从哪来是个体力活：自己写，或者满网抄。&lt;br&gt;
+&lt;a href=&quot;https://github.com/msitarzewski/agency-agents&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;Agency Agents&lt;/a&gt; 干脆把它做成了一个仓库——起于一条 Reddit 帖子，&lt;br&gt;
+如今攒了两百七十个带人格的专家角色，按公司组织架构分成十七个「事业部」，一条命令装进十六种工具。&lt;br&gt;
+角色本身是提示词工程，仓库真正下功夫的地方是分发和治理，这篇两头都拆。&lt;/p&gt;
+&lt;!--more--&gt;
+&lt;h3 id=&quot;定位&quot;&gt;定位&lt;/h3&gt;
+&lt;p&gt;MIT 协议的角色集合，每个角色一个 markdown 文件：frontmatter 记名字、简介、配色、性格标签，&lt;br&gt;
+正文是完整的人格设定——身份与记忆、核心使命、铁律、检查单、产出格式。&lt;br&gt;
+本地这份 checkout 数出 270 个带 frontmatter 的角色，分十七个分部：工程一家独大（六十个上下），&lt;br&gt;
+设计、销售、付费媒体、市场、产品、安全、测试之外，还有医疗、GIS、游戏开发、空间计算这些偏门。&lt;br&gt;
+角色光谱很宽：正经的有网络工程师（Cisco / Juniper / PAN-OS 配置排障）、嵌入式固件、Solidity 合约、&lt;br&gt;
+销售的 MEDDPICC 商机评分；跳脱的有给界面塞彩蛋的「Whimsy Injector」、专治大路货设计的「UI 防平庸终审门」。&lt;/p&gt;
+&lt;h3 id=&quot;角色文件&quot;&gt;角色文件&lt;/h3&gt;
+&lt;p&gt;拿 Code Reviewer 感受一下成色。frontmatter 之外，正文把评审风格钉死成规则：&lt;br&gt;
+问题分三级（🔴 阻断 / 🟡 建议 / 💭 挑剔），每条意见必须给出理由和改法，&lt;br&gt;
+「建议而非命令」「一轮给全、不挤牙膏」「好代码要点名夸」。&lt;br&gt;
+这类文件的价值不在文采，在于把一个领域的检查单和产出格式固化下来——&lt;br&gt;
+模型还是那个模型，但它开工前先被塞了一份靠谱的作业规程。&lt;/p&gt;
+&lt;h3 id=&quot;分发管线&quot;&gt;分发管线&lt;/h3&gt;
+&lt;p&gt;角色写成 markdown 只算完成一半，各家工具各认各的格式，这是仓库最工程化的部分。&lt;/p&gt;
+&lt;center&gt;
+&lt;p&gt;&lt;span class=&quot;img-fig&quot;&gt;&lt;img src=&quot;/images/agency-agents-pipeline.svg&quot; alt=&quot;角色的分发管线&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;span class=&quot;img-cap&quot;&gt;角色的分发管线：一份 markdown 源，按契约渲染成各工具认得的形状&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;
+&lt;/center&gt;
+&lt;p&gt;（&lt;a href=&quot;/diagrams/agency-agents-pipeline.html&quot;&gt;交互版&lt;/a&gt;，可缩放、可播放数据流轨迹。）&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;tools.json&lt;/code&gt; 给 16 个工具各立一份契约：渲染格式、安装形态、探测目录、落盘路径。&lt;br&gt;
+&lt;code&gt;convert.sh&lt;/code&gt; 按契约把角色渲染进 &lt;code&gt;integrations/&lt;/code&gt;：Claude Code 原样 markdown 落 &lt;code&gt;.claude/agents/&lt;/code&gt;，&lt;br&gt;
+Codex 转 TOML，Cursor 转 &lt;code&gt;.mdc&lt;/code&gt; 规则，Kimi 一个角色两件套（yaml + system.md），&lt;br&gt;
+OpenClaw 更是一角色三文件（SOUL / AGENTS / IDENTITY）。&lt;br&gt;
+安装形态分三种：per-agent 一角色一文件；roster 全员拼成一个大文件（Aider 的 &lt;code&gt;CONVENTIONS.md&lt;/code&gt;、Windsurf 的 &lt;code&gt;.windsurfrules&lt;/code&gt; 走这条）；&lt;br&gt;
+plugin 是构建出来的插件工件（Hermes 路由插件）。&lt;br&gt;
+&lt;code&gt;install.sh&lt;/code&gt; 是个交互向导：自动探测机器上装了哪些工具，按分部或单个角色挑着装，支持 dry-run；&lt;br&gt;
+另有一个桌面 App（独立仓库）读同一份目录，点一下装、自动更新。&lt;/p&gt;
+&lt;h3 id=&quot;目录治理&quot;&gt;目录治理&lt;/h3&gt;
+&lt;p&gt;两百七十个文件、十七个目录、十六种工具、三套消费方，靠什么不散架——两份事实源加一道 CI 闸。&lt;/p&gt;
+&lt;center&gt;
+&lt;p&gt;&lt;span class=&quot;img-fig&quot;&gt;&lt;img src=&quot;/images/agency-agents-truth.svg&quot; alt=&quot;两份事实源与一致性闸&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;span class=&quot;img-cap&quot;&gt;两份事实源与一致性闸：目录、脚本、App 消费同一份目录，CI 负责对账&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;
+&lt;/center&gt;
+&lt;p&gt;（&lt;a href=&quot;/diagrams/agency-agents-truth.html&quot;&gt;交互版&lt;/a&gt;）&lt;code&gt;divisions.json&lt;/code&gt; 管分部，&lt;code&gt;tools.json&lt;/code&gt; 管工具，&lt;br&gt;
+转换与安装脚本里各持一份清单，CI 逐项对账：目录里多了个分部而 json 没登记、脚本清单跟契约对不上，构建直接红。&lt;br&gt;
+还有一道原创性检查，专防复制粘贴改个名就提交的角色。&lt;br&gt;
+社区仓库能维持秩序，靠的多半不是热情，是这类把「一致」写进 CI 的执念。&lt;/p&gt;
+&lt;h3 id=&quot;安装&quot;&gt;安装&lt;/h3&gt;
+&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;brew&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; install&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; --cask&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; msitarzewski/agency-agents/agency-agents&lt;/span&gt;&lt;span style=&quot;color:#A0ADA0;--shiki-dark:#758575DD&quot;&gt;   # 桌面 App&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;git&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; clone&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; https://github.com/msitarzewski/agency-agents.git&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; &amp;#x26;&amp;#x26;&lt;/span&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt; cd&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; agency-agents&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;./scripts/install.sh&lt;/span&gt;&lt;span style=&quot;color:#A0ADA0;--shiki-dark:#758575DD&quot;&gt;                                     # 交互向导：挑工具 + 挑分部&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;./scripts/install.sh&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; --tool&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; claude-code&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; --division&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; engineering,security&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;./scripts/install.sh&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; --tool&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; cursor&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; --agent&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; frontend-developer,ui-designer&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;h3 id=&quot;边界与风险&quot;&gt;边界与风险&lt;/h3&gt;
+&lt;p&gt;先把最容易的误会说破：&lt;strong&gt;角色不是能力&lt;/strong&gt;。人格提示词不给模型加新工具、新知识，&lt;br&gt;
+「网络工程师」上身之后干活的还是同一个底座模型——它带来的是领域检查单、产出格式和聚焦，上限始终是底座本身。&lt;br&gt;
+把它当「招了个专家」用会失望，当「给模型发了本作业规程」用刚刚好。&lt;/p&gt;
+&lt;p&gt;全量安装是反噬。270 个角色全装进 Claude Code 的选择器就是污染，挑角色比干活还费神；&lt;br&gt;
+OpenCode 的运行时超过 119 个静默丢弃（上游 bug，README 里明说）；&lt;br&gt;
+roster 形态更要小心——Aider 和 Windsurf 是全员人格拼进一个文件，每次会话整本花名册都进上下文，token 和注意力两头吃亏。&lt;br&gt;
+按分部装不是可选项，是正确用法。&lt;/p&gt;
+&lt;p&gt;质量必然参差。结构有 lint 兜底、抄袭有检查拦着，但深浅没人能拦：&lt;br&gt;
+有的角色是老兵把二十年经验写成了规程，有的只是把岗位 JD 翻译成了第二人称。装之前把文件读一遍，跟招人面试一个道理。&lt;/p&gt;
+&lt;p&gt;维护面也大：16 个工具的目录约定随上游 CLI 演进而漂移，契约加 CI 能保证仓库内部不散架，兜不住上游改主意。&lt;/p&gt;
+&lt;p&gt;管 skill 的仓库&lt;a href=&quot;/posts/89ecf0d5/&quot;&gt;之前写过一个&lt;/a&gt;，管的是「怎么做事」；这个管的是「谁来做事」。&lt;br&gt;
+照组织架构图给 AI 建事业部，多少有点行为艺术，但那道把一致性写进 CI 的闸，倒比不少正经产品都认真。&lt;/p&gt;
+</content>
+  </entry>
   <entry>
     <title>Harvey LAB：法律 Agent 基准的架构与评测方法</title>
     <link href="https://dfine.tech/posts/c01b12ee/"/>
@@ -2942,106 +3014,6 @@ Git分支在本质上是一个指向最新提交对象的指针，每次提交�
 &lt;p&gt;在储藏一个工作状态后，继续在该分支上工作，最后还原储藏的时候可能会引起合并冲突，此时可以新建一个储藏分支简化工作。&lt;/p&gt;
 &lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;git&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; stash&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; branch&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt; &amp;#x3C;&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;branchnam&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;e&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt;&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;p&gt;此时Git会创建一个新的分支，检出储藏工作时的所处的提交，重新应用，如果成功，则丢弃储藏。&lt;/p&gt;
-</content>
-  </entry>
-  <entry>
-    <title>Telegram接管聊天消息</title>
-    <link href="https://dfine.tech/posts/b03b049f/"/>
-    <id>https://dfine.tech/posts/b03b049f/</id>
-    <published>2019-03-20T22:49:44+08:00</published>
-    <updated>2019-03-20T22:49:44+08:00</updated>
-    <category term="Telegram"/>
-    <category term="Docker"/>
-    <content type="html">&lt;p&gt;虽有Web微信的简陋功能，虽有electronic的外观封装，但每次登陆实在太麻烦，以及很多功能被限制，表情无法接收等，被鹅厂放弃的Linux用户对微信的体验大概确实不好。&lt;/p&gt;
-&lt;!--more--&gt;
-&lt;h3 id=&quot;关于telegram&quot;&gt;关于Telegram&lt;/h3&gt;
-&lt;p&gt;关于Telegram(电报)，直接引用&lt;a href=&quot;https://zh.wikipedia.org/wiki/Telegram&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;维基&lt;/a&gt;上的介绍:&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;Telegram是一个跨平台的即时通信软件，它的客户端是自由及开放源代码软件，但是它的服务器是专有软件。用户可以相互交换加密与自毁消息，发送照片、影片等所有类型文件。官方提供手机版（Android、iOS、Windows Phone）、桌面版（Windows、macOS、Linux）和网页版等多种平台客户端；同时官方开放应用程序接口，因此拥有许多第三方的客户端可供选择，其中多款内置中文。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;这个是俄国的社交服务VK的创始者杜洛夫兄弟的作品，Telegram Messenger LLP是独立的非营利公司，与VK也没啥关系，所有的宗旨只在于保证聊天和隐私安全。但不接受监管的软件通常过的不是太好，追求绝对的隐私安全，以至于其在各个国家遭受了被封锁的命运。其他国家暂且不论，因为不肯交出密钥，连俄罗斯媒体监管机构都请求法庭再全国范围内封锁该软件。抛开这些原因不谈，就技术方面，其良好的功能体验，开源的客户端以及开放的应用程序接口，已经领先于绝大多数同类APP了。&lt;br&gt;
-Tencent基本是属于放弃Linux用户的一类，后来新注册的微信号连网页版都无法使用，虽然嫌弃通常是相互的，但微信之类的产品用的人太多，粘性太大，有时候不得不用其交流，等网页版每次都要扫一下也是麻烦，所以直接使用Telegram的机器人来收发微信消息。&lt;/p&gt;
-&lt;h3 id=&quot;环境安装&quot;&gt;环境安装&lt;/h3&gt;
-&lt;p&gt;聚合社交平台这方面，&lt;a href=&quot;https://github.com/blueset/ehForwarderBot&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;EFB&lt;/a&gt;做的不错，而且也有了现成的Docker镜像（由royx提供），使得环境搭建更为简单。&lt;br&gt;
-另外，需要一台能访问外网的主机，主要是能访问TG(Telegram)服务器。&lt;br&gt;
-然后安装Docker:&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;curl&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -sSL&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; https://get.daocloud.io/docker&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt; |&lt;/span&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt; sh&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;安装好之后，就可以拉取镜像了:&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;docker&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; pull&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; royx/docker-efb&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;h3 id=&quot;配置tg-bot&quot;&gt;配置TG Bot&lt;/h3&gt;
-&lt;p&gt;主要方式是通过登陆网页版微信，然后将微信消息通过Bot发送及接受。首先需要配置TG Bot:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;搜索并找到&lt;code&gt;@botfather&lt;/code&gt;机器人，然后发送指令:&lt;code&gt;/newbot&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;给Bot起个名字。&lt;/li&gt;
-&lt;li&gt;给机器人起用户名，以&lt;code&gt;bot&lt;/code&gt;结尾&lt;/li&gt;
-&lt;li&gt;获取机器人的Token&lt;/li&gt;
-&lt;li&gt;设置Bot隐私权限: 默认Bot可能无法接收非&lt;code&gt;/&lt;/code&gt;开头的消息，所以需要设置隐私权限。向该机器人发送指令&lt;code&gt;/setprivacy&lt;/code&gt;，选择刚刚创建的机器人，点&lt;code&gt;Disable&lt;/code&gt;即可。&lt;/li&gt;
-&lt;li&gt;允许将Bot添加进群组: 给机器人发送指令&lt;code&gt;/setjoingroups&lt;/code&gt;,选择enable。&lt;/li&gt;
-&lt;li&gt;允许Bot提供指令列表: 给机器人发送指令&lt;code&gt;/setcommand&lt;/code&gt;，输入以下内容：&lt;/li&gt;
-&lt;/ol&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;help - 显示命令列表.
-link - 将远程会话绑定到 Telegram 群组
-chat - 生成会话头
-recog - 回复语音消息以进行识别
-info - 显示当前 Telegram 聊天的信息.
-unlink_all - 将所有远程会话从 Telegram 群组解绑.
-update_info - 更新群组名称和头像
-extra - 获取更多功能&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;h3 id=&quot;获取tg-id&quot;&gt;获取TG ID&lt;/h3&gt;
-&lt;p&gt;搜索另外一个机器人&lt;code&gt;@get_id_bot&lt;/code&gt;，点击&lt;code&gt;start&lt;/code&gt;即可获得TG ID。&lt;/p&gt;
-&lt;h3 id=&quot;配置efb&quot;&gt;配置EFB&lt;/h3&gt;
-&lt;p&gt;新建一个&lt;code&gt;config.py&lt;/code&gt;文件保存机器人信息，输入以下内容:&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;master_channel = &amp;#39;plugins.eh_telegram_master&amp;#39;, &amp;#39;TelegramChannel&amp;#39;
-slave_channels = [(&amp;#39;plugins.eh_wechat_slave&amp;#39;, &amp;#39;WeChatChannel&amp;#39;)]
-
-eh_telegram_master = {
-    &amp;quot;token&amp;quot;: &amp;quot;12345678:QWFPGJLUYarstdheioZXCVBKM&amp;quot;,
-    &amp;quot;admins&amp;quot;: [13456782],
-    &amp;quot;bing_speech_api&amp;quot;: [&amp;quot;xxx&amp;quot;, &amp;quot;xxx&amp;quot;],
-    &amp;quot;baidu_speech_api&amp;quot;: {
-        &amp;quot;app_id&amp;quot;: 0,
-        &amp;quot;api_key&amp;quot;: &amp;quot;xxx&amp;quot;,
-        &amp;quot;secret_key&amp;quot;: &amp;quot;xxx&amp;quot;
-    }
-}&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;在其中输入之前所获得的token，以及将admin后的内容换成TG ID。其余&lt;code&gt;xxx&lt;/code&gt;的内容是语音识别API，想要的可以申请，没有的也无所谓。&lt;br&gt;
-然后新建一个&lt;code&gt;tgdata.db&lt;/code&gt;文件，为空即可。&lt;/p&gt;
-&lt;h3 id=&quot;启动efb容器&quot;&gt;启动EFB容器&lt;/h3&gt;
-&lt;p&gt;指定配置文件和数据文件的地址，启动容器:&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;docker&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; run&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -d&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; --restart=always&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; --name=ehforwarderbot&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt;        -v&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; $(&lt;/span&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt;pwd&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;)&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;/config.py:/opt/ehForwarderBot/config.py&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt;        -v&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; $(&lt;/span&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt;pwd&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;)&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;/tgdata.db:/opt/ehForwarderBot/plugins/eh_telegram_master/tgdata.db&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;        royx/docker-efb&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;然后通过&lt;code&gt;docker logs&lt;/code&gt;查看容器输出内容，应该可以看到一个二维码，用微信扫一扫即可登录。&lt;/p&gt;
-&lt;h3 id=&quot;机器人使用&quot;&gt;机器人使用&lt;/h3&gt;
-&lt;p&gt;登陆成功即可正常使用机器人收发微信消息，默认情况下，所有的微信消息以及公众号消息，全都是通过那个机器人发送的，看起来会比较乱。&lt;br&gt;
-如果需要单独跟某个人聊天，一种方法是在你创建的机器人中发送&lt;code&gt;/chat 好友名&lt;/code&gt;，然后机器人会给一段消息，回复那个消息就可以将消息发送给指定的联系人。但是略显麻烦，聊天不多的人可以这样。&lt;br&gt;
-另一种方法是单读创建一个TG群组，然后将名称命名为你要聊天的好友名，将机器人拉进来。然后向你所创建的机器人发送指令&lt;code&gt;/link 好友名&lt;/code&gt;，将与该好友的聊天绑定到你所创建的群组中，即可如微信一般发送以及接收消息，且可以发送TG的自定义贴纸表情。&lt;/p&gt;
-&lt;h3 id=&quot;后加接管qq消息&quot;&gt;(后加)接管QQ消息&lt;/h3&gt;
-&lt;p&gt;此外，使用EFB工具也可以托管QQ消息，方法挺多，这里依然采用最简单的容器方法。&lt;br&gt;
-和接管微信消息一样，需要创建一个机器人获取Token，也可以就用微信机器人，不过为了方便管理，就直接另外创建一个机器人了。&lt;br&gt;
-然后直接使用EFB和酷Q的&lt;code&gt;efb-qq-coolq-docker&lt;/code&gt;项目中的配置，仓库&lt;a href=&quot;https://github.com/Earth-Online/efb-qq-coolq-docker&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;在这&lt;/a&gt;.&lt;br&gt;
-然后修改两个配置文件:&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;vim ehforward_config/profiles/default/blueset.telegram/config.yaml
-
-token: &amp;quot;你的机器人token&amp;quot;
-admins:
-- 你的tgid&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;和&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;vim docker-compose.yml
-
-- VNC_PASSWD=你的密码
-- COOLQ_ACCOUNT=你的qq账号&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;执行&lt;code&gt; docker-compose up -d&lt;/code&gt;,然后打开&lt;code&gt;ip:9801&lt;/code&gt;完成登录操作。&lt;br&gt;
-但目前直接登录后，login可以成功，却无法获取到friends，借用&lt;code&gt;blue-bird1&lt;/code&gt;的解决方法，修改bot容器中的配置：&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;docker&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; exec&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -it&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; efb-qq-coolq-docker_bot_1&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; /bin/ash&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;vi&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; /usr/local/lib/python3.6/site-packages/efb_qq_slave/Clients/CoolQ/CoolQ.py&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;将第329行和第512行的调用赋值改为绝对赋值:&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;res = {&amp;quot;good&amp;quot;: True, &amp;quot;online&amp;quot;: True}&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;然后重启容器即可。&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;docker&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; restart&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; efb-qq-coolq-docker_bot_1&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;此时即可正常收发QQ消息。&lt;/p&gt;
 </content>
   </entry>
 </feed>
