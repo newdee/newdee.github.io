@@ -19,7 +19,7 @@
     <category term="插件化"/>
     <category term="LLM"/>
     <content type="html">&lt;p&gt;DeepSeek Harness（命令行叫 &lt;code&gt;dsh&lt;/code&gt;）是 DeepSeek AI 开源的 agent harness，MIT，还在 developer preview 阶段，明说会有破坏性变更。它不是又一个「把 prompt 和工具拼起来跑一圈」的循环，而是把整个 agent 运行时——模型适配器、工具注册表、会话日志、连 agent loop 本身——全部做成插件，挂在一个叫 Cordis 的框架上。没有一个要打补丁的内核，任何一层都能从配置替换掉。&lt;/p&gt;
-&lt;p&gt;这篇不介绍怎么用它写 agent，而是拆它的架构：Cordis 的插件范式、启动时怎么把一棵插件树组合出来、会话日志为什么是唯一事实源、一个回合怎么执行、工具管线和能力接缝是怎么设计的，最后说它换来了什么、代价是什么。&lt;/p&gt;
+&lt;p&gt;这篇不介绍怎么用它写 agent，而是拆它的架构：Cordis 的插件范式、启动时怎么把一棵插件树组合出来、会话日志为什么是唯一事实源、一个回合怎么执行、工具管线和能力接缝是怎么设计的。然后是我更想聊的那半边——它到底贡献了什么，跟 pi 那种「薄内核」路线差在哪一层，以及顺着这条线往远看，harness 自身的进化该由谁来做。&lt;/p&gt;
 &lt;!--more--&gt;
 &lt;h3 id=&quot;定位&quot;&gt;定位&lt;/h3&gt;
 &lt;p&gt;装好 Node 一行就能跑：&lt;/p&gt;
@@ -96,15 +96,36 @@ tools/result        冻结的、无损 JSON 的最终结果&lt;/code&gt;&lt;/pre
 &lt;p&gt;有两处能力值得单独点出，因为它们展示了接缝抽象能容纳多大的差异。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Code Mode&lt;/strong&gt; 是代码执行接缝（&lt;code&gt;ctx.codeRuntime&lt;/code&gt;）。它让模型不再一次发一个工具调用，而是&lt;strong&gt;写一段程序&lt;/strong&gt;：程序体是一个 async 函数，可以用顶层 &lt;code&gt;await&lt;/code&gt; 和 &lt;code&gt;return&lt;/code&gt;，宿主把一组异步绑定注入进去，跑完把它打印的和返回的报告回来。它是一个可选能力，不在 agent loop 的主干上。它的类型契约里藏着一个安全细节：在 &lt;code&gt;mode: 'code'&lt;/code&gt; 下，只有带父 token 的调用（也就是程序内部通过 SDK 发起的子调用）才能执行原生工具名；一个模型直接发的调用（没有父）在进策略管线之前就被拒成 &lt;code&gt;UNKNOWN_TOOL&lt;/code&gt;。换句话说，开了 Code Mode，模型就只能通过写程序来用工具，不能再绕过去直接点名调用。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;进程沙箱&lt;/strong&gt;（&lt;code&gt;ctx.sandbox&lt;/code&gt;）则把一个同世界子进程的 argv 包进一层文件效果策略。本地实现覆盖了 Linux 的 bwrap/Landlock、macOS 的 Seatbelt、Windows 的 ACL 受限令牌三套后端。它的模式只管文件效果：&lt;code&gt;read-only&lt;/code&gt;、&lt;code&gt;workspace-write&lt;/code&gt;、&lt;code&gt;danger-full-access&lt;/code&gt;（网络和进程可见性不在这个词汇表里）。而且它诚实地报告执法完整度——&lt;code&gt;full&lt;/code&gt; 表示后端管住了这个模式承诺的每一项文件效果，&lt;code&gt;partial&lt;/code&gt; 表示只管住了一部分（老的 Landlock ABI、Windows ACL 的若干边界就是当前的 partial 情形）。需要绝对边界的消费方必须把 &lt;code&gt;partial&lt;/code&gt; 当回事，不能拿它当 &lt;code&gt;full&lt;/code&gt; 用。&lt;/p&gt;
-&lt;h3 id=&quot;收益&quot;&gt;收益&lt;/h3&gt;
-&lt;p&gt;把架构过一遍，它换来的东西大致是这些：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;没有要 fork 的核心。&lt;/strong&gt; 想加个模型提供方就在 &lt;code&gt;ctx.llm&lt;/code&gt; 上注册适配器，想加个面向模型的能力就在 &lt;code&gt;ctx.tools&lt;/code&gt; 上注册，想给某个会话不同的能力集就组一个 agent preset。扩展点是文档里列好的一张表，改动落在既定的接缝上，而不是散进某个核心文件。&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;一次替换搬动整片能力。&lt;/strong&gt; 接缝的三角色设计，让「指向远程沙箱」这种改动一次性带走 Bash / PTY / LSP，provider 不分叉。&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;日志是白拿的能力。&lt;/strong&gt; 因为「模型可见即已记录」被不变量执法，replay、fork、resume、审计、遥测全都从一条可重建的流派生，不用每个功能各自实现一遍。&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;按 agent 定制不必分进程。&lt;/strong&gt; 作用域注册遮蔽全局，让每个 agent 有自己的人格和工具变体，而无需另起一个进程或一份配置。&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;可逆 effect 让拆卸干净。&lt;/strong&gt; 注册即 effect，卸载和热重载按相反顺序撤销，不留残骸。&lt;/li&gt;
-&lt;/ul&gt;
+&lt;h3 id=&quot;贡献点&quot;&gt;贡献点&lt;/h3&gt;
+&lt;p&gt;插件化不是新词，agent harness 也已经有一堆。把 &lt;code&gt;dsh&lt;/code&gt; 和别人拉开距离的，是下面这几件它真正推进了的事——我认为其中至少三条值得别的项目直接抄走。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;把「无特权内核」做到了字面意义。&lt;/strong&gt; 大多数号称插件化的系统，都还留着一个不肯拆的核心：也许工具可插拔，但 agent loop 是写死的；也许模型可换，但会话怎么存是框架说了算。&lt;code&gt;dsh&lt;/code&gt; 把这条线推到底——loop 本身也是一个插件，会话日志也是。这个差别不是程度上的，是性质上的：留一个核心，你的扩展就永远是「围绕它」；不留核心，扩展和核心平级。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;把产品形态变成了配置的叠法。&lt;/strong&gt; profile 列 bundle、bundle 装配置行、patch 按 id 覆盖，三层叠出一棵树。于是「浏览器版」和「一次性执行版」不是两份代码分支，而是两种叠法。更关键的是 &lt;code&gt;--dump-config&lt;/code&gt; 这个配套设计：既然最终形态是叠出来的，它就诚实地提供了一条命令让你看见叠的结果，而不是让你去源码里猜。&lt;strong&gt;承认自己不透明，并给出观察手段&lt;/strong&gt;，这比假装透明要诚实得多。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;把一条纪律升格成了运行时不变量。&lt;/strong&gt; 「模型可见即已记录」在别处通常是一句写在贡献指南里的建议，靠 review 拦；&lt;code&gt;dsh&lt;/code&gt; 把它做成运行时执法的不变量——你绕过日志往请求里塞东西，它当场报错。这是我在这个项目里最欣赏的一处：&lt;strong&gt;它把「大家应该遵守」变成了「你做不到违反」。&lt;/strong&gt; 代价是每加一种模型可见输入就要新增一种会话事件，但换来的 replay、fork、审计是白拿的。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;把权限的单调性写进了类型。&lt;/strong&gt; 工具守卫的返回类型故意没有「放行」这个分支，于是「监听器顺序不能把拒绝翻回允许」不是靠约定，而是编译期就成立。安全策略最怕的就是「某个后注册的插件把前面的限制放宽了」，这个设计从根上掐掉了这类 bug。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;把接缝规范成了三角色。&lt;/strong&gt; 服务定义 / 提供方 / 消费方，缺一不算接缝。这条规矩看着教条，但它让「换一个 provider 搬动整片能力」变得可复制——文件系统和子进程共享执行世界，所以指向远程沙箱能一次带走 Bash、PTY、LSP。没有这套规范，同样的效果得靠每个能力各自的巧劲。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;给 Code Mode 加了封闭性。&lt;/strong&gt; 开启 &lt;code&gt;mode: 'code'&lt;/code&gt; 后，模型直接点名调用原生工具会在进策略管线前就被拒成 &lt;code&gt;UNKNOWN_TOOL&lt;/code&gt;——只有程序内部发起的子调用才算数。很多实现只是「多提供一个写代码的工具」，模型想绕就绕；&lt;code&gt;dsh&lt;/code&gt; 让这个模式真正封闭。有封闭性，Code Mode 才谈得上是一种可以据以做策略的执行模型。&lt;/p&gt;
+&lt;h3 id=&quot;与-pi-的对比薄内核与无内核&quot;&gt;与 pi 的对比：薄内核与无内核&lt;/h3&gt;
+&lt;center&gt;
+&lt;p&gt;&lt;span class=&quot;img-fig&quot;&gt;&lt;img src=&quot;/images/deepseek-harness-plugin-depth.svg&quot; alt=&quot;可替换面的两种深度&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;span class=&quot;img-cap&quot;&gt;可替换面的两种深度，以及扩展权归属：薄内核把扩展权留给开发者，无内核把它交给启动时的组合层，自进化是另一条路&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;
+&lt;/center&gt;
+&lt;p&gt;（&lt;a href=&quot;/diagrams/deepseek-harness-plugin-depth.html&quot;&gt;交互版&lt;/a&gt;）&lt;/p&gt;
+&lt;p&gt;聊插件化 agent，绕不开 &lt;a href=&quot;https://github.com/earendil-works/pi-mono&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;pi&lt;/a&gt;。它和 &lt;code&gt;dsh&lt;/code&gt; 表面上说的是同一句话——核心要小，功能推给外部——但两者的深度完全不在一层。&lt;/p&gt;
+&lt;p&gt;pi 的出发点是对「工具越做越重」的反动：内置工具只有 &lt;code&gt;read&lt;/code&gt; &lt;code&gt;write&lt;/code&gt; &lt;code&gt;edit&lt;/code&gt; &lt;code&gt;bash&lt;/code&gt; &lt;code&gt;grep&lt;/code&gt; &lt;code&gt;find&lt;/code&gt; &lt;code&gt;ls&lt;/code&gt; 七个，&lt;strong&gt;没有&lt;/strong&gt;内置 MCP、子代理、权限弹窗、计划模式、待办、后台 bash。这些统统推给 extension、skill、prompt template 和 package。它的 extension API 也相当能打，可以注册工具、斜杠命令、快捷键、provider，还能挂几十个生命周期事件——拦 &lt;code&gt;tool_call&lt;/code&gt;、改系统提示、截输入。&lt;/p&gt;
+&lt;p&gt;但注意 pi 留下了什么：&lt;strong&gt;agent loop、会话模型、工具分发这些东西是固定的。&lt;/strong&gt; 你的扩展再强，也是绕着一个不变的内核长出来的。这是一个非常合理的工程立场——保留一个稳定内核，才有稳定的扩展契约。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;dsh&lt;/code&gt; 走的是另一步：&lt;strong&gt;连那个内核也拆了。&lt;/strong&gt; 这就是我说的深度不同——pi 是「核心不变，外部可插拔」，&lt;code&gt;dsh&lt;/code&gt; 是「没有不可变的东西」。&lt;/p&gt;
+&lt;p&gt;顺着往下想一层，会看到一个更有意思的差别：&lt;strong&gt;扩展权交给了谁。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;pi 的扩展权在开发者手里——人写 TypeScript extension，社区打包分发，生态活不活取决于有多少人在写。&lt;code&gt;dsh&lt;/code&gt; 把扩展权放在了启动时的组合层：换一份配置就是换一棵插件树，而配置是运行时自己就能读写的东西。&lt;/p&gt;
+&lt;p&gt;于是有了一个推断——&lt;strong&gt;这是我的推测，不是 &lt;code&gt;dsh&lt;/code&gt; 文档里的承诺&lt;/strong&gt;：它在结构上具备 &lt;a href=&quot;/posts/e728ebc0/&quot;&gt;Prime Agent&lt;/a&gt; 那种自进化的形状。agent 探到自己的能力边界，写一个插件、往组合里挂一行，下次启动那棵树就变了。pi 里做同样的事要人来写扩展并合进社区仓库，&lt;code&gt;dsh&lt;/code&gt; 里理论上是一次配置写入。&lt;/p&gt;
+&lt;p&gt;要说清楚的是，&lt;code&gt;dsh&lt;/code&gt; 目前并没有做这件事，也没有 Prime 那套配套机制。Prime 的自进化走的是完全不同的一条路：它不去加大可替换面，而是让 agent 复盘一次轨迹后，去改一层&lt;strong&gt;补充状态&lt;/strong&gt;——提示、记忆、可复用技能、子 agent 规格；每次改动留快照可回滚，基础 system prompt 永远不动。也就是说，进化被严格关在一个可审查、可撤销的隔间里。&lt;/p&gt;
+&lt;p&gt;这个对比让我看清了一件事：&lt;strong&gt;可替换面越大，越需要 Prime 那种可回滚与可审查。&lt;/strong&gt; &lt;code&gt;dsh&lt;/code&gt; 现在的可替换面比谁都大，但它的插件树是给人配置的——一旦真让 agent 自己往里写东西，缺的就不是能力，而是「改了什么、能不能撤、怎么验」这三样。能力和护栏得配套，谁先谁后不重要，缺一个就是隐患。&lt;/p&gt;
+&lt;h3 id=&quot;harness-自身的进化&quot;&gt;harness 自身的进化&lt;/h3&gt;
+&lt;p&gt;再往远看一层。&lt;/p&gt;
+&lt;p&gt;pi 的插件现在靠社区维护，而社区里的插件——说实话——后面基本也都是 agent 生成的了。人在这条链上的位置正在退：从「写插件」退到「提需求、审 diff」，再往后可能只剩「出问题时来看一眼」。如果人为参与继续减少，最终形态大概是 agent 自己判断需要什么、自己实现、自己挂上去、自己用。&lt;strong&gt;扩展这件事重新回归 agent 自身&lt;/strong&gt;，我觉得是个挺清楚的趋势。&lt;/p&gt;
+&lt;p&gt;插件化是当下最流行的答案，自进化则比它看得更远一点。但如果再往远推一步，会碰到一个更根本的东西：&lt;strong&gt;harness 本身的进化，现在仍然完全依赖人。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;从 prompt 工程，到 MCP、工具调用，再到现在的插件化——每一代都是人总结出来的方法论，而每一种方法论或多或少都带着它那个时代的局限。今天我们认为「一切皆插件」是对的，就像三年前认为「把规则写进 prompt」是对的一样。真正的瓶颈不在某一代方法论好不好，而在于&lt;strong&gt;换代的速度受制于人的认知节奏&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;所以更远的那个问题是：harness 自身的演化，能不能也交给 AI？不是让它写一个插件，而是让它去评估、质疑、重构这套方法论本身——发现「插件」这个抽象在某个场景下就是不对的，然后提出下一个抽象。&lt;/p&gt;
+&lt;p&gt;这件事今天当然还做不到，而且它缺的东西相当具体：&lt;strong&gt;得先有可验证的评测&lt;/strong&gt;。自动改插件还能靠 diff 和回滚兜住，自动改方法论则很难说清「改好了」是什么意思——没有靠得住的度量，自进化和随机漂移在外部看来是一样的。Prime 那套「小步、有据、留快照、基础底稿不动」的克制，可能正是这个方向上唯一站得住的起点。&lt;/p&gt;
+&lt;p&gt;从这个角度回看 &lt;code&gt;dsh&lt;/code&gt;，它的价值就不只是「一个插件化做得很彻底的 harness」了。它把「什么可以被替换」这条线推到了尽头，等于替后来者先把地基打好——真到了 agent 自己改自己的那天，一个没有不可变内核的运行时，会比一个留着硬核的运行时好改得多。&lt;/p&gt;
 &lt;h3 id=&quot;代价与风险&quot;&gt;代价与风险&lt;/h3&gt;
 &lt;p&gt;好处讲清楚，代价也得讲清楚，不然不可信。&lt;/p&gt;
 &lt;ul&gt;
@@ -117,6 +138,7 @@ tools/result        冻结的、无损 JSON 的最终结果&lt;/code&gt;&lt;/pre
 &lt;h3 id=&quot;尾声&quot;&gt;尾声&lt;/h3&gt;
 &lt;p&gt;&lt;code&gt;dsh&lt;/code&gt; 最值得学的地方，不是某个具体功能，而是它把一个决定推到了极致：&lt;strong&gt;没有内核，一切皆插件，组合发生在启动时。&lt;/strong&gt; 大多数框架会保留一个「核心」，再在核心周围留扩展点；&lt;code&gt;dsh&lt;/code&gt; 干脆连 agent loop 都做成可替换的插件，把「特权」这个概念从架构里删掉了。&lt;/p&gt;
 &lt;p&gt;这个选择不是免费的——它把认知成本前置，把「看懂系统」变成「看懂一棵组合出来的树」。但它换回的自由度也是真的：产品形态是一种叠法，定制能力是换一个 provider，观察行为是订阅一个事件。对一个明说自己会频繁破坏兼容、需要快速演化的项目来说，这种「任何一层都能替换」的结构，可能正是它敢于快速迭代的底气。&lt;/p&gt;
+&lt;p&gt;我自己的判断是：&lt;code&gt;dsh&lt;/code&gt; 的这套设计，短期看是给人用的——给愿意学 Cordis、愿意自己叠一棵树的开发者用。但它真正的价值可能要更晚才兑现。当扩展这件事逐渐从人手里回到 agent 手里，「哪一层能被改」就会从一个工程口味问题，变成一个能力上限问题。到那时候，今天这份把可替换面推到尽头的执拗，会显得很有先见之明。&lt;/p&gt;
 &lt;p&gt;代码在 &lt;a href=&quot;https://github.com/deepseek-ai/deepseek-harness&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;deepseek-ai/deepseek-harness&lt;/a&gt;，MIT。架构文档本身写得相当克制、准确，值得直接读一遍，比这篇更权威。&lt;/p&gt;
 </content>
   </entry>
