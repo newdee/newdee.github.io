@@ -4,9 +4,91 @@
   <subtitle>dfine's Blog</subtitle>
   <link href="https://dfine.tech/atom.xml" rel="self"/>
   <link href="https://dfine.tech/"/>
-  <updated>2026-08-16T15:08:37+08:00</updated>
+  <updated>2026-08-16T16:40:12+08:00</updated>
   <id>https://dfine.tech/</id>
   <author><name>dfine</name></author>
+  <entry>
+    <title>Final2x：一个刻意做薄的超分外壳</title>
+    <link href="https://dfine.tech/posts/312598b4/"/>
+    <id>https://dfine.tech/posts/312598b4/</id>
+    <published>2026-08-16T16:40:12+08:00</published>
+    <updated>2026-08-16T16:40:12+08:00</updated>
+    <category term="Electron"/>
+    <category term="Vue"/>
+    <category term="图像超分"/>
+    <category term="架构"/>
+    <content type="html">&lt;p&gt;图片超分这类工具，模型早就够用了，卡住普通人的是环境：Python、PyTorch、CUDA 版本、一长串命令行参数。
+Final2x 做的事情是把这堆东西塞进一个六百多像素宽的小窗口——拖图进去、选模型、点开始。
+让我想写一篇的不是它的界面，是它划进程边界的方式：界面这边一行推理代码都没有，真正干活的是另一个进程、另一门语言，两边靠三样东西通信。&lt;/p&gt;
+&lt;!--more--&gt;
+&lt;h3 id=&quot;定位&quot;&gt;定位&lt;/h3&gt;
+&lt;p&gt;跨平台的图片超分辨率工具，Windows、macOS、Linux 都有发行物，BSD 3-Clause。当前是 v4.0.0，推理后端换成了 cccv，开始支持挂自定义权重。&lt;/p&gt;
+&lt;p&gt;它不训练模型也不实现算法，做的是把一堆现成的超分模型包装成能双击的东西。内置的权重列表覆盖 Real-ESRGAN、Real-CUGAN、DAT、HAT、SwinIR、SCUNet、EDSR、SRCNN 八个系列七十多项，里头还有 APISR、AnimeJaNai、Ani4K 这些动漫向的微调版本，通用照片和二次元插画各有各的选择。&lt;/p&gt;
+&lt;p&gt;仓库结构是这篇想讲的重点。GUI 这边是 TypeScript 加 Vue，从主进程到界面组件，没有任何推理代码。所有算法在一个叫 Final2x-core 的独立项目里，Python 写的，能单独 &lt;code&gt;pip&lt;/code&gt; 装、单独当命令行工具用。桌面应用只是它的一个前端。&lt;/p&gt;
+&lt;h3 id=&quot;上手&quot;&gt;上手&lt;/h3&gt;
+&lt;p&gt;Windows 和 macOS 下安装包就行。macOS 没走签名公证，第一次要手动放行：&lt;/p&gt;
+&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;xattr&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -cr&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; /Applications/Final2x.app&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;Linux 得自己先备好环境，因为安装包里不带推理内核：&lt;/p&gt;
+&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;pip&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; install&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; Final2x-core&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;Final2x-core&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -h&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;apt&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; install&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -y&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; libomp5&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; xdg-utils&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;打开是个固定大小的窗口，把图拖进去、选模型和倍率、点开始。输出目录不填的话，它会从第一张输入图的所在目录推一个。&lt;/p&gt;
+&lt;h3 id=&quot;进程边界&quot;&gt;进程边界&lt;/h3&gt;
+&lt;center&gt;
+&lt;p&gt;&lt;span class=&quot;img-fig&quot;&gt;&lt;img src=&quot;/images/final2x-roundtrip.svg&quot; alt=&quot;一次超分的进程往返&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;span class=&quot;img-cap&quot;&gt;一次超分的进程往返：配置 base64 后当命令行参数下去，stdout 文本流上来，界面靠三个哨兵正则解析进度&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;
+&lt;/center&gt;
+&lt;p&gt;（&lt;a href=&quot;/diagrams/final2x-roundtrip.html&quot;&gt;交互版&lt;/a&gt;，可缩放、可播放调用轨迹。）&lt;/p&gt;
+&lt;p&gt;一次超分的完整往返是这样：界面把设置攒成一个配置对象，通过 IPC 交给主进程；主进程把它序列化、base64、拼成命令行参数，起一个子进程；子进程一边跑一边往 stdout 打日志，主进程原样转发回界面；跑完给一个退出码。&lt;/p&gt;
+&lt;p&gt;两个进程之间的契约就这三样：一个 base64 过的 JSON、一条 stdout 文本流、一个退出码。没有 socket，没有本地 HTTP 服务，没有 gRPC，也没有反向通道——子进程起来之后，界面唯一还能对它做的事就是把它杀掉。&lt;/p&gt;
+&lt;p&gt;base64 那一步值得单说。配置里有引号，路径里有空格，中文路径也常见，而 Windows 的 cmd 和 POSIX shell 的转义规则完全不是一回事。编码之后参数里只剩 &lt;code&gt;A-Za-z0-9+/=&lt;/code&gt;，引号地狱一次性消失。这招土，但比自己写一套跨平台的 shell 转义靠谱得多。&lt;/p&gt;
+&lt;p&gt;杀进程那头也有个坑。子进程是带 shell 起的，直接对拿到的 pid 发信号只会杀掉 shell，Python 那层变成孤儿继续占着显存。所以它按 pid 树整棵杀，并且在应用退出前先拦下 quit 事件，等杀干净了再放行。&lt;/p&gt;
+&lt;h3 id=&quot;哨兵协议&quot;&gt;哨兵协议&lt;/h3&gt;
+&lt;p&gt;进度条怎么来的？正则匹配 stdout。&lt;/p&gt;
+&lt;figure class=&quot;code&quot; data-lang=&quot;ts&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;ts&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt;const &lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt;skipImageRegex&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; =&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt; /&lt;/span&gt;&lt;span style=&quot;color:#AB5E3F;--shiki-dark:#C4704F&quot;&gt;______Skip_Image______:&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;(&lt;/span&gt;&lt;span style=&quot;color:#5A6AA6;--shiki-dark:#6872AB&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#2F798A;--shiki-dark:#4C9A91&quot;&gt;+&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;)&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt;/&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt;const &lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt;processingRegex&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; =&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt; /&lt;/span&gt;&lt;span style=&quot;color:#AB5E3F;--shiki-dark:#C4704F&quot;&gt;Processing------&lt;/span&gt;&lt;span style=&quot;color:#BDA437;--shiki-dark:#E6CC77&quot;&gt;\[&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; ([&lt;/span&gt;&lt;span style=&quot;color:#5A6AA6;--shiki-dark:#6872AB&quot;&gt;\d.&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;]&lt;/span&gt;&lt;span style=&quot;color:#2F798A;--shiki-dark:#4C9A91&quot;&gt;+&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;)&lt;/span&gt;&lt;span style=&quot;color:#AB5E3F;--shiki-dark:#C4704F&quot;&gt;% &lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt;/&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt;const &lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt;srSuccessRegex&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; =&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt; /&lt;/span&gt;&lt;span style=&quot;color:#AB5E3F;--shiki-dark:#C4704F&quot;&gt;______SR_COMPLETED______&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt;/&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;界面每收到一段输出就拿这三条过一遍：匹配到百分比就更新进度条，匹配到跳过就弹一条提示，匹配到那个下划线包起来的完成标记就把成功标志置上。子进程退出时如果这个标志还是假，直接弹失败对话框——&lt;strong&gt;退出码为零不算成功，见过完成哨兵才算&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;脆弱是明摆着的，内核那边改一句日志格式，进度条就静默失效。但它换来一件事：内核的输出对人也是可读的。同一份日志既喂给界面解析，也原样显示在日志抽屉里，不需要维护「给人看的」和「给程序看的」两套。人和程序读同一份输出，这个取舍我觉得是划算的。&lt;/p&gt;
+&lt;h3 id=&quot;内核的来源&quot;&gt;内核的来源&lt;/h3&gt;
+&lt;center&gt;
+&lt;p&gt;&lt;span class=&quot;img-fig&quot;&gt;&lt;img src=&quot;/images/final2x-core-resolve.svg&quot; alt=&quot;推理内核从哪来&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;span class=&quot;img-cap&quot;&gt;推理内核从哪来：构建期拉一份打进安装包，运行期先探测系统里有没有，两条路汇到同一句 spawn&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;
+&lt;/center&gt;
+&lt;p&gt;（&lt;a href=&quot;/diagrams/final2x-core-resolve.html&quot;&gt;交互版&lt;/a&gt;）&lt;/p&gt;
+&lt;p&gt;「到底用哪个内核」这件事有三段逻辑。&lt;/p&gt;
+&lt;p&gt;先探测：直接跑一次 &lt;code&gt;Final2x-core -h&lt;/code&gt;，退出码为零就说明系统里有 &lt;code&gt;pip&lt;/code&gt; 装的版本，那就直接用命令名调用。探不到才回退到安装包里带的那份，位置是可执行文件目录再上跳一级——打包配置里那份内核是以额外资源的身份放在 asar 归档旁边的，不进归档。&lt;/p&gt;
+&lt;p&gt;包里那份是构建期下载来的：CI 打包前先从内核项目的 Release 拉一个压缩包解开，再交给打包器塞进去。Linux 这一步直接跳过，因为 PyTorch 加上权重的体积不适合放进安装包，所以 Linux 的发行物文件名里干脆写着 pip。&lt;/p&gt;
+&lt;p&gt;还有个细节：界面里那个七十多项的模型下拉框不是手抄的，文件头上写着由 Final2x-core 自动生成、不要手改。跨语言的枚举同步交给代码生成，比两边各维护一份靠谱。而且这个下拉框是可输入的，v4 挂自定义权重就是从这儿输名字进去。&lt;/p&gt;
+&lt;h3 id=&quot;能力&quot;&gt;能力&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;模型系列 —— Real-ESRGAN、Real-CUGAN、DAT、HAT、SwinIR、SCUNet、EDSR、SRCNN，含 APISR、AnimeJaNai、Ani4K 等动漫向微调权重
+目标倍率 —— 可以不按模型固有倍率走，填一个目标缩放值，由内核自己组合放大与重采样
+设备选择 —— Auto、CUDA、MPS、CPU 四挡，默认 Auto
+分块推理 —— 显存不够时切块跑，默认开着
+批量与格式 —— 一次拖多张，输出可选 PNG、JPG、WebP、TIFF
+权重代理 —— 权重要从 GitHub 拉，可以填一个加速前缀
+自定义权重 —— v4 起模型框可以直接输入名字&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;设置是持久化的，关掉再开还在。&lt;/p&gt;
+&lt;h3 id=&quot;边界与限制&quot;&gt;边界与限制&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Linux 不带内核。&lt;/strong&gt; 得自己 &lt;code&gt;pip&lt;/code&gt; 装，还得先有 Python 3.9+ 和 PyTorch 2.0+。这不算隐藏条款，发行物名字里就写着 pip。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Intel Mac 没有官方构建。&lt;/strong&gt; 发布矩阵里 macOS 只有 arm64；下载脚本里那条 x64 分支查不到地址，会落到「无效平台」直接返回。Windows arm64 拿到的则是 x64 内核，靠系统转译跑。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;协议是文本。&lt;/strong&gt; 内核改日志格式，进度条就哑了，而且这类耦合不会在编译期报错。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;窗口尺寸锁死。&lt;/strong&gt; 宽度限死在 670 到 870 之间，高度 470 到 670，拉不开。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;硬件加速被关掉了。&lt;/strong&gt; 主进程启动时就调了 &lt;code&gt;disableHardwareAcceleration&lt;/code&gt;，注释写的理由是 Windows 兼容性。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;没签名公证。&lt;/strong&gt; macOS 首次运行要手动放行。README 给的办法是把 Gatekeeper 整个关掉，这条我个人不太赞成，先试 &lt;code&gt;xattr -cr&lt;/code&gt; 通常就够了。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;取舍&quot;&gt;取舍&lt;/h3&gt;
+&lt;p&gt;把 GUI 和推理拆成两个进程、两门语言，是这类工具的常见形态，但拆到什么程度差别很大。多数做法是嵌一个本地服务：起个 HTTP 或者 gRPC，双向通道，结构化消息，进度、日志、取消各走各的路。Final2x 选了最土的那一档，单向命令行加 stdout 文本。&lt;/p&gt;
+&lt;p&gt;代价上面写了。收益有两条，我认为都成立。&lt;/p&gt;
+&lt;p&gt;一是内核有了 GUI 之外的生命。它本来就是个 &lt;code&gt;pip&lt;/code&gt; 包，装完直接是命令行工具，能进脚本、进批处理、进别人的流水线。如果协议是私有的 socket，内核就退化成桌面应用的附属品了。&lt;/p&gt;
+&lt;p&gt;二是两边可以完全独立发版。界面不需要知道内核的内部结构，内核也不需要为界面留接口。运行期那套「先看系统里有没有」的逻辑，正是因为协议足够薄才敢写——用户自己装的版本可能比包里那份新，但只要命令行参数没变就能直接顶上。&lt;/p&gt;
+&lt;p&gt;判断一个本地 AI 工具的外壳做得薄不薄，我现在会看一条：把 GUI 删掉，内核还能不能独立活着。能活的，外壳大概率是对的。&lt;/p&gt;
+&lt;h3 id=&quot;尾声&quot;&gt;尾声&lt;/h3&gt;
+&lt;p&gt;这类工具最容易走的一条路是：为了界面写起来顺手，把推理逻辑也拉进同一个进程，最后得到一个既不好用也不好改的整体。Final2x 反过来，把外壳压到只剩窗口、参数拼装和一个进度条正则，别的全推给一个能独立存在的命令行程序。&lt;/p&gt;
+&lt;p&gt;代码在 &lt;a href=&quot;https://github.com/EutropicAI/Final2x&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;EutropicAI/Final2x&lt;/a&gt;，BSD 3-Clause，内核在 &lt;a href=&quot;https://github.com/EutropicAI/Final2x-core&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;Final2x-core&lt;/a&gt;。&lt;/p&gt;
+</content>
+  </entry>
   <entry>
     <title>Cordis：把卸载做完备的插件框架</title>
     <link href="https://dfine.tech/posts/256be320/"/>
@@ -2845,54 +2927,6 @@ No composer.json present in the current directory, this may be the cause of the 
 &lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;docker&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; run&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -it&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; --rm&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; --name=&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;draw&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -p&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; 8080:8080&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -p&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; 8443:8443&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; jgraph/draw.io&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;p&gt;在浏览器中打开指定端口地址即可开始绘制。&lt;br&gt;
 &lt;img src=&quot;https://raw.githubusercontent.com/newdee/BlogImage/master/20191213141900.png&quot; alt=&quot;&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-</content>
-  </entry>
-  <entry>
-    <title>小工具(一)</title>
-    <link href="https://dfine.tech/posts/778cc776/"/>
-    <id>https://dfine.tech/posts/778cc776/</id>
-    <published>2019-08-19T01:57:25+08:00</published>
-    <updated>2019-08-19T01:57:25+08:00</updated>
-    <category term="flashcards"/>
-    <category term="lsd"/>
-    <category term="tree2dotx"/>
-    <category term="graphviz"/>
-    <category term="gprof"/>
-    <content type="html">&lt;p&gt;太久没回来了，其实很多次想写但是无法静下心来，思绪如开始停更的三月里乱飞的柳絮，总感觉经历了很多，但却没有力气吐出一个字。终于处暑，昔时聚在一起的人们也已经走得差不多了，终于也想起了，该随便写点什么了。&lt;/p&gt;
-&lt;!--more--&gt;
-&lt;p&gt;就推荐一些小工具吧，这段时间发现的，感觉挺有意思的。以后也不知道会不会继续，先假设是个连续剧吧，写完拖更的那种。&lt;/p&gt;
-&lt;h1 id=&quot;flashcards&quot;&gt;FlashCards&lt;/h1&gt;
-&lt;p&gt;一个类似单词卡的小工具，也可以用来放代码，示例仓库&lt;a href=&quot;https://github.com/jwasham/computer-science-flash-cards&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;FlashCards&lt;/a&gt;&lt;br&gt;
-方法很简单，直接用Docker启动，可以放在自己的电脑上，也可以放在自己的服务器上，挂一个端口，然后可以Web端远程访问。另外，单词数据可以直接上传Github仓库，环境不需要。&lt;br&gt;
-这样随时随地，就是一个私人的Note？&lt;br&gt;
-搭好之后访问大概是这样:&lt;br&gt;
-&lt;img src=&quot;https://raw.githubusercontent.com/newdee/BlogImage/master/20190825211746.png&quot; alt=&quot;&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;
-&lt;img src=&quot;https://raw.githubusercontent.com/newdee/BlogImage/master/20190825211917.png&quot; alt=&quot;&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;h1 id=&quot;终端美化lsd&quot;&gt;终端美化LSD&lt;/h1&gt;
-&lt;p&gt;主要功能是将Linux下的&lt;code&gt;ls&lt;/code&gt;命令输出结果美化一下，不同的文件类型会有不同的图标，不过目前颜色还不支持修改。大概效果如下:&lt;br&gt;
-&lt;img src=&quot;https://raw.githubusercontent.com/newdee/BlogImage/master/20190825212556.png&quot; alt=&quot;&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;p&gt;仓库地址&lt;a href=&quot;https://github.com/Peltoche/lsd&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;在此&lt;/a&gt;。&lt;br&gt;
-不过需要安装&lt;a href=&quot;https://github.com/ryanoasis/nerd-fonts/blob/master/readme.md&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;NerdFonts&lt;/a&gt;&lt;/p&gt;
-&lt;h1 id=&quot;tree2dotx&quot;&gt;Tree2dotx&lt;/h1&gt;
-&lt;p&gt;就是将树形结构描述转化为DOT描述。 DOT语言是一种文本图形描述语言，可用于画有向无向图、流程图，语法比较简单，网上一搜就有，这里不做介绍。&lt;br&gt;
-比如将当前目录下的文件转成关系图，使用tree2dotx&lt;a href=&quot;https://raw.githubusercontent.com/tinyclub/linux-0.11-lab/master/tools/tree2dotx&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;工具&lt;/a&gt;,命令为：&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;tree&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt; |&lt;/span&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt; tree2dotx&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt; &gt;&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; out.dot&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;h1 id=&quot;graphviz&quot;&gt;Graphviz&lt;/h1&gt;
-&lt;p&gt;Graphviz(Graph Visualization Software)是一个由AT&amp;amp;T实验室启动的开源工具包，用于绘制DOT语言脚本描述的图形,官网&lt;a href=&quot;https://www.graphviz.org/&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;在这&lt;/a&gt;,可以从DOT文件生成图像，常见的有png/gif/svg等。&lt;br&gt;
-如果将之前的树形目录保存为关系图，只需要继续将上面的命令重定向即可。&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;tree&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt; |&lt;/span&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt; tree2dotx&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt; |&lt;/span&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt; dot&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -Tpng&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -o&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; list.png&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;保存为&lt;code&gt;list.png&lt;/code&gt;文件，大致就是这个样子:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/newdee/BlogImage/master/20190825214302.png&quot; alt=&quot;&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;h1 id=&quot;gprof&quot;&gt;Gprof&lt;/h1&gt;
-&lt;p&gt;一个代码性能分析工具，结合Gdb可以很方便的分析所写的代码。&lt;br&gt;
-主要方式是在使用gdb编译时加上&lt;code&gt;-pg&lt;/code&gt;参数，然后正常运行程序，最后会出现一个&lt;code&gt;gmon.out&lt;/code&gt;的文件，里面就是各个函数的信息。&lt;br&gt;
-结合Graphviz，可以得到函数关系调用图。&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;gprof&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -b&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; ./test&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; gmon.out&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt; |&lt;/span&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt; gprof2dot&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt; |&lt;/span&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt; dot&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -Tpng&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -o&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; test.png&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;其中&lt;code&gt;gprof2dot&lt;/code&gt;工具可以通过pip安装。&lt;br&gt;
-最后结果如下:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/newdee/BlogImage/master/20190825215411.png&quot; alt=&quot;&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;
-里面有各个函数调用次数、运行时间等情况，保存为svg也可以在浏览器中看。&lt;/p&gt;
-&lt;p&gt;EMMMM, To be continued...&lt;/p&gt;
 </content>
   </entry>
 </feed>
