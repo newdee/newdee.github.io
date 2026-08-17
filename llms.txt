@@ -1,0 +1,117 @@
+# 阁子（dfine's Blog）
+
+> 多可喜，亦多可悲。dfine 的个人博客，写技术笔记、折腾记录、随笔与旧体诗，全文简体中文。
+
+站点由自研 TypeScript 静态引擎生成。文章按 `/posts/<abbrlink>/` 寻址，地址自建站起未变过。
+
+## 文章（97 篇，新到旧）
+
+- [Final2x：一个刻意做薄的超分外壳](https://dfine.tech/posts/312598b4/)：图片超分这类工具，模型早就够用了，卡住普通人的是环境：Python、PyTorch、CUDA 版本、一长串命令行参数。 Final2x 做的事情是把这堆东西塞进一个六百多像素宽的小窗口——拖图进去、选模型、点开始。 让我想写一篇的不是它的…（2026-08-16）
+- [Cordis：把卸载做完备的插件框架](https://dfine.tech/posts/256be320/)：上一篇写 DeepSeek Harness 的时候，底下那层 Cordis 我只用五句话带过，因为当时手上没有它的代码。 现在代码拿到了，从头读了一遍，发现那五句里至少有一句是错的，而真正值得说的地方一句都没提到。 这篇补上：一次插件激活…（2026-08-16）
+- [DeepSeek Harness：一切皆插件的开源 agent 运行时](https://dfine.tech/posts/9b3cccd3/)：DeepSeek Harness（命令行叫 dsh ）是 DeepSeek AI 开源的 agent harness，MIT，还在 developer preview 阶段，明说会有破坏性变更。它不是又一个「把 prompt 和工具拼起来…（2026-08-14）
+- [Agency Agents：一座 AI 角色库的分发工程](https://dfine.tech/posts/fcfab9cc/)：给编码助手装「子人格」这件事，各家工具都支持，但角色从哪来是个体力活：自己写，或者满网抄。 Agency Agents 干脆把它做成了一个仓库——起于一条 Reddit 帖子， 如今攒了两百七十个带人格的专家角色，按公司组织架构分成十七个…（2026-08-12）
+- [Harvey LAB：法律 Agent 基准的架构与评测方法](https://dfine.tech/posts/c01b12ee/)：评测 agent 的基准大多长在程序员的地界上：修 bug、刷题、逛网页。 法律 AI 公司 Harvey 把自家的评测开源了出来—— Harvey LAB （Legal Agent Benchmark）， 让 agent 坐进虚拟资料室…（2026-08-12）
+- [DeepTutor：开源的 AI 私人家教工作台](https://dfine.tech/posts/87dbedbe/)：用聊天窗口学东西有个通病：金鱼记忆。今天讲明白的概念，下周开个新会话又得从头解释一遍； 错过的题、读到一半的资料、积累的笔记，散落在各个网页里，谁也不认识谁。 DeepTutor 是港大 HKUDS 实验室开源的学习工作台，想把这些串成一…（2026-08-12）
+- [Semantica：面向可审计 AI 的图原生基础设施](https://dfine.tech/posts/b1fa57c7/)：上一篇拆了管省钱的 prompt-cache，这篇接着拆管认账的。 Agent 跑在生产上有个老问题：它存的是 embedding，不是意义——上下文说不清来历，决策事后无从审计。 在信贷、医疗这类行当里，「AI 为什么这么判」是监管几个…（2026-08-12）
+- [PromptCache：LLM 语义缓存网关的架构与实现](https://dfine.tech/posts/589593b6/)：线上的 LLM 调用看多了，会发现请求高度重复：客服机器人翻来覆去就那几问，RAG 内部问答也扎堆。 按 token 计费的上游对着重复问题一遍遍生成，钱白烧，延迟也压不下来。 传统精确匹配缓存在自然语言面前几乎无命中——「怎么退货」和「…（2026-08-12）
+- [Prime Agent，只给模型一个工具的长跑 agent](https://dfine.tech/posts/e728ebc0/)：终端 coding agent 见得多了，Prime Agent 还是让我停下来看了半天：模型手里只有一个工具，跑过的经验能沉淀回自身，关了终端会话也接着跑。 它是 PrimeIntellect 开源的 coding / research…（2026-08-11）
+- [Skill Shelf: 给 agent 的 skill 仓库，兼做服务的配置中心](https://dfine.tech/posts/89ecf0d5/)：传统服务的行为由 config 决定，AI agent 的行为由 skill 和 prompt 决定。这两样东西本质上是同一类：都是写在代码之外、运行时才去取的行为定义。既然是同一类，就该收进同一个服务统一管理。 Skill Shelf …（2026-08-10）
+- [Cloudflare Computer，装在 Durable Object 里的文件系统](https://dfine.tech/posts/752fbec9/)：Cloudflare 最近放出了一个叫 Cloudflare Computer 的预览仓库，把「给 agent 一台电脑」拆成了两半：文件系统和执行环境。 文件系统住进 Durable Object 的 SQLite，执行环境退化成可插拔…（2026-08-10）
+- [QM，给全公司用的 agent 平台](https://dfine.tech/posts/53c0ead3/)：市面上的 agent 几乎都按个人助理的样子设计，一个人用很顺，搬进公司就开始别扭：所有人共享一份记忆和一台沙箱，配置互相踩，权限一刀切。 QM 反过来，从第一天就按「多人」设计：每个人、每个频道各有一套隔离的工作空间，又能在同一个组织里…（2026-08-10）
+- [PersonaLive: 把肖像扩散模型压到能直播](https://dfine.tech/posts/4bd1127b/)：一张照片加一个摄像头，实时驱动照片里的人跟着你做表情、转头，输出能直接推流。这件事的难点不在效果，在帧率——扩散模型生成一帧要跑好几次 UNet，天生和实时是反的。 PersonaLive 是澳门大学、Dzine.ai 与大湾区大学 GV…（2026-08-10）
+- [Neon: 把本地视频点亮成系统虚拟摄像头](https://dfine.tech/posts/2523a9f9/)：会议软件里想放一段预先录好的视频，而不是自己的脸。市面上的办法基本是装 OBS 加虚拟摄像头插件，或者找那种要装内核驱动的商业软件。 Neon 是我写的一个更直接的东西：一个 Windows 11 上的虚拟摄像头服务，加一个桌面控制台。建…（2026-08-10）
+- [LiteReality-Agent笔记: 从一次扫描到可交互的房间](https://dfine.tech/posts/e2482d34/)：好久没写点正经的东西了，上一篇还是折腾容器的事。这两天读了一个叫LiteReality-Agent的项目，是用手机扫一遍房间，然后端到端生成一个可编辑、可渲染、门窗抽屉都能动的三维场景。 本来只想看看它怎么调模型的，结果被它的工程组织方式…（2026-08-10）
+- [小工具(三)](https://dfine.tech/posts/a64e7c3f/)：竟然真的有后续！！！(Again)（2020-08-10）
+- [相机小述](https://dfine.tech/posts/79707c4f/)：看了看，好像自己确实是太懒了，不过虽然这样，说的时候还是要把锅甩给疫情的，想起以前接触相机这么久了，不如就还记得的一点东西，介绍一下，水一点东西，混一次提交。 不过不知道有没有帮助，不是介绍什么拍摄三要素（快门、光圈、感光度）的控制，也不…（2020-07-19）
+- [四元数与旋转矩阵](https://dfine.tech/posts/dc13723b/)：在计算物体旋转时，如相机标定中的旋转矩阵R，通常都是以三维矩阵表示，三个自由度分别是绕三个坐标轴的旋转角度，但在Unity中，或者像 colmap 中,都是以四元数(Quaternion)来表示三维旋转的。实际上是复平面向量与实数域矩阵的…（2020-01-08）
+- [小工具(二)](https://dfine.tech/posts/d8bd5c14/)：竟然真的有后续！！！（2019-12-16）
+- [私有办公服务搭建](https://dfine.tech/posts/8c1f2c30/)：鉴于Microsoft Office通常体积臃肿，而且只在Windows下能用。虽然LibOffice开源且免费，适用于各个平台，但碍于接触到的多是Microsoft Office的文档，打开时经常格式很乱，于是考虑搭建一种服务，可以在浏…（2019-12-13）
+- [小工具(一)](https://dfine.tech/posts/778cc776/)：太久没回来了，其实很多次想写但是无法静下心来，思绪如开始停更的三月里乱飞的柳絮，总感觉经历了很多，但却没有力气吐出一个字。终于处暑，昔时聚在一起的人们也已经走得差不多了，终于也想起了，该随便写点什么了。（2019-08-19）
+- [图床搭建](https://dfine.tech/posts/f7ade587/)：周末回来发现博客里的图片全成了码云的个性403了，原来是因为很多公共的图床存活不了多少年，而且当图不再使用时，不便于回收，所以在图床选择这方面，纠结了很久。后来Github认为在其上传图片获取外链并不算滥用，但是Github在国内的速度比…（2019-03-26）
+- [Git基本用法](https://dfine.tech/posts/29103606/)：目前版本控制系统比较流行的就是SVN和Git了，相比较而言，Git有分布式的优势，对网络依赖性更低，但SVN简单，这一条就有很强的生存能力了。用Git已经好几年了，不过很长一段时间只是在用 clone pull add commit pu…（2019-03-21）
+- [Telegram接管聊天消息](https://dfine.tech/posts/b03b049f/)：虽有Web微信的简陋功能，虽有electronic的外观封装，但每次登陆实在太麻烦，以及很多功能被限制，表情无法接收等，被鹅厂放弃的Linux用户对微信的体验大概确实不好。（2019-03-20）
+- [Hashcat密码破解](https://dfine.tech/posts/b0550b46/)：拿到了一个被加密的Excel，要求输入密码才能打开，于是尝试了下密码破解方法。（2019-03-14）
+- [Docker博客环境封装及自动化部署](https://dfine.tech/posts/6b278ddb/)：说来惭愧，也不记得有几次立flag要把博客坚持下去的，看看上一篇的时间，一拖又是这么久了。 为了不至于彻底沦落成上班摸鱼，下班看剧的MADAO（并非在说长谷川先生），还是想去舒适区外面逛逛。自动化部署并不是什么难事，记得以前网上就可以找到…（2019-03-05）
+- [小聊乐理](https://dfine.tech/posts/d48d9dba/)：很久啦，不止一个人说我写的太无聊，确实我又不是什么有趣的主儿。孤芳自赏，历来惯了。不过生活多点味道也挺好，技术博客里也不需要太多技术，毕竟技术应该寄生在人身上，而不是博客里。 ——今天偶尔尝试一下别的内容了。（2018-11-17）
+- [LXD搭设服务器](https://dfine.tech/posts/325daa6a/)：主要是想搭设几台服务器，希望用户环境能隔离，相互安装和配置环境不影响，也希望不至于发生有了sudo权限就把别人的都删了的情况。同时也希望所有用户都能使用服务器上的硬件设备如GPU，且都能上网。（2018-10-12）
+- [Time Machine](https://dfine.tech/posts/a0c49a8e/)：Docker是个好东西，或者说容器是个好东西。 毕竟回忆里的昨天,我再也回不去。 但容器可以。（2018-10-10）
+- [不满就折腾小记](https://dfine.tech/posts/9dfc9fe0/)：又不记得有多久没来了。稀里糊涂的过着日子，稀里糊涂的毕了业。很多事都是历久愈艰，所以很多习惯才没法坚持下去，对于博客这种需要长期维护的事情来说也当是如此。 然而，还是又回来试图挣扎一下了。（2018-10-08）
+- [GStreamer笔记五: Media Formats and Pad Capabilities](https://dfine.tech/posts/79fb69ed/)：此次所述有关pad功能。关于pad， 前面 已有简单介绍，pad功能是GStreamer的一个基本元素，由于框架会自动处理他们，所以大多数时候它们是不可见的。本次主要了解的是关于pad功能的检索。（2017-12-06）
+- [GSreamer笔记四: GUI Toolkit Integration](https://dfine.tech/posts/40a79901/)：主要是关于如何将GStreamer集成到图形用户界面(GUI)工具箱中。基本上当GUI工具箱处理用户界面时，GStreamer主要负责媒体播放。其中两个库必须交互的部分是最有趣的两个部分，即:指导GStreamer将视频输出到GTK+的窗…（2017-12-04）
+- [GStreamer笔记三: Time Management](https://dfine.tech/posts/58b8a847/)：主要是关于如何使用GStreamer中的时间相关工具，如查询Pipeline的位置或者持续时间等信息，以及寻找或者跳转到Stream中的不同位置——时间点的方法。（2017-12-03）
+- [GStreamer笔记二: Dynamic Pipeline](https://dfine.tech/posts/24b1a5e1/)：主要也是关于建立Pipeline的，不过主要目的是建立动态的Pipeline，即在信息可用时随时创建Pipeline，而不是在应用程序开始时候定义单一Pipeline。（2017-12-01）
+- [GStreamer笔记一: GStreamer Concepts](https://dfine.tech/posts/8755e75b/)：笔记主要参照GStreamer官方tutorial，之前的一篇 文章 里最后一个例子写的是一个通过uri自动建立Pipeline的代码。这里主要内容是关于实例化每个元素并连接起来来手动建立Pipeline。（2017-12-01）
+- [查询工具pkg-config](https://dfine.tech/posts/aad6181/)：在程序编译时候，通常需要引用外部库文件或者头文件，文件多了用gcc指定时候就显得麻烦，一个一个写在Makefile中也比较繁琐，这种情况下，能自动获取完整的依赖库信息就显得轻松不少了。（2017-11-30）
+- [多媒体框架GStreamer](https://dfine.tech/posts/413bb42a/)：GStreamer is a library for constructing graphs of media-handling components. The applications it supports range from si…（2017-11-23）
+- [Linux的文件IO和多进程](https://dfine.tech/posts/360656f/)：Linux中的用户编程接口（API）遵循了UNIX中的应用编程界面标准——POSIX。这些系统调用编程接口主要是通过C库(libc)实现的。 Linux中程序的运行空间主要分为内核空间和用户空间，通常用户能直接访问的是用户空间，内核空间一…（2017-11-18）
+- [网易18校招题](https://dfine.tech/posts/ad27c4df/)：没怎么找工作，因为各种原因也没准备，偶然翻到了牛客网，发现以前还有个账号，又看了一下里面的题目，因为没怎么刷题，即兴练手。（2017-11-09）
+- [楼赛](https://dfine.tech/posts/c72229d1/)：这几天登录了下实验楼，看到有个楼赛，然后就参加了，这里记录一下。 虽然一直用Linux，但是基本没专门去上过之类的课，最早还是智能信息课的实验机房里搭Hadoop用到的，然后还挺喜欢的，以至于后来卸了Win把笔记本装了Ubuntu，用的开…（2017-10-29）
+- [Mathjax的LaTeX公式语法](https://dfine.tech/posts/b9c74ed9/)：E = m c 2（2017-10-21）
+- [Hexo博客的优化](https://dfine.tech/posts/6d87f1ac/)：捣鼓个人博客也有一段时间了，其间加了不少的插件，改来改去，最后打开也变得很慢了。问题主要有两个方面，一个是网络问题，因为托管在Github上，国内访问一直很慢，后来还是迁移到Coding上了，妥协了，给他加了个 Hosted by Cod…（2017-09-30）
+- [Next主题的Gitalk移植](https://dfine.tech/posts/4da30c7/)：之前是由于各种评论服务都挂了，后来采用来必力，偶尔抽了一次风，所以当时打算用Github的Issue当评论。 在网上找了很多，大多是Gitment的，也照着网上的教程试了一遍，也装成功了，具体过程都添加在建站时候的一篇文档里了，并没有单独…（2017-09-24）
+- [Bash和Tmux的Powerline](https://dfine.tech/posts/1dd5cd65/)：Powerline可以说是一个状态提示栏，当你在终端操作各种指令的时候，状态提示可以告诉你你当前的一些信息，有时候会提高一些工作效率，不过更多时候可能只是觉得很cool吧。 主要说两个Powerline，一个是Bash的（Zsh算一类），…（2017-09-22）
+- [IPv4下使用IPv6](https://dfine.tech/posts/8544442c/)：在IPv4环境下使用IPv6。当前测试所用系统:ubuntu。 因为暂时离开学校，而IPv6目前尚未普及，只有部分高校有所搭建，但希望访问以前的PT站，因此这里记录一下之前的“4 to 6” 的搭建过程。 目前所用方法暂时有两种有效，加上…（2017-09-21）
+- [FFmpeg常用命令](https://dfine.tech/posts/3c4e255/)：又是一阵时间没回来了，中间偶然获得了You-get这个神器，果然py大法好。 但是善难养成，恶易成习。 坚持太难了。（2017-08-19）
+- [Nodeppt入坑](https://dfine.tech/posts/9b44f6cc/)：没错，又来入坑了。（2017-07-26）
+- [Markdown制作幻灯片](https://dfine.tech/posts/14461a6d/)：写完博客之后，考虑的就是怎么做幻灯片了。（2017-07-26）
+- [SS服务器搭建](https://dfine.tech/posts/1420aa47/)：在ubuntu环境下的SS服务器搭建。（2017-07-25）
+- [Tmux的会话配置](https://dfine.tech/posts/8cfd1ed2/)：受一个外国朋友的影响，用了几个月的Tmux. 简直就像打开了新世界的大门。（2017-07-23）
+- [回来](https://dfine.tech/posts/c33ea426/)：尘封的往事不必再提，忘却的岁月如风而逝。（2017-07-22）
+- [镜语](https://dfine.tech/posts/48f0e3fe/)：久不动笔，有时候总想说点什么，但是最后不知是碍于什么，也许是怕人看，也许是怕人了解自己，然后投来鄙夷的眼光。不过想到自己好歹也搭建了一个博客，或许可以在没有人知道的地方，尽情的释放自己。（2016-12-18）
+- [建站，阁子记](https://dfine.tech/posts/6ed4d3bc/)：丙申九月，建站小记。（2016-09-04）
+- [Cvsba编译过程（在VS2015下的编译与测试）](https://dfine.tech/posts/f3656e8e/)：由于之前所用的sba（光束法平差）库是10版本编译的，现在我用的是15版本，而且15的版本相对于以前变化不少，之前也参照过网上的一篇13版本的编译过程，不过一直出错，后来调试很长时间，终于生成成功，这里mark一下。（2016-09-02）
+- [一种计算Visual Hull的方法](https://dfine.tech/posts/7ad61e8d/)：计算Visual Hull的方法:（2016-07-28）
+- [ubuntu下opencv的配置](https://dfine.tech/posts/ebc78778/)：ubuntu下opencv的配置过程：（2016-07-24）
+- [三维建模中shape of silhouette 的简要理解](https://dfine.tech/posts/dfc9d3fd/)：举例 一篇文章：shape silhouette fusion for image-based modeling（2016-07-21）
+- [JavaScript学习笔记（一）](https://dfine.tech/posts/5f7ed589/)：初学JavaScript，不过之前已经学过很多语言了。刚看JavaScript的时候，感觉很多内容其实和python挺像的，只不过这里初始化时没有要求变量类型。没错，java和JavaScript的区别就是雷锋和雷峰塔的区别。感觉对于编程…（2016-03-20）
+- [Hadoop搭建之WordCount程序](https://dfine.tech/posts/bfb99b1f/)：Hadoop环境需要 实验一中已经搭好了hadoop，部署模式是完全分布式，一个namenode，三个datanode。之前已经用JPS查看进程，已经搭好，现在再检查下是否搭建成功：（2016-03-13）
+- [Hadoop搭建](https://dfine.tech/posts/4f23e727/)：这里以虚拟机为例，介绍Hadoop2.7.1的搭建过程（2016-03-13）
+- [送](https://dfine.tech/posts/f84e19c0/)：记得那年， 一连月的风， 瘆人的声音嘶吼着夜。（2015-12-18）
+- [剧闲词](https://dfine.tech/posts/a0a14ae3/)：没有追剧的习惯，唯一算追过的就是海贼了，也是经常忘记，偶尔想起来才看看更新的几集。（2015-03-29）
+- [垂钓](https://dfine.tech/posts/526f0d1a/)：青春一场盛宴，往昔谁知真假？（2015-03-12）
+- [销岁一记](https://dfine.tech/posts/f71e8f70/)：复暮合，复朝发。（2014-11-02）
+- [昨日记梦](https://dfine.tech/posts/5a450135/)：昨日有梦，吾为人师。（2014-09-18）
+- [时虽予之](https://dfine.tech/posts/41f33d57/)：时虽予之，不若取之。（2014-08-02）
+- [四岁杂谈](https://dfine.tech/posts/ac01029d/)：四年大学生活，不知是四年羁旅奔波，挣扎奋斗，还是四年光阴误掷，乐在消遣。（2014-07-03）
+- [临风添](https://dfine.tech/posts/1e8f285/)：1.11 圈圈点点 阴雨暗风（2014-01-11）
+- [离忧](https://dfine.tech/posts/b51bf43/)：这几年来，对学校一直没什么感觉，在这里住了三四年，原以为，等我毕业之后，学校对我而言就只是一个名字而已了。我实在不想承认这是一所大学，还是我成长的环境。（2013-10-26）
+- [新替](https://dfine.tech/posts/56ef94c8/)：突然有种风烛残年的感觉，像是要老去了。大四了么？（2013-09-18）
+- [豫让赋](https://dfine.tech/posts/795d092a/)：肃清枯叶过雁哀， 瑟泠秋风临马嘶。（2013-09-09）
+- [借月章](https://dfine.tech/posts/179dffb0/)：曾记高梧暮池旁，荷下碎月潋光。（2013-08-14）
+- [竹节记](https://dfine.tech/posts/e091e5ba/)：有时候想说些什么，而真正说的时候又忘记了。今天就是，可能是没休息好的原因，也是困扰了很久的一个问题，当一个人的兴趣开始变的不合时宜的时候。（2013-08-08）
+- [暑呓](https://dfine.tech/posts/41e08ba2/)：前几天回去了一趟，跟同学一起的。ta是回去办身份证，我是回去拿个起子。（2013-08-02）
+- [实习日志8](https://dfine.tech/posts/37928299/)：上午实习老师完成任务的讲了下硝酸的制造工艺，下午就是放假了，没啥，就睡了半天，合着马上就要走了，大家也都开始做着离开的准备了。（2013-07-02）
+- [实习日志7](https://dfine.tech/posts/a72d9f08/)：今天有点不同，今天太无聊了，上午讲课，下午还是讲课。（2013-07-01）
+- [实习日志6](https://dfine.tech/posts/d02aaf9e/)：早上，五点，行程继续。（2013-06-30）
+- [实习日志5](https://dfine.tech/posts/4923fe24/)：有时候题目与文章没一点关系，今天就是。仅仅因为发生在实习期间。（2013-06-29）
+- [实习日志4](https://dfine.tech/posts/3e24ceb2/)：日记真的是每天都要写的么？又是无聊之中的胡思乱想。（2013-06-28）
+- [实习日志3](https://dfine.tech/posts/a0405b11/)：如果不是兴趣，坚持本身都会是一件无聊乏味而又痛苦的事，正如今天的日记，第三天，实习，继续。（2013-06-27）
+- [实习日志2](https://dfine.tech/posts/d7476b87/)：今天还是讲的氯碱工业和氯苯制取，不过换了个老师。从苯的干燥氯化到尾气处理，无聊的要紧。很快讲完了，然后不自觉的问了我们一句啥专业的，那惊讶的表情就出来了。（2013-06-26）
+- [实习日志1](https://dfine.tech/posts/4e4e3a3d/)：初至南京，记得来之前老师说每天一篇实习日记，也算是完成任务，也算是刚刚结束六级与期末的放松，也算是啰嗦几句。（2013-06-25）
+- [等](https://dfine.tech/posts/dc21e617/)：不知道我在等什么。（2013-06-12）
+- [周郎忆](https://dfine.tech/posts/3e23e45/)：三爵之后断琴声，（2013-04-27）
+- [你](https://dfine.tech/posts/d617d273/)：你，我似乎很熟悉。（2013-04-12）
+- [寒之岁碎言](https://dfine.tech/posts/1f4b713c/)：俺没有写东西的习惯，在以前写作文都是煎熬。但现在突然觉得，有些辉煌，你不留下来，你就会后悔遗失；有些经典，你不记下来，你就会后悔忘却。临晚照对晴空，这难得的好天气；无来鸿无去雁，却也无防碍，本不愿附庸风雅，况这大寒天气，俺自以为身体要紧，…（2013-01-23）
+- [停调中秋吟](https://dfine.tech/posts/6d156558/)：晓月多寒岚雾重，（2012-09-30）
+- [悼亡词](https://dfine.tech/posts/66fca25e/)：寒暑流年易霜鬓， 荏苒岁月半世灰。（2012-03-24）
+- [粘蝇板](https://dfine.tech/posts/61fb1399/)：一只苍蝇飞到另一只身边，（2012-03-04）
+- [不属于自己的高三](https://dfine.tech/posts/5f159f2c/)：桌上的一大堆书完全可以挡住老师的视线，让睡觉在其盲区内进行。（2011-12-07）
+- [忆韩生](https://dfine.tech/posts/f9f66023/)：风满楼，月满楼，（2011-11-16）
+- [子夜](https://dfine.tech/posts/5e4725d8/)：冷月无风秋自憔，（2011-10-22）
+- [生命的意义](https://dfine.tech/posts/9e3b7d7e/)：人活着到底是为了什么？（2011-06-11）
+- [无调自吟](https://dfine.tech/posts/e3091d2/)：春来东风瘦，（2011-06-09）
+- [寻涯临雪](https://dfine.tech/posts/6ad13995/)：岁岁纷零雪， 处处染白头。（2011-01-04）
+- [伤逝](https://dfine.tech/posts/38270fed/)：冷风瑟瑟枯木摇，（2010-12-02）
+- [清辉孤月伴我行](https://dfine.tech/posts/4521ac31/)：似曾懒慢倦疏狂，（2010-11-29）
+
+## 站内页面
+
+- [归档](https://dfine.tech/archives/)：全部文章按年月排列
+- [闲言](https://dfine.tech/talks/)：短记，共 41 条
+- [友人](https://dfine.tech/links/)：友链
+- [关于](https://dfine.tech/About/)：作者与本站说明
+
+## 订阅与索引
+
+- [Atom 全文订阅](https://dfine.tech/atom.xml)：最新 20 篇，含正文 HTML
+- [sitemap](https://dfine.tech/sitemap.xml)

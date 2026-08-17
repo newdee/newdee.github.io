@@ -1,13 +1,35 @@
-# hexo robots.txt
-User-agent: * Allow: /
-Allow: /archives/
-Disallow: /vendors/
-Disallow: /js/
-Disallow: /css/
-Disallow: /fonts/
-Disallow: /vendors/
-Disallow: /fancybox/
+# 阁子 https://dfine.tech
+# 构建生成（src/engine/feeds.ts），勿手改
 
+User-agent: *
+Allow: /
 
-Sitemap: https://newdee.cf/sitemap.xml
-Sitemap: https://newdee.cf/baidusitemap.xml
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+Sitemap: https://dfine.tech/sitemap.xml
+Sitemap: https://dfine.tech/baidusitemap.xml
