@@ -4,8 +4,10 @@
 
 站点由自研 TypeScript 静态引擎生成。文章按 `/posts/<abbrlink>/` 寻址，地址自建站起未变过。
 
-## 文章（101 篇，新到旧）
+## 文章（103 篇，新到旧）
 
+- [OpenViking：把 agent 的上下文做成一个文件系统](https://dfine.tech/posts/befcc948/)：OpenViking 是火山引擎开源的 agent 上下文数据库。它的主张一句话就能说清： 别让 agent 去查一个黑盒向量库，让它像开发者一样用 ls 、 tree 、 find 翻自己的上下文。 记忆、资源、技能统一挂在 vikin…（2026-08-19）
+- [munder-difflin：把终端 agent 编成一间办公室](https://dfine.tech/posts/36d537a0/)：munder-difflin 是个 Electron 桌面应用，把你已经在终端里跑的那些 agent CLI—— claude 、 codex 、 grok 、 opencode 等十种——包成一间 2D 办公室：每个会话是一个走来走去的…（2026-08-19）
 - [ai-memory：换个 CLI 接着干的 agent 记忆层](https://dfine.tech/posts/8e7c317d/)：同时用好几个编码 agent 的人都遇到过：Claude Code 干到一半退了，换 Codex 打开同一个目录，上一个知道的事一件都不剩。 ai-memory 是个 Rust 单二进制，用 MCP 加生命周期钩子给这些 CLI 接一层共…（2026-08-18）
 - [TimesFM：预测之前的脏活都在模型外面](https://dfine.tech/posts/3d8fb35a/)：时序预测这行以前的规矩是一个数据集训一个模型，调参调到吐。 TimesFM 是 Google Research 那个拿来就能零样本预测的基座模型，仓库我扒了一遍。 想写它不是因为分数，是因为「变长、缺洞、要分位数」这几件脏活它全在模型外面…（2026-08-17）
 - [DarwinX：模型不动，只进化外壳](https://dfine.tech/posts/26ecdcbf/)：自我改进的 agent 现在不新鲜了，让模型自己改自己的 prompt 和工具，谁都能搭一套。 难的是改完不崩：这道题好了，那三道悄悄坏了，回头看还不知道是哪一次改动干的。 DarwinX 给的答案挺利落——模型全程冻死，把「不许倒退」写…（2026-08-17）

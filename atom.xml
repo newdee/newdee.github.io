@@ -4,9 +4,322 @@
   <subtitle>dfine's Blog</subtitle>
   <link href="https://dfine.tech/atom.xml" rel="self"/>
   <link href="https://dfine.tech/"/>
-  <updated>2026-08-18T14:26:14+08:00</updated>
+  <updated>2026-08-19T16:12:30+08:00</updated>
   <id>https://dfine.tech/</id>
   <author><name>dfine</name></author>
+  <entry>
+    <title>OpenViking：把 agent 的上下文做成一个文件系统</title>
+    <link href="https://dfine.tech/posts/befcc948/"/>
+    <id>https://dfine.tech/posts/befcc948/</id>
+    <published>2026-08-19T16:12:30+08:00</published>
+    <updated>2026-08-19T16:12:30+08:00</updated>
+    <category term="Agent"/>
+    <category term="架构"/>
+    <category term="Python"/>
+    <category term="Rust"/>
+    <content type="html">&lt;p&gt;&lt;a href=&quot;https://github.com/volcengine/OpenViking&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;OpenViking&lt;/a&gt; 是火山引擎开源的 agent 上下文数据库。它的主张一句话就能说清：&lt;strong&gt;别让 agent 去查一个黑盒向量库，让它像开发者一样用 &lt;code&gt;ls&lt;/code&gt;、&lt;code&gt;tree&lt;/code&gt;、&lt;code&gt;find&lt;/code&gt; 翻自己的上下文。&lt;/strong&gt;&lt;br&gt;
+记忆、资源、技能统一挂在 &lt;code&gt;viking://&lt;/code&gt; 这个虚拟文件系统下，每个目录带着 L0 摘要和 L1 概览，检索先定位到目录再往下钻，每一次查询都留下可回看的路径。&lt;br&gt;
+读完之后我最认可的不是那套三层结构，是它在一致性模型里写下的那句话：&lt;strong&gt;宁可漏掉一条搜索结果，也不要返回一条错的。&lt;/strong&gt; 整个写入路径的所有顺序决定，都是从这一句推出来的。&lt;/p&gt;
+&lt;!--more--&gt;
+&lt;h3 id=&quot;先说规模和技术栈&quot;&gt;先说规模和技术栈&lt;/h3&gt;
+&lt;p&gt;它不是个薄封装。到今天的 HEAD（&lt;code&gt;afa5aae9&lt;/code&gt;），2026-01-29 起 2,033 次提交，三种语言各管一层：&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;层&lt;/th&gt;
+&lt;th&gt;语言&lt;/th&gt;
+&lt;th&gt;规模&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;服务与业务逻辑&lt;/td&gt;
+&lt;td&gt;Python&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;openviking/&lt;/code&gt; 619 个文件、148,477 行&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;文件层 RAGFS&lt;/td&gt;
+&lt;td&gt;Rust&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;crates/ragfs/&lt;/code&gt; 78 个文件、40,673 行&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;向量与标量索引引擎&lt;/td&gt;
+&lt;td&gt;C++&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;src/&lt;/code&gt; 65 个文件、12,260 行&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;C++ 那层自带依赖（croaring 位图、leveldb、rapidjson、spdlog），是真的在写索引引擎而不是调库。协议是 AGPLv3，&lt;code&gt;crates/ov_cli&lt;/code&gt; 和 &lt;code&gt;examples/&lt;/code&gt; 单独给 Apache 2.0。背后有论文：VikingMem，arXiv:2605.29640，VLDB 2026 收录，README 说开源的是其中一个子集。&lt;/p&gt;
+&lt;h3 id=&quot;viking三种上下文一棵树&quot;&gt;&lt;code&gt;viking://&lt;/code&gt;：三种上下文，一棵树&lt;/h3&gt;
+&lt;p&gt;它把上下文按人的认知习惯切成三类，各有不同的生命周期和&lt;strong&gt;谁来发起&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Resource&lt;/strong&gt;——外部知识与规则，长期、相对静态，&lt;strong&gt;用户主动加&lt;/strong&gt;（文档、手册、代码仓）。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Memory&lt;/strong&gt;——agent 的认知，长期、持续更新，&lt;strong&gt;agent 自己记&lt;/strong&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Skill&lt;/strong&gt;——可声明的能力配置，长期、静态，用户或系统加。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;三类挂在同一棵树上：&lt;/p&gt;
+&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;viking://
+├── resources/                  # 用户加的知识
+└── user/{user_id}/
+    ├── memories/               # agent 记的
+    ├── resources/              # 私有资源
+    ├── skills/
+    └── peers/{peer_id}/        # 对话里出现的稳定第三方&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;内置的记忆类型有九种，各有默认落点：&lt;code&gt;profile.md&lt;/code&gt;（基本信息）、&lt;code&gt;preferences/&lt;/code&gt;（按主题分的偏好）、&lt;code&gt;entities/&lt;/code&gt;（人、项目、组织）、&lt;code&gt;events/&lt;/code&gt;（决定与里程碑）、&lt;code&gt;identity.md&lt;/code&gt;（助手的名字、人格）、&lt;code&gt;soul.md&lt;/code&gt;（原则、边界、风格）、以及给「agent 进化」用的 &lt;code&gt;cases/&lt;/code&gt;、&lt;code&gt;trajectories/&lt;/code&gt;、&lt;code&gt;experiences/&lt;/code&gt;。应用可以自定义类型。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;peers/&lt;/code&gt; 这个设计我第一次见：如果对话里出现了一个稳定的第三方，关于他的记忆写进他自己的空间，而不是糊在当前用户的记忆里。路由规则写得很死——只有在归档批次里&lt;strong&gt;真实出现过&lt;/strong&gt;的、通过安全校验的 &lt;code&gt;peer_id&lt;/code&gt; 才允许写入，不在白名单里的直接跳过；某些 schema（比如 &lt;code&gt;cases&lt;/code&gt;）标了 &lt;code&gt;peer_enabled: false&lt;/code&gt;，就完全忽略 peer 目标，只写自己。执行派生的那三类（trajectories/experiences 和可执行技能）&lt;strong&gt;永远不写 peer 记忆&lt;/strong&gt;。&lt;/p&gt;
+&lt;h3 id=&quot;三层不是每个文件一份&quot;&gt;三层不是每个文件一份&lt;/h3&gt;
+&lt;p&gt;这是 README 容易让人误会、而文档说得很准的一处。L0/L1 是&lt;strong&gt;目录级的语义挂件&lt;/strong&gt;，不是每个文件配一份：&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;层&lt;/th&gt;
+&lt;th&gt;落点&lt;/th&gt;
+&lt;th&gt;默认正文上限&lt;/th&gt;
+&lt;th&gt;用途&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;L0 摘要&lt;/td&gt;
+&lt;td&gt;目录里的 &lt;code&gt;.abstract.md&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;256 字符&lt;/td&gt;
+&lt;td&gt;向量检索、快速筛&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;L1 概览&lt;/td&gt;
+&lt;td&gt;目录里的 &lt;code&gt;.overview.md&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;4000 字符&lt;/td&gt;
+&lt;td&gt;rerank、内容导航&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;L2 详情&lt;/td&gt;
+&lt;td&gt;原始文件与子目录&lt;/td&gt;
+&lt;td&gt;无统一上限&lt;/td&gt;
+&lt;td&gt;按需加载全文&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;普通文件不会各自生成 L0/L1，文件摘要只作为&lt;strong&gt;输入&lt;/strong&gt;汇进所属目录的 L1。而 L0 又是从 L1 正文里截出来的——具体是 H1 标题之后、第一个 &lt;code&gt;##&lt;/code&gt; 之前的那段简述。生成方向是自底向上：文件摘要 → 叶子目录 L1 → 叶子 L0 → 父目录，一直冒到命名空间边界。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/images/openviking-write-path.svg&quot; alt=&quot;OpenViking 的写入主链&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
+&lt;p&gt;新版 L0/L1 用一种叫 OKF 的最小格式：YAML frontmatter 加可见正文。frontmatter 里最有意思的是 &lt;code&gt;freshness&lt;/code&gt; 那组字段，它统计的是&lt;strong&gt;直接子项&lt;/strong&gt;而不是整个递归子树：&lt;/p&gt;
+&lt;figure class=&quot;code&quot; data-lang=&quot;yaml&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;yaml&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt;freshness&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;:&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt;  total_entries&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;:&lt;/span&gt;&lt;span style=&quot;color:#2F798A;--shiki-dark:#4C9A91&quot;&gt; 3&lt;/span&gt;&lt;span style=&quot;color:#A0ADA0;--shiki-dark:#758575DD&quot;&gt;        # 直接文件加直接子目录&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt;  sampled_entries&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;:&lt;/span&gt;&lt;span style=&quot;color:#2F798A;--shiki-dark:#4C9A91&quot;&gt; 3&lt;/span&gt;&lt;span style=&quot;color:#A0ADA0;--shiki-dark:#758575DD&quot;&gt;      # 这次摘要真的看了几个&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt;  unsampled_entries&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;:&lt;/span&gt;&lt;span style=&quot;color:#2F798A;--shiki-dark:#4C9A91&quot;&gt; 0&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt;  pending_child_changes&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;:&lt;/span&gt;&lt;span style=&quot;color:#2F798A;--shiki-dark:#4C9A91&quot;&gt; 0&lt;/span&gt;&lt;span style=&quot;color:#A0ADA0;--shiki-dark:#758575DD&quot;&gt;  # 已知变了但还没反映进正文的&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;直接子项超过 &lt;code&gt;semantic.sidecar_sample_size&lt;/code&gt;（默认 32）就走&lt;strong&gt;确定性、保序的稳定采样&lt;/strong&gt;——同一棵没变的树反复刷新会选中同一批样本，避免正文被无意义地重写、避免 git diff 里全是噪声。&lt;code&gt;pending_child_changes &amp;gt; 0&lt;/code&gt; 的含义被写清楚了：正文仍然可读，但已知落后于底层变化。&lt;/p&gt;
+&lt;p&gt;而且它对自己没做完的部分很坦白，文档里挂着一个 TODO：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;当前实现在每一个成功的 resource/skill 语义任务后都尝试向上冒泡，即使新生成的子摘要没有变化。这不是最终的调度策略。未来的实现应该用 &lt;code&gt;freshness&lt;/code&gt; 来合并、设阈值或加时间窗……目标是减少热目录上的重复刷新和向上的写放大。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;写放大这个问题是真的：一个深目录里改一个文件，会一路把每一层父目录的摘要都重刷一遍。承认它比藏起来好。&lt;/p&gt;
+&lt;p&gt;读取面的行为也分得很细：&lt;code&gt;abstract()&lt;/code&gt;/&lt;code&gt;overview()&lt;/code&gt;、find 与 rerank 的预览、&lt;code&gt;ls output=agent&lt;/code&gt; 都只给正文；只有直接 &lt;code&gt;read(&amp;quot;.../.abstract.md&amp;quot;)&lt;/code&gt; 才拿到 frontmatter；普通 &lt;code&gt;ls&lt;/code&gt; 把这两个挂件藏起来。做嵌入时元数据有白名单，初始只放 &lt;code&gt;directory&lt;/code&gt; 一个字段进去——&lt;code&gt;source&lt;/code&gt;、&lt;code&gt;generated_by&lt;/code&gt;、&lt;code&gt;freshness&lt;/code&gt; 全部排除，并且明确写了「正常向量化和管理员 &lt;code&gt;vectors_only&lt;/code&gt; 重建索引用同一套策略，所以重建索引不会改变检索输入」。这条对&lt;strong&gt;可复现&lt;/strong&gt;很关键：重建索引之后检索结果不该变，这是个容易被破坏的不变量。&lt;/p&gt;
+&lt;p&gt;写保护也是同一个思路：公开 &lt;code&gt;write&lt;/code&gt;/&lt;code&gt;batch_write&lt;/code&gt; 能改 L0/L1 的&lt;strong&gt;正文&lt;/strong&gt;，但挂件必须已存在（公开接口不能凭空造一个 &lt;code&gt;.abstract.md&lt;/code&gt;），只给正文的请求会继承已存的元数据，给完整 OKF 的请求必须保留所有已知元数据、改一个受保护字段就失败，&lt;code&gt;append&lt;/code&gt; 只追加正文永不碰 frontmatter。而且正文更新之后&lt;strong&gt;只重建当前存在的那些层、不重新生成语义&lt;/strong&gt;——不然你刚手写的正文会被后台摘要盖掉。&lt;/p&gt;
+&lt;h3 id=&quot;检索树是用来导航的不是用来打分的&quot;&gt;检索：树是用来导航的，不是用来打分的&lt;/h3&gt;
+&lt;p&gt;检索分两条入口，差别是要不要过模型：&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;&lt;/th&gt;
+&lt;th&gt;&lt;code&gt;find()&lt;/code&gt;&lt;/th&gt;
+&lt;th&gt;&lt;code&gt;search()&lt;/code&gt;&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;需要会话上下文&lt;/td&gt;
+&lt;td&gt;不需要&lt;/td&gt;
+&lt;td&gt;需要&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;意图分析&lt;/td&gt;
+&lt;td&gt;无&lt;/td&gt;
+&lt;td&gt;LLM 分析&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;查询数量&lt;/td&gt;
+&lt;td&gt;单条&lt;/td&gt;
+&lt;td&gt;0–5 条 TypedQuery&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;延迟&lt;/td&gt;
+&lt;td&gt;低&lt;/td&gt;
+&lt;td&gt;较高&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;意图分析这一步吃的是「会话压缩摘要 + 最近 5 条消息 + 当前查询」，产出 0 到 5 条带类型的查询。0 条也是合法输出——闲聊和寒暄不需要检索。三类查询还各有文体约定：skill 用动词开头（「创建 RFC 文档」），resource 用名词短语（「RFC 文档模板」），memory 用「用户的 XX」（「用户的代码风格偏好」）。这种约定看起来土，但它让 embedding 的输入分布和被检索的内容对齐了，比堆 prompt 有用。&lt;/p&gt;
+&lt;p&gt;分层检索用优先队列递归下钻，每轮并行展开最多 4 个目录，收敛判定是 top-k 连续 3 轮不变（或候选池连续 3 轮不长）就停。&lt;/p&gt;
+&lt;p&gt;这里有个细节值得单独说。文档给出的打分公式是：&lt;/p&gt;
+&lt;figure class=&quot;code&quot; data-lang=&quot;python&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;python&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;final_score &lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; alpha &lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt;*&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; embedding_score &lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt;+&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; (&lt;/span&gt;&lt;span style=&quot;color:#2F798A;--shiki-dark:#4C9A91&quot;&gt;1&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt; -&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; alpha&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;)&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt; *&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; parent_score&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;而 &lt;code&gt;score_propagation_alpha&lt;/code&gt; 的默认值是 &lt;strong&gt;1.0&lt;/strong&gt;。代入一下就知道，默认配置下父节点分数的权重是 0——&lt;strong&gt;父分数传播这个机制默认是关着的&lt;/strong&gt;。我去代码里核对过（&lt;code&gt;hierarchical_retriever.py:506&lt;/code&gt;），确实就是 &lt;code&gt;alpha * score + (1 - alpha) * current_score&lt;/code&gt;，alpha 取 1 时 &lt;code&gt;current_score&lt;/code&gt; 被完全乘掉。旁边的 &lt;code&gt;hotness_alpha&lt;/code&gt;（把访问热度掺进分数）默认是 &lt;strong&gt;0.0&lt;/strong&gt;，同样默认关闭。&lt;/p&gt;
+&lt;p&gt;所以默认行为其实是：&lt;strong&gt;树负责导航和上下文完整性，最终排序纯粹是每个节点自己的语义分数&lt;/strong&gt;（有 rerank 就加一层 rerank）。这不是 bug——配置文档把 &lt;code&gt;1.0 ignores the parent score&lt;/code&gt; 写得明明白白——但它和「目录递归检索」这个宣传语给人的印象不太一样：你可能以为父目录的相关性会抬高子文件的排名，默认并不会。想要那个行为，得自己把 alpha 调到 0.5 之类。&lt;/p&gt;
+&lt;p&gt;顺带记几个常量，调参时有用：&lt;code&gt;GLOBAL_SEARCH_TOPK = 10&lt;/code&gt;（全局定位起点的候选数）、&lt;code&gt;MAX_CONVERGENCE_ROUNDS = 3&lt;/code&gt;、&lt;code&gt;MAX_PARALLEL_CHILD_SEARCHES = 4&lt;/code&gt;、&lt;code&gt;MAX_RELATIONS = 5&lt;/code&gt;、&lt;code&gt;DIRECTORY_DOMINANCE_RATIO = 1.2&lt;/code&gt;。rerank 只在配了 AK/SK 且处于 THINKING 模式时启用，&lt;strong&gt;返回非法结果或 API 失败就退回向量分数&lt;/strong&gt;——这个降级是对的，rerank 是精度优化而不是正确性依赖。&lt;/p&gt;
+&lt;h3 id=&quot;一致性所有顺序都是从一句话推出来的&quot;&gt;一致性：所有顺序都是从一句话推出来的&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;09-transaction.md&lt;/code&gt; 是这个仓库最值得读的一篇。它开头就把立场摆出来：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;OpenViking 是一个上下文数据库，FS 是真相源，VectorDB 是派生索引。丢掉的索引可以从源数据重建，丢掉的源数据无法恢复。因此：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;宁可漏掉一条搜索结果，也不要返回一条错的。&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;然后每个操作的步骤顺序都是这句话的推论：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;rm&lt;/code&gt;&lt;/strong&gt;——&lt;strong&gt;先删索引，再删文件&lt;/strong&gt;。反过来的话，文件没了索引还在，搜索会返回一个不存在的文件。按这个顺序，中间崩了最坏情况是「文件还在但搜不到」，重试能补完。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;mv&lt;/code&gt;&lt;/strong&gt;——先拷贝到新位置（源还完整，安全），再改向量库里的 URI，最后删源。改索引失败就把拷贝清掉，源和旧索引都完好。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;add_resource&lt;/code&gt;&lt;/strong&gt;——先在最终路径上拿子树锁，语义处理跑在临时目录上，完成后同步进最终位置。这期间任何 &lt;code&gt;rm&lt;/code&gt; 想拿同一路径的子树锁都会拿到 &lt;code&gt;ResourceBusyError&lt;/code&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;锁的设计也很朴素，就两种类型：&lt;strong&gt;EXACT&lt;/strong&gt;（锁一个具体路径）和 &lt;strong&gt;TREE&lt;/strong&gt;（逻辑上覆盖整个子树，但只在根上写一个锁文件）。锁文件的内容是栅栏令牌 &lt;code&gt;{handle_id}:{time_ns}:{lock_type}&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;几个我觉得写得好的地方：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;TOCTOU 双检 + 让后来者退让。&lt;/strong&gt; 写完锁文件之后再扫一遍祖先和子孙，发现冲突就比较 &lt;code&gt;(时间戳, handle_id)&lt;/code&gt;，&lt;strong&gt;较晚的那个撤掉自己的锁&lt;/strong&gt;，等一会再试。这是防活锁——如果双方都固执重试，就都进不去；定一个全序让后来者退，就总有一个能走。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;等待超时固定为 0。&lt;/strong&gt; 这条我一开始以为是没做完，读下去发现是刻意的：运行期等待超时被固定成 &lt;code&gt;0.0&lt;/code&gt; 并且不再接受外部配置，抢不到锁就直接 &lt;code&gt;LockAcquisitionError&lt;/code&gt;。不排队意味着不会有调用方被莫名堵住，冲突立刻暴露给上层去决定重试还是报错。配套的是三层过期清理：锁文件里的令牌时间戳超过 &lt;code&gt;lock_expire&lt;/code&gt;（默认 30 秒）就在下次获取时被当残锁删掉；LockManager 每 60 秒扫一遍还持有锁但已不活跃的 handle 强制释放；进程崩溃留下的孤儿锁靠同一套残锁检测收掉。长任务不靠调大超时，而是开一个刷新循环，每 &lt;code&gt;lock_expire/2&lt;/code&gt; 刷一次令牌。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;模型调用一律在锁外。&lt;/strong&gt; 理由写得很直接：LLM 调用延迟不可预测（5 秒到 60 秒以上），不能待在持锁操作里。所以 &lt;code&gt;session.commit()&lt;/code&gt; 被拆成两段——&lt;/p&gt;
+&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;Phase 1（不持锁）: 生成归档摘要 → 写归档 → 清空 messages.jsonl → 清内存
+Phase 2（持久队列）: 落归档元数据并入队 → 抽取记忆 → 写当前状态 → 写关系 → 入语义队列&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;Phase 1 不加锁的依据是「不完整的归档没有副作用」；Phase 2 不再用独立 redo log，而是靠一个持久化的 &lt;code&gt;session_commit&lt;/code&gt; 队列（QueueFS 用 SQLite 落盘），重启后 QueueManager 接着跑剩下的活。这条成立的前提被单独点了出来：&lt;strong&gt;记忆抽取是幂等的&lt;/strong&gt;——从同一份归档重复抽取产出相同结果。没有这条，重放就是危险的。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;并发刷同一个目录摘要&lt;/strong&gt;用的是 &lt;code&gt;coalesce_version&lt;/code&gt;：同一个 dirty key 上可能起多个刷新任务，但只有最新版本允许写回，过期任务在写回前把自己的结果丢掉；最后落盘时对 &lt;code&gt;.abstract.md&lt;/code&gt;/&lt;code&gt;.overview.md&lt;/code&gt; 短暂拿一下 EXACT 锁。这样并发改 &lt;code&gt;docs/a.md&lt;/code&gt;、&lt;code&gt;docs/b.md&lt;/code&gt;、&lt;code&gt;docs/c.md&lt;/code&gt; 各持自己的 EXACT 锁互不阻塞，不需要为了刷一次目录摘要去锁整棵子树。&lt;/p&gt;
+&lt;h3 id=&quot;会话如何变成记忆&quot;&gt;会话如何变成记忆&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;commit()&lt;/code&gt; 的第二段里，记忆抽取的流程是四步：&lt;/p&gt;
+&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;消息 → LLM 抽取 → 候选记忆 → 向量预筛找相似 → LLM 判重 → 写 AGFS → 向量化&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;判重的决策粒度分两级，这个设计比常见的「相似度超过阈值就合并」细得多：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;对候选：&lt;code&gt;skip&lt;/code&gt;（重复，什么都不做）/ &lt;code&gt;create&lt;/code&gt;（创建，可以先删掉冲突的旧记忆）/ &lt;code&gt;none&lt;/code&gt;（不创建，但用下面的条目级决策去处理已有记忆）&lt;/li&gt;
+&lt;li&gt;对每条已有记忆：&lt;code&gt;merge&lt;/code&gt;（把候选内容并进去）/ &lt;code&gt;delete&lt;/code&gt;（删掉这条冲突的）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;也就是说一次抽取可以同时表达「这条新的不要，但把旧的那两条合并成一条、再删掉第三条」。代价是判重要过一次 LLM，而且它有权删已有记忆。&lt;/p&gt;
+&lt;p&gt;配套的审计机制我很喜欢：每次 &lt;code&gt;commit()&lt;/code&gt; 都往归档目录写一份 &lt;code&gt;memory_diff.json&lt;/code&gt;，逐条记下这次的 adds / updates / deletes，updates 带 &lt;code&gt;before&lt;/code&gt; 和 &lt;code&gt;after&lt;/code&gt;，deletes 带被删内容全文。&lt;strong&gt;即使一条都没动，也会写一个全零的空 diff。&lt;/strong&gt; 有了这个，「agent 的记忆什么时候被谁改成了什么」是可查、可回滚的——这是绝大多数记忆层缺的东西。归档目录里还有个 &lt;code&gt;.done&lt;/code&gt; 标记文件表示 Phase 2 真的跑完了。&lt;/p&gt;
+&lt;p&gt;抽取策略由 &lt;code&gt;memory_policy&lt;/code&gt; 控制，可以只开 self 不开 peer、可以关掉每次归档的工作记忆摘要、可以用 &lt;code&gt;memory_types&lt;/code&gt; 白名单限定只抽哪几类。有一条依赖关系值得记：&lt;code&gt;experiences&lt;/code&gt; 会自动激活 &lt;code&gt;cases&lt;/code&gt; 和 &lt;code&gt;trajectories&lt;/code&gt;（整条 agent 进化流水线）；反过来如果没有 &lt;code&gt;experiences&lt;/code&gt;，你显式写的 &lt;code&gt;cases&lt;/code&gt;/&lt;code&gt;trajectories&lt;/code&gt; 会被&lt;strong&gt;静默忽略而不报错&lt;/strong&gt;——这个静默我不太喜欢，配置写错了不会有人告诉你。&lt;/p&gt;
+&lt;h3 id=&quot;技能里的密钥一个软保证&quot;&gt;技能里的密钥：一个软保证&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;13-privacy.md&lt;/code&gt; 讲的机制挺聪明，但我认为它的强度需要说清楚。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;add_skill&lt;/code&gt; 的时候，OpenViking 会用 LLM 从技能正文里&lt;strong&gt;抽取敏感值&lt;/strong&gt;（&lt;code&gt;api_key&lt;/code&gt;、&lt;code&gt;token&lt;/code&gt;、&lt;code&gt;base_url&lt;/code&gt; 之类），把明文替换成占位符 &lt;code&gt;{{ov_privacy:skill:{skill_name}:{field_name}}}&lt;/code&gt;，真实值存进版本化的隐私配置；读 &lt;code&gt;SKILL.md&lt;/code&gt; 的时候自动还原。配置按 &lt;code&gt;category + target_key&lt;/code&gt; 组织，&lt;code&gt;current.json&lt;/code&gt; 是当前生效快照，&lt;code&gt;history/version_N.json&lt;/code&gt; 是全量历史快照，值不变就不产生新版本，可以激活任一历史版本回滚。&lt;/p&gt;
+&lt;p&gt;好处是真的：明文不常驻在内容文件里，密钥轮换和回滚有版本可依，对调用方透明。还原时如果占位符找不到对应值，会保留占位符并追加一段 &lt;code&gt;[OpenViking Privacy Notice]&lt;/code&gt; 说明哪些没替换、哪些配了却没被引用——排查体验做得很细。&lt;/p&gt;
+&lt;p&gt;但要看清它的边界：&lt;strong&gt;「哪些是敏感值」是模型判断的。&lt;/strong&gt; 模型漏掉一个 token，那个 token 就以明文存进了 &lt;code&gt;SKILL.md&lt;/code&gt;，而且没有任何提示——注意力都在「配了却没用上」这种无害情况上，漏抽这种有害情况反而是静默的。另外读取时的 URI 匹配是&lt;strong&gt;后缀匹配&lt;/strong&gt; &lt;code&gt;/skills/{name}/SKILL.md&lt;/code&gt;，宽松了些。所以我会把它当成一层降低暴露面的便利设施，不当成密钥管理的边界；真正的密钥该在进入正文之前就不在那里。&lt;/p&gt;
+&lt;h3 id=&quot;基准数字很好看先看清是在比什么&quot;&gt;基准：数字很好看，先看清是在比什么&lt;/h3&gt;
+&lt;p&gt;README 的图很扎眼：LoCoMo 上 OpenClaw 从 24.20% 提到 82.08%，Hermes 从 33.38% 到 82.86%，Claude Code 从 57.21% 到 80.32%；同时输入 token 降 34.3%–91.0%，查询延迟降 58.45%–66.10%。tau2-bench 上任务成功率零售 +6.87pp、航空 +11.87pp。&lt;/p&gt;
+&lt;p&gt;先说加分的：&lt;strong&gt;评测脚本是真的开源出来的&lt;/strong&gt;，在 &lt;code&gt;benchmark/&lt;/code&gt; 下按被测对象分目录——locomo、longmemeval、tau2、skillsbench、retrieval、RAG、vectordb_perf，而且给竞品也写了脚本（mem0、supermemory），一键跑的 shell、导入、评估、LLM 裁判打分、统计各是独立文件。甚至还提交了一份 &lt;code&gt;locomo_bad_case_questions.csv&lt;/code&gt;，把自己答错的题记着。这个态度比只贴一张图强得多。&lt;/p&gt;
+&lt;p&gt;再说该打的折扣，两条：&lt;/p&gt;
+&lt;p&gt;一是&lt;strong&gt;打分靠 LLM 裁判&lt;/strong&gt;（&lt;code&gt;judge.py&lt;/code&gt;），所以绝对数值取决于裁判模型和判分 prompt，跨报告横比意义有限。二是**「原生记忆 vs 接上 OpenViking」比的是集成后的端到端效果**，不是记忆算法的同条件对照——基线里 agent 用的是自己那套简易记忆，提升里既有检索质量的贡献，也有「本来几乎没有长期记忆」的贡献。24% → 82% 这种跨度，主要说明的是基线薄，而不是 OpenViking 强了 3.4 倍。反而 Claude Code 那条（57.21% → 80.32%，基线本身就不弱）更有参考价值。&lt;/p&gt;
+&lt;h3 id=&quot;文档也有分叉&quot;&gt;文档也有分叉&lt;/h3&gt;
+&lt;p&gt;老规矩，查一处：&lt;code&gt;crates/ragfs/ORIGIN.md&lt;/code&gt; 说 RAGFS 是 AGFS 的 Rust 重写，源在本仓库的 &lt;code&gt;third_party/agfs/&lt;/code&gt;（Go 实现），并给了个开关：&lt;/p&gt;
+&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;export RAGFS_IMPL=auto (default to rust, with fallback to go)&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;我全仓库搜过。&lt;code&gt;third_party/&lt;/code&gt; 下只有 croaring、krl、leveldb-1.23、rapidjson、spdlog——&lt;strong&gt;没有 agfs&lt;/strong&gt;；而 &lt;code&gt;RAGFS_IMPL&lt;/code&gt; 这个字符串在整个仓库里只出现在 ORIGIN.md 自己那三行里，&lt;strong&gt;没有任何代码读它&lt;/strong&gt;。也就是说那个「回退到 Go 实现」的开关是纯文档，Go 实现已经不在仓库里了。这不影响使用（Rust 实现就是唯一实现），但如果你照着 ORIGIN.md 去设那个环境变量，会得到一个什么都不做的环境变量。&lt;/p&gt;
+&lt;p&gt;相比之下 &lt;code&gt;docs/en/concepts/&lt;/code&gt; 那一批的准确度不错——我抽查的 &lt;code&gt;score_propagation_alpha = 1.0&lt;/code&gt;、&lt;code&gt;hotness_alpha = 0.0&lt;/code&gt;、&lt;code&gt;MAX_CONVERGENCE_ROUNDS = 3&lt;/code&gt;、&lt;code&gt;GLOBAL_SEARCH_TOPK = 10&lt;/code&gt;、L0/L1 上限 256/4000 字符、采样阈值 32、锁过期 30 秒，都和代码对得上，而且好几处主动标注了「当前实现如此，未来会改」。&lt;code&gt;docs/design/&lt;/code&gt; 下还有十九份 RFC（&lt;code&gt;memory-link-design.md&lt;/code&gt; 有 96 KB），是比 README 有用得多的一手材料。&lt;/p&gt;
+&lt;h3 id=&quot;一点判断&quot;&gt;一点判断&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;它真正的赌注是「结构化导航优于扁平检索」。&lt;/strong&gt; 不是「加了向量库」，向量库谁都有；是把上下文强行组织成一棵带层级摘要的树，让检索变成一次可解释的下钻。收益很实在：结果自带周围上下文、每次查询留下轨迹可以回看是哪条路径给出的、按需只读到需要的那一层。代价也实在：写入路径上要为每一层生成并维护摘要，还带来向上的写放大——它自己在 TODO 里承认这块的调度还没做完。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;它对失败方向的取舍很清醒。&lt;/strong&gt; 「宁可漏一条也不返回一条错的」，然后让 &lt;code&gt;rm&lt;/code&gt; 反着删、&lt;code&gt;mv&lt;/code&gt; 先拷再改、锁不等待直接失败、rerank 挂了退回向量分。这跟我前一篇写的 &lt;a href=&quot;/posts/36d537a0/&quot;&gt;munder-difflin&lt;/a&gt; 里那条「读屏只能清除草稿不能发明草稿」是同一个方法论：先问判错的两个方向哪个更贵，再把不确定性全推到便宜那一侧。两个完全不相干的项目在这个点上想法一致，我倾向于认为这不是巧合。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;用之前想清楚两件事。&lt;/strong&gt; 一是 AGPLv3——服务化对外提供会触发传染条款，&lt;code&gt;crates/ov_cli&lt;/code&gt; 和 &lt;code&gt;examples/&lt;/code&gt; 才是 Apache 2.0，README 里那句「开源版没有阉割、不需要激活码」是可信的，但许可证本身就是最大的那个约束。二是它现在的形态是一个&lt;strong&gt;要单独跑起来的服务&lt;/strong&gt;（&lt;code&gt;openviking-server&lt;/code&gt;，默认 1933 端口），加上 embedding、rerank、判重、意图分析、摘要好几处模型调用——这不是一个进程内的小库，是一套要运维的基础设施。想要轻的，同类里有把整个记忆层做成一个 Rust 单二进制的做法，我写过&lt;a href=&quot;/posts/8e7c317d/&quot;&gt;另一篇&lt;/a&gt;；有意思的是那个项目也把「真相在磁盘上、数据库只是派生索引」列为最大的架构决策，理由几乎一字不差。这个方向看起来正在收敛成共识。&lt;/p&gt;
+</content>
+  </entry>
+  <entry>
+    <title>munder-difflin：把终端 agent 编成一间办公室</title>
+    <link href="https://dfine.tech/posts/36d537a0/"/>
+    <id>https://dfine.tech/posts/36d537a0/</id>
+    <published>2026-08-19T15:46:48+08:00</published>
+    <updated>2026-08-19T15:46:48+08:00</updated>
+    <category term="Agent"/>
+    <category term="Electron"/>
+    <category term="架构"/>
+    <content type="html">&lt;p&gt;&lt;a href=&quot;https://github.com/chaitanyagiri/munder-difflin&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;munder-difflin&lt;/a&gt; 是个 Electron 桌面应用，把你已经在终端里跑的那些 agent CLI——&lt;code&gt;claude&lt;/code&gt;、&lt;code&gt;codex&lt;/code&gt;、&lt;code&gt;grok&lt;/code&gt;、&lt;code&gt;opencode&lt;/code&gt; 等十种——包成一间 2D 办公室：每个会话是一个走来走去的像素小人，互相发消息时有信封在桌子之间飞。&lt;br&gt;
+名字是《办公室》里那家最差的纸业公司，主管叫 Michael，他是这层楼的老板，你是他的老板。&lt;br&gt;
+听起来像个玩具。但它代码里最花心思的地方不是那间办公室，是**「谁有权往一个真实终端的输入行里打字」**——这个问题它想得比我见过的任何 agent 编排工具都细。&lt;/p&gt;
+&lt;!--more--&gt;
+&lt;h3 id=&quot;先说规模&quot;&gt;先说规模&lt;/h3&gt;
+&lt;p&gt;到 2026-08-19 的 HEAD（&lt;code&gt;92461ab&lt;/code&gt;），仓库从 5 月 31 日起攒了 710 次提交，&lt;code&gt;src/&lt;/code&gt; 下 185 个 ts/tsx 文件、53,166 行。两个主要文件都偏大：&lt;code&gt;index.ts&lt;/code&gt; 4,582 行，&lt;code&gt;hive.ts&lt;/code&gt; 2,464 行。38 个测试文件，跑在 node 自带的 &lt;code&gt;node --test&lt;/code&gt; 上。&lt;/p&gt;
+&lt;p&gt;版本 0.4.4，README 自称 working prototype。这个自我定位是准的：功能面铺得很宽（语音编排、Slack 接入、内置 Monaco IDE、技能目录、看板、成本账本、断路器、自动更新），有些地方深得出乎意料，有些地方文档已经和代码分叉了——后面会讲。&lt;/p&gt;
+&lt;h3 id=&quot;两个数据平面&quot;&gt;两个数据平面&lt;/h3&gt;
+&lt;p&gt;这是它唯一真正的架构决策，别的都是推论。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;SPEC.md&lt;/code&gt; 里写得很直白：钩子给不了你用户想看的原始字节流，而光有终端输出流又没法可靠知道当前在跑哪个工具（除非去解析输出，很脆）。所以两条路都要：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;终端平面&lt;/strong&gt;——主进程用 &lt;code&gt;node-pty&lt;/code&gt; 把每个 agent 拉起成真进程，输出按 id 走 IPC（&lt;code&gt;pty:data:&amp;lt;id&amp;gt;&lt;/code&gt;）推给渲染进程，xterm.js 渲染。逐字节真实，你能直接往里打字。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;事件平面&lt;/strong&gt;——每个 agent 启动时用 &lt;code&gt;--settings&lt;/code&gt; 把钩子指向一个自带的小 shim，shim 把生命周期负载写进主进程监听的本地 socket（POSIX 上是 hive 目录里的 &lt;code&gt;hooks.sock&lt;/code&gt;，Windows 上换成按 hive 路径 sha1 命名的具名管道）。&lt;code&gt;PreToolUse&lt;/code&gt;/&lt;code&gt;PostToolUse&lt;/code&gt; 决定小人走去哪个工位，&lt;code&gt;Notification&lt;/code&gt; 决定它是不是在挥手叫你。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;画布是事件驱动的，终端视图是原始字节的，两者不共享判断。这个切分很干净，也是它敢让小人动起来而不撒谎的原因——动画的每一帧背后是一个真实的钩子事件，不是猜的。&lt;/p&gt;
+&lt;p&gt;顺带一个有意思的历史：&lt;code&gt;SPEC.md&lt;/code&gt; 通篇还在讲用 tmux 附着到你已有的窗格（&lt;code&gt;tmux pipe-pane&lt;/code&gt; 读、&lt;code&gt;send-keys&lt;/code&gt; 写），明确写着「不 spawn、不拥有 &lt;code&gt;claude&lt;/code&gt; 进程」。而实际发布的东西自己 spawn PTY、自己拥有生命周期。那份 spec 现在是考古材料，不是文档。&lt;/p&gt;
+&lt;h3 id=&quot;蜂巢协调层就是一个-git-仓库&quot;&gt;蜂巢：协调层就是一个 git 仓库&lt;/h3&gt;
+&lt;p&gt;多 agent 部分叫 hive，落在 &lt;code&gt;&amp;lt;harnessHome&amp;gt;/hive/&lt;/code&gt;，是个本地 git 仓库。核心是四条锁死的规则，每一条都能看出是被具体的坑教出来的：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;只有主进程提交。&lt;/strong&gt; 十几个进程并发 &lt;code&gt;git commit&lt;/code&gt;，撞的是 &lt;code&gt;.git/index.lock&lt;/code&gt;，仓库会坏。所以 agent 一律不碰 git，只写普通文件。提交逻辑重试 5 次，退避 &lt;code&gt;50 * (attempt + 1)&lt;/code&gt; 毫秒，并且把 mtime 超过 10 秒的 &lt;code&gt;index.lock&lt;/code&gt; 当残锁直接删掉。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;每个文件只有一个写者。&lt;/strong&gt; agent 只写自己的 &lt;code&gt;agents/&amp;lt;id&amp;gt;/&lt;/code&gt; 目录。跨 agent 的投递由主进程的路由器完成：把发信人 &lt;code&gt;outbox/&lt;/code&gt; 里的消息搬进收信人 &lt;code&gt;inbox/&lt;/code&gt;。一条消息一个 JSON 文件，写临时文件再 &lt;code&gt;rename&lt;/code&gt;——不是往一个共享的邮箱文件里追加，那种在 git 下必然冲突。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;append-only 的 &lt;code&gt;log.jsonl&lt;/code&gt;&lt;/strong&gt;，消费者各自记游标。唯一真正被多方编辑的是 &lt;code&gt;board.md&lt;/code&gt;，办法是让 GOD agent 当唯一的抄写员。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;消息 schema 是 FIPA-lite。&lt;/strong&gt; 它只借了 FIPA-ACL 里唯一有用的概念——言语行为（&lt;code&gt;request&lt;/code&gt;/&lt;code&gt;inform&lt;/code&gt;/&lt;code&gt;propose&lt;/code&gt;/&lt;code&gt;query&lt;/code&gt;/&lt;code&gt;agree&lt;/code&gt;/&lt;code&gt;refuse&lt;/code&gt;/&lt;code&gt;done&lt;/code&gt;），把 LISP 语法丢了。防活锁靠三条：只有 &lt;code&gt;request&lt;/code&gt;/&lt;code&gt;query&lt;/code&gt;/&lt;code&gt;propose&lt;/code&gt; 有义务被回复（&lt;code&gt;inform&lt;/code&gt;/&lt;code&gt;done&lt;/code&gt; 是终止的）；每次回复 &lt;code&gt;hops&lt;/code&gt; 加一，超过 &lt;code&gt;HOP_CAP = 12&lt;/code&gt; 路由器直接丢弃并记一行 &lt;code&gt;drop&lt;/code&gt;；重复见到已处理的 id 是幂等 no-op（靠 &lt;code&gt;cursor.json&lt;/code&gt;）。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/images/munder-difflin-message.svg&quot; alt=&quot;一封 agent 消息走到终端的全程&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
+&lt;h3 id=&quot;最后一米谁有权往终端里打字&quot;&gt;最后一米：谁有权往终端里打字&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;docs/message-queue.md&lt;/code&gt; 是整个仓库里我最推荐读的一篇，一千多字讲一件很窄的事：&lt;strong&gt;一个真实 CLI 只有一根输入行，而想用它的不止你一个。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;它先把两个都叫「队列」的东西分开：harness 自己的 MD 队列（zustand 里，每个 agent 一条，存着被暂存的自动消息），和 Claude Code 内部的队列（它已接受但没开始做的文本）。harness 看不见后者，也从不对它做推理。这个区分很重要，因为混淆它们会让人写出「我以为它闲着」的代码。&lt;/p&gt;
+&lt;p&gt;然后是&lt;strong&gt;一个门&lt;/strong&gt;。所有想碰到运行中 agent 的路径——composer、Slack 入口、inbox 提醒、定时 &lt;code&gt;/compact&lt;/code&gt;——统统 &lt;code&gt;enqueueMessage&lt;/code&gt;，由一个 drain 循环决定何时放行。文档里写明这条是载重的：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;当 inbox 提醒直接往终端写时，它就是第二个写者，有它自己关于「输入行何时空闲」的判断——于是它的文本落在了用户写了一半的那行上面，提醒和用户的句子被当成一个乱七八糟的 prompt 一起提交了。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;放行要五个条件同时成立：agent 状态是 idle、没有全局暂停（或这条消息被手动放行）、过了 35 秒开机宽限、&lt;code&gt;isTerminalAutomationSafe(ptyId)&lt;/code&gt; 通过、距上次投递超过 4.5 秒。而且只有两次 PTY 写入（文本、回车）都成功才算送达，失败就留在队列里重试。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;isTerminalAutomationSafe&lt;/code&gt; 才是精华。它在四种情况下拒绝投递：PTY 已退出、你打开了一个菜单（&lt;code&gt;picker&lt;/code&gt;）、你有未提交的草稿（&lt;code&gt;draft&lt;/code&gt;）、刚放开输入行的短暂重绘窗口（&lt;code&gt;settling&lt;/code&gt;）。&lt;code&gt;picker&lt;/code&gt; 和 &lt;code&gt;draft&lt;/code&gt; 都是&lt;strong&gt;推断&lt;/strong&gt;出来的而不是被上报的，所以 30 分钟后过期——不然一个没被观测到的菜单关闭就能把这个 agent 的队列卡到会话结束。&lt;/p&gt;
+&lt;p&gt;然后是两条我很喜欢的硬规矩：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;自动化永不擦掉你的文字。&lt;/strong&gt; 过期意味着排队的消息被打在你那行&lt;strong&gt;后面&lt;/strong&gt;，两者融成一个 prompt。早先的版本会先发 Ctrl-U，那悄悄销毁过真实的草稿——它们只是被放置了一分钟而已。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;自动化永不关掉你的菜单。&lt;/strong&gt; 我们不会往 picker 发 Escape。你可能是故意打开它然后走开的；为了给一条排队消息腾地方而把它收掉，不是 harness 该做的决定。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;最漂亮的一段是第 4 节。&lt;code&gt;inputDirty&lt;/code&gt; 靠数 &lt;code&gt;term.onData&lt;/code&gt; 的按键推断，会漂移——一个自己吃掉按键的 TUI 会让计数停在零以上，而屏幕上其实是空的，这叫&lt;strong&gt;幽灵草稿&lt;/strong&gt;，它会挡住一条本该发出去的消息。修法是直接读 xterm 已经渲染好的屏幕缓冲（&lt;code&gt;term.buffer.active&lt;/code&gt; 里光标那一行，剥掉提示符装饰）。关键在于这个读取是&lt;strong&gt;单向&lt;/strong&gt;的：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;屏幕说空 ⇒ 相信它，撤掉阻塞&lt;/li&gt;
+&lt;li&gt;屏幕说有字、或者读不出来 ⇒ 退回按键计数&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;理由是两种错误的代价不对称：误判「空」会开门并把消息糊到你正在写的句子上；误判「有字」只是让那条消息多等一会。所以让便宜的那种错发生。还有一个更细的：&lt;code&gt;inputDirty&lt;/code&gt; 在你按下键那一刻就置位，但字符要等 PTY 回显才进 xterm 的缓冲——这个间隙里读缓冲会得到「空」，正好是贵的那个方向。所以距上次按键 1 秒内的读取返回「不知道」，什么都不清除。&lt;/p&gt;
+&lt;p&gt;我读完这节的感受是：这种「先想清楚两种错误哪个更贵，再决定让判断往哪边偏」的写法，在 agent 工具里太少见了。大部分项目在这个位置会写一个 &lt;code&gt;if (isIdle) sendKeys(...)&lt;/code&gt; 然后收 issue。&lt;/p&gt;
+&lt;h3 id=&quot;那个系统提示词前缀不许含变量&quot;&gt;那个系统提示词前缀不许含变量&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;hive.ts&lt;/code&gt; 里 &lt;code&gt;injectedPrompt()&lt;/code&gt; 上面有一段大写的注释，标着 🔒 PROMPT-CACHE INVARIANT：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;保持这个前缀&lt;strong&gt;无易变量&lt;/strong&gt;。它只插值那些在一个 agent 整个生命周期里稳定的值（名字、id、目录、根、semanticMemory）。&lt;strong&gt;不要&lt;/strong&gt;在这里加日期、UUID、计数器、board/registry 状态，或任何 &lt;code&gt;Date.now()&lt;/code&gt; 派生的文本：一个每次 spawn 都变的前缀会打掉 Anthropic 的 prompt cache（每一轮都要重新预热整个系统提示词）。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;易变的上下文走活的通道——inbox 和 PTY——绝不烤进前缀。这是个很实际的成本约束被写成了不变量，而且写在了最容易被人无意破坏的那个函数头上。&lt;/p&gt;
+&lt;p&gt;紧跟着还有一段 🪟 NO SHELL SYNTAX，同样值得抄：注入给 agent 的每条路径和命令，都必须是它在自己那个平台上真会敲的样子。两个曾经悄悄只在 Windows 上坏掉的习惯被点名——&lt;code&gt;$VAR&lt;/code&gt; 在 cmd.exe 下展开成空，所以那些指令在每一台 Windows 上都是死的；用字符串拼 &lt;code&gt;'…' + '/inbox/'&lt;/code&gt; 会告诉 Windows agent 去读 &lt;code&gt;C:\Users\x\hive\agents\god/inbox/&lt;/code&gt;。修法是烤进 &lt;code&gt;join()&lt;/code&gt; 出来的绝对路径：跨平台、不需要展开、而且仍然对 prompt cache 稳定。&lt;/p&gt;
+&lt;h3 id=&quot;windows-上的沉默&quot;&gt;Windows 上的沉默&lt;/h3&gt;
+&lt;p&gt;v0.4.4 的发布说明标题是「Windows 上的 agent 终于能互相说话了」。根因在 &lt;code&gt;pty.ts&lt;/code&gt; 里写了一大段，是我这两天读到最好的一个 bug 故事。&lt;/p&gt;
+&lt;p&gt;Windows 上 &lt;code&gt;.cmd&lt;/code&gt;/&lt;code&gt;.bat&lt;/code&gt; 不能直接交给 &lt;code&gt;CreateProcess&lt;/code&gt;，所以 spawn 走 &lt;code&gt;cmd.exe /d /s /c &amp;quot;&amp;lt;line&amp;gt;&amp;quot;&lt;/code&gt;。这意味着 argv 变成一个由 cmd.exe 解析的单字符串，而 cmd.exe：把 CR/LF 当语句分隔符——在考虑引号之前——所以多行参数会被&lt;strong&gt;截断在第一个换行&lt;/strong&gt;，剩下的当命令执行；把 &lt;code&gt;(&lt;/code&gt;/&lt;code&gt;)&lt;/code&gt; 读成块分隔符；没有反斜杠转义；命令行上限约 8191 字符。&lt;/p&gt;
+&lt;p&gt;而注入的那段 hive 协议提示词是 &lt;strong&gt;6.1k 字符、11 行、62 个括号&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;结果：每一个用 npm 装的 CLI（OpenCode 永远如此；&lt;code&gt;claude.cmd&lt;/code&gt; 在没有原生 &lt;code&gt;claude.exe&lt;/code&gt; 时也是），启动起来看着完全健康、界面正常，但从来没收到过 HIVE PROTOCOL 那一段，从来不知道 &lt;code&gt;inbox/&lt;/code&gt;、&lt;code&gt;outbox/&lt;/code&gt; 存在，于是&lt;strong&gt;没有任何一个 agent 听到过另一个 agent 说话&lt;/strong&gt;。Claude 看起来能用，只是因为它的原生 &lt;code&gt;claude.exe&lt;/code&gt; 绕过了 cmd.exe。&lt;/p&gt;
+&lt;p&gt;修法是把 npm 的 &lt;code&gt;.cmd&lt;/code&gt; shim 解码回它真正要跑的「解释器 + 脚本」，然后用&lt;strong&gt;参数数组&lt;/strong&gt;去 spawn——这样 node-pty 自己那套符合 MSDN/CRT 规则的 &lt;code&gt;argsToCommandLine&lt;/code&gt; 生效，直接交给 &lt;code&gt;CreateProcess&lt;/code&gt;，中间没有 shell 解析器。引号里的换行在那儿只是一个普通字符，上限也从 cmd 的 8191 变成 &lt;code&gt;CreateProcess&lt;/code&gt; 的 32767。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;parseNpmCmdShim&lt;/code&gt; 是纯函数（只吃 shim 路径和内容，不碰文件系统、不看 &lt;code&gt;process.platform&lt;/code&gt;），所以能在 macOS/Linux 上单测——Windows 构建通常就是在那儿写的。它模式匹配了 npm &lt;code&gt;cmd-shim&lt;/code&gt; 历史上三代产物的形状，并且&lt;strong&gt;任何看不懂的形状都返回 null 退回 cmd.exe 路径&lt;/strong&gt;，保证不比原来更差。&lt;/p&gt;
+&lt;p&gt;然后是第二次修（&lt;code&gt;14cb1e4&lt;/code&gt;）。&lt;code&gt;opencode-ai&lt;/code&gt; 的 bin 指向 &lt;code&gt;./bin/opencode.exe&lt;/code&gt;——一个编译好的二进制，不是 JS 脚本——npm 于是写出一个没有解释器的 shim：&lt;/p&gt;
+&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;&amp;quot;%dp0%\..\opencode-ai\bin\opencode.exe&amp;quot;   %*&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;解析器只建模了「两个 token」那种形状。这里只有一个带引号的 token、前面什么都没有，于是 &lt;code&gt;before&lt;/code&gt; 是空、&lt;code&gt;word&lt;/code&gt; 是 undefined，返回 null，笔直掉回那条会截断的 cmd.exe 路径。每一台 Windows 上的 OpenCode 安装都确定性地中招。提交信息里那句最狠：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;agent 启动了、渲染了、看起来很健康，而且完全不知道自己有一个收件箱。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;还有一句是这个 bug 能活过一次发布的真正原因：&lt;strong&gt;cmd.exe 回退路径是静默的。&lt;/strong&gt; 现在它会警告，并且报出它没能解码的目标，以及这次 spawn 里是否真有多行参数处在风险中。这个改动比修解析器本身更有价值。&lt;/p&gt;
+&lt;h3 id=&quot;god-agent机制与智能分开&quot;&gt;GOD agent：机制与智能分开&lt;/h3&gt;
+&lt;p&gt;Michael 是个普通的 &lt;code&gt;claude&lt;/code&gt; 进程，坐在 &lt;code&gt;desk-ceo&lt;/code&gt;，标记 &lt;code&gt;isGod&lt;/code&gt;。设计文档把分工讲得很清楚：&lt;strong&gt;GOD agent 是智能，主进程是机制&lt;/strong&gt;（git、socket、路由）。&lt;/p&gt;
+&lt;p&gt;它的职责是名册与路由（&lt;code&gt;registry.json&lt;/code&gt;）、裁决（读每一条对外请求，例行的自己解决，只有关键的才升级）、当 &lt;code&gt;board.md&lt;/code&gt; 的唯一抄写员、维护任务台账（&lt;code&gt;tasks.json&lt;/code&gt;）。什么算「关键」（破坏性操作、花真钱、范围变更、无法解决的冲突）写在它的系统提示词里，而不是代码里——文档明说这是主要的控制面：&lt;strong&gt;要调的是提示词，不是代码。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;这个选择有代价，它也承认了：没有独立的审批队列，人类介入靠的是每个 agent 自己 Claude Code 会话里的工具权限提示（可以从手机上通过 &lt;code&gt;/remote-control&lt;/code&gt; 远程批）。也就是说，安全边界的可靠性等于那段提示词的可靠性加上权限提示的覆盖度。对一个 5–15 个 agent 的个人 floor 也许够；再往上我会不放心。&lt;/p&gt;
+&lt;p&gt;还有个很实际的细节：钩子服务器会在 &lt;code&gt;SessionStart&lt;/code&gt; 和每次 &lt;code&gt;UserPromptSubmit&lt;/code&gt; 时，把当前名册作为 &lt;code&gt;additionalContext&lt;/code&gt; 塞给 GOD——注释说得很清楚，&lt;code&gt;fleet.json&lt;/code&gt; 在磁盘上永远是新的，但 GOD 的&lt;strong&gt;上下文&lt;/strong&gt;不是：重启后它接上一份描述旧楼层的 transcript，然后去给早就不在的 agent 发消息。这是个只有真跑过才会碰到的问题。&lt;/p&gt;
+&lt;h3 id=&quot;记忆markdown-优先索引可缺&quot;&gt;记忆：markdown 优先，索引可缺&lt;/h3&gt;
+&lt;p&gt;记忆分两层，主从关系很明确。&lt;/p&gt;
+&lt;p&gt;底座是每个 agent 的 &lt;code&gt;memory.md&lt;/code&gt; 加共享 &lt;code&gt;board.md&lt;/code&gt;，纯 markdown。文档里直接否掉了重型向量层（Letta/Mem0/Zep），理由是两条：5–15 个 agent 的规模上不需要；更重要的是&lt;strong&gt;架构上不对——那些东西想拥有 agent 运行时，而这里的运行时是 CLI 本身&lt;/strong&gt;。这个判断我认同。&lt;/p&gt;
+&lt;p&gt;语义层是 &lt;code&gt;memory.ts&lt;/code&gt; 包的 MemPalace CLI，走 CLI 不走 MCP，整个 hive 共用一个 palace，把每个 agent 的 &lt;code&gt;memory.md&lt;/code&gt; 挖进它自己的 wing（按 mtime 判断要不要重挖）。关键是&lt;strong&gt;检测并降级&lt;/strong&gt;：&lt;code&gt;mempalace&lt;/code&gt; 没装就整体 no-op，markdown 记忆照常工作。顺手一个细节——&lt;code&gt;mempalace mine&lt;/code&gt; 尊重 &lt;code&gt;.gitignore&lt;/code&gt;，所以它往每个 agent 目录扔一份 &lt;code&gt;.gitignore&lt;/code&gt; 排掉 &lt;code&gt;settings.json&lt;/code&gt;/&lt;code&gt;cursor.json&lt;/code&gt;/&lt;code&gt;inbox/&lt;/code&gt;/&lt;code&gt;outbox/&lt;/code&gt;，而不是去改 mine 命令。理由是那个钩子配置是个大 JSON blob，会把 wake-up 摘要冲掉。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;reflect.ts&lt;/code&gt; 补的是压缩那一半。它自称「清洁工缺掉的 CONDENSE 半边」：清洁工会标记超大的 &lt;code&gt;memory.md&lt;/code&gt;（&amp;quot;Needs condensing.&amp;quot;）但从不真的缩小它。压缩把文件重写成有界的三段——钉住的持久事实（永不动）、一份滚动的递归摘要、最新的 K 段原文——用便宜的无头 &lt;code&gt;claude -p&lt;/code&gt;（&lt;code&gt;claude-haiku-4-5&lt;/code&gt;）去总结被驱逐的尾巴。预算 128 KB。&lt;/p&gt;
+&lt;p&gt;安全性是分层的，注释说得很明确：&lt;strong&gt;先备份（无损冷拷贝）→ 不信任就验证 → 原子替换&lt;/strong&gt;。任何一步检查失败，原文件逐字节不动，唯一的副作用是一行 &lt;code&gt;condense-abort&lt;/code&gt; 日志。还有一条解释了为什么这个循环必须在 Electron 主进程里而不是 launchd：macOS 的 TCC 会拦住 launchd 拉起的 shell 访问 &lt;code&gt;~/Documents&lt;/code&gt;，只有这个进程拿到了文件夹授权。&lt;/p&gt;
+&lt;h3 id=&quot;刹车与账本&quot;&gt;刹车与账本&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;breaker.ts&lt;/code&gt; 的开场就说清了动机：Claude Code 有 &lt;code&gt;--max-turns&lt;/code&gt;，但&lt;strong&gt;没有美元上限&lt;/strong&gt;，所以自己造一个。&lt;/p&gt;
+&lt;p&gt;这个模块只管策略——触发条件加 steer → constrain → stop 的升级阶梯——没有副作用：读信号、返回决定，执行由 &lt;code&gt;index.ts&lt;/code&gt; 里的心跳去做。输入聚合三路：用量采样（成本与 token 速率）、钩子事件（重复的同名同参 &lt;code&gt;PostToolUse&lt;/code&gt; 是跑飞的典型信号、api_error 风暴）、文件 mtime 无进展。速率用的是连续累计采样的&lt;strong&gt;差分&lt;/strong&gt;（Δoutput/Δt），不是把单次采样当增量——这是个很容易写错的地方。&lt;/p&gt;
+&lt;p&gt;默认值透露了它的性格：&lt;code&gt;hardStop&lt;/code&gt; &lt;strong&gt;默认关&lt;/strong&gt;，没开的话阶梯顶到 &lt;code&gt;constrained&lt;/code&gt; 就不会杀进程；一个 beat 只升一级，绝不跳到 kill；健康的 beat 会降一级（可恢复）；token 速率兜底定在 60,000 output tokens/min，注释自称「故意定得很高的粗糙兜底」；无进展要连续 2 个 beat 才算（一次 inbox ack 或 statusline 突发不该单独触发）。还有一个上下文压缩豁免：&lt;code&gt;PreCompact&lt;/code&gt; 打开它，让压缩带来的 token 爆发不触发 Δoutput 那几个臂，&lt;code&gt;PostCompact&lt;/code&gt; 或任何 &lt;code&gt;SessionStart&lt;/code&gt; 关掉它并留 90 秒尾巴。&lt;/p&gt;
+&lt;p&gt;成本那边，&lt;code&gt;transcript.ts&lt;/code&gt; 直接读 &lt;code&gt;~/.claude/projects/&lt;/code&gt; 下的 JSONL transcript 拿真实 token，不是估的。里面有个很典型的兼容坑：Claude Code 的 project key 是把 cwd 里每个非字母数字字符换成短横（&lt;code&gt;/Users/me/app&lt;/code&gt; → &lt;code&gt;-Users-me-app&lt;/code&gt;），而 2026 年之前的 POSIX 写法是丢掉前导斜杠、只换斜杠，于是点号活了下来。它把两种 key 都留着，只为了让改动之前写的 transcript 还能读。&lt;/p&gt;
+&lt;p&gt;顺带一个我觉得写得最好的注释在 &lt;code&gt;hive.ts&lt;/code&gt;：&lt;code&gt;cost-ledger.jsonl&lt;/code&gt; 是 append-only 的，每次用量采样加一行，而 hive 一直在提交——一个跟踪它的仓库会在&lt;strong&gt;每次提交&lt;/strong&gt;里存一份整个文件的新拷贝。它算得很具体：一个四分之一 GB 的账本加几千次提交，就是几百 GB 的 blob 要 git 去走，这就是一次例行 &lt;code&gt;gc&lt;/code&gt; 变成多 GB &lt;code&gt;pack-objects&lt;/code&gt; 的原因。而且它点出了那个真正的陷阱：&lt;strong&gt;git 对已经在索引里的文件会继续记录，不管 &lt;code&gt;.gitignore&lt;/code&gt; 说什么&lt;/strong&gt;——所以只加 ignore 行读起来像修好了，仓库照旧在长。所以它专门做了一次 &lt;code&gt;rm --cached&lt;/code&gt;，而且在动手之前先探测有没有真的被跟踪，免得每次启动都在重试路径里重写索引。&lt;/p&gt;
+&lt;h3 id=&quot;文档已经和代码分叉了&quot;&gt;文档已经和代码分叉了&lt;/h3&gt;
+&lt;p&gt;这是我要给的最实在的批评，而且我是查过的。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;HIVE.md&lt;/code&gt; 把「自治循环 = &lt;code&gt;Stop&lt;/code&gt; 钩子」列为锁死的设计决策之一，Phase 1 标着 ✅：agent 干完一轮，&lt;code&gt;Stop&lt;/code&gt; 钩子返回 &lt;code&gt;{&amp;quot;decision&amp;quot;:&amp;quot;block&amp;quot;,&amp;quot;reason&amp;quot;:…}&lt;/code&gt; 让它接着干，靠 &lt;code&gt;stop_hook_active&lt;/code&gt; 防死循环。&lt;/p&gt;
+&lt;p&gt;代码里已经没有这回事了。&lt;code&gt;hooks.ts&lt;/code&gt; 的 &lt;code&gt;Stop&lt;/code&gt; 分支现在直接返回 &lt;code&gt;{}&lt;/code&gt;，注释写着：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;永远不要把未读的 hive 邮件在 &lt;code&gt;Stop&lt;/code&gt; 处变成一次强制续跑。那条老路绕过了终端草稿/HITL 安全，并且可能在用户正在回答一个问题的时候花掉额度。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;改成了 inbox 文件保持在磁盘上，由渲染进程那条「只在 idle 时投递」的受控路径稍后唤醒——就是上面那五个条件的门。这个改动是对的，而且理由比原设计更成熟：原设计里 &lt;code&gt;Stop&lt;/code&gt; 钩子这条自治通道，恰好绕过了它自己后来花最多心思建的那道门。&lt;/p&gt;
+&lt;p&gt;但 &lt;code&gt;HIVE.md&lt;/code&gt; 一个字没改。而且 &lt;code&gt;drainForStop()&lt;/code&gt; 这个函数还在 &lt;code&gt;hive.ts:1029&lt;/code&gt;，我全仓库搜过，&lt;strong&gt;生产路径上没有任何调用者&lt;/strong&gt;，只有两处注释提到它，和一个测试文件在调它。也就是说：设计文档的招牌机制，现在是一个孤儿函数加一份还在宣称它是 ✅ 的文档。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;SPEC.md&lt;/code&gt; 的情况更彻底，前面说过，整篇讲的还是 tmux。&lt;/p&gt;
+&lt;p&gt;我不觉得这是懒。710 次提交、两个半月，从 tmux 附着改成自己 spawn PTY、从 Stop 钩子强制续跑改成受控队列投递，这是两次正确的方向转弯。问题只在于文档没跟着转，而它们又都自称是 source of truth。读这个仓库的正确顺序是：&lt;code&gt;docs/message-queue.md&lt;/code&gt; 和代码注释可信（我抽查了 &lt;code&gt;FLUSH_COOLDOWN_MS = 4500&lt;/code&gt;、&lt;code&gt;STALE_INPUT_MS = 1_800_000&lt;/code&gt;、&lt;code&gt;BOOT_GRACE_MS = 35_000&lt;/code&gt;、&lt;code&gt;ECHO_GRACE_MS = 1000&lt;/code&gt;，与文档逐一对得上），&lt;code&gt;HIVE.md&lt;/code&gt; 当路线图读，&lt;code&gt;SPEC.md&lt;/code&gt; 当考古读。&lt;/p&gt;
+&lt;p&gt;另外两件该知道的事。一是许可证有个真陷阱：代码是 MIT，但捆进来的像素美术（tileset、地图、《办公室》全体角色的底图）来自 LimeZu 的 FREE VERSION 授权，&lt;strong&gt;仅限非商业使用&lt;/strong&gt;，重上色的精灵图继承这个限制。要商用必须换掉资源或买授权，README 把这条写在了 IMPORTANT 框里，算是坦诚。二是 &lt;code&gt;blog/&lt;/code&gt; 目录下有 130 篇文章，标题是 &lt;code&gt;claude-squad-vs-munder-difflin&lt;/code&gt;、&lt;code&gt;best-ai-coding-agents&lt;/code&gt;、&lt;code&gt;generative-engine-optimization-techniques&lt;/code&gt; 这类——一个相当直白的 GEO/SEO 内容矩阵，每篇还配了手绘风格的 hero 图。这跟工程质量无关，但看仓库时值得知道自己在看什么。&lt;/p&gt;
+&lt;h3 id=&quot;我会借走什么&quot;&gt;我会借走什么&lt;/h3&gt;
+&lt;p&gt;抛开那间办公室，有四件事我认为是可以直接搬的：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;一、文件系统当协调层，单提交者。&lt;/strong&gt; 想让多个 agent 协作又不想引入消息队列，「每个 agent 只写自己目录 + 一个进程负责搬运和提交」是成本极低的一套。原子 &lt;code&gt;rename&lt;/code&gt; 投递、per-agent 游标幂等、hop cap 防乒乓，三样加起来不到两百行。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;二、把「谁能碰共享的窄资源」写成一份单独的文档。&lt;/strong&gt; 那根输入行只是个例子。任何有人和自动化同时要用的资源——一个 tty、一个分支、一个 API 配额——都值得一份「一个门 + 放行条件表 + 两种错误的代价对比」的文档。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;三、判断按代价不对称来偏。&lt;/strong&gt; 这是上一条的方法论内核。不要问「怎么判断得更准」，先问「判错的两个方向哪个更贵」，然后把不确定性全推给便宜的那一侧。munder-difflin 的读屏只能清除草稿不能发明草稿、回显间隙内返回「不知道」，都是这一条的直接应用。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;四、把成本约束写成带 🔒 的不变量，压在最容易被破坏的函数头上。&lt;/strong&gt; prompt cache 那条注释的价值不在于它解释了 prompt cache，而在于它出现在唯一一个「顺手加个时间戳」就能悄悄让每轮成本翻倍的地方。&lt;/p&gt;
+&lt;p&gt;至于那些走来走去的小人——它自己的 spec 里写了一句很清醒的话，说这个隐喻的真实风险是落成噱头，缓解办法是让每个动画都真的告诉你一件你原本不知道的事；如果走到书架前没能比一个文字标签更快地传达「它在读文件」，那就是造了个玩具。这个自我要求，比大部分同类项目的 README 都诚实。&lt;/p&gt;
+</content>
+  </entry>
   <entry>
     <title>ai-memory：换个 CLI 接着干的 agent 记忆层</title>
     <link href="https://dfine.tech/posts/8e7c317d/"/>
@@ -2205,101 +2518,6 @@ Codex路线是明确的二等公民，没有pre-tool hook、没有工具白名�
 两万八千行代码、41个测试文件、100个提交，做到架构文档和代码逐条对得上，注释里还留着「这个bug让我们付了什么代价」，这种密度的工程自觉，2026年的agentic项目里不算常见。&lt;/p&gt;
 &lt;p&gt;仓库在&lt;a href=&quot;https://github.com/ZheningHuang/LiteReality-Agent&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;这里&lt;/a&gt;，项目主页在&lt;a href=&quot;https://litereality.github.io/Litereality-agent-site/&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;这里&lt;/a&gt;。&lt;/p&gt;
 &lt;p&gt;看完之后手有点痒，感觉自己那几个项目的日志该重写了。&lt;/p&gt;
-</content>
-  </entry>
-  <entry>
-    <title>蝉与梦</title>
-    <link href="https://dfine.tech/posts/ec2d269e/"/>
-    <id>https://dfine.tech/posts/ec2d269e/</id>
-    <published>2024-09-05T00:00:00+08:00</published>
-    <updated>2024-09-05T00:00:00+08:00</updated>
-    <category term="日常"/>
-    <category term="心情"/>
-    <content type="html">&lt;p&gt;杭州的这个夏天真的很热。热的已经不需要任何副词去加强感受了，大概因为每天明确的温度数值和每天的高温预警已经足够说明。印象中炎热的夏季里总是摆脱不了蝉鸣，想起前段时间的一个午睡，连梦都被它们侵占了。不过近观倒是也发现了一些有意思的事。&lt;/p&gt;
-&lt;!--more--&gt;
-&lt;p&gt;周围都是林子，看不到边，林子里是夏蝉的王国，声势浩荡。稍粗点的枝桠上，有几个领首之蝉，正在灌输着满满的正能量：以汝之音，传汝之思，响遏行云，无远弗届，也是颇为励志。&lt;/p&gt;
-&lt;p&gt;当然，以前以为蝉叫只是求偶，但这里看起来也不尽然。有几只远看的时候确实也以为是求偶，不过走近了发现好像并不是，各说各的，只是声音不够大，周围都是求偶的，于是不管在说什么，也会误以为它们也是求偶的了。&lt;/p&gt;
-&lt;p&gt;林子中间有一遮天的老树，突发奇想的想去看看上面有什么，不过爬着爬着，好像看到的还是蝉，不过是一些不太一样的蝉，体型更大，而且和外面土色的黑灰蝉不太一样，这里的颜色更鲜艳一些，抬头望去，远处好像还有一些金色和银色的，确实好看。颜色相近的聚在一起，远看的话，大概就像长在树上的山茶花吧。他们也在叫着，但也不是求偶，看许多斑斓的雌翼绕着雄蝉，大概他们确实也不需要为这事扯破嗓子了。&lt;/p&gt;
-&lt;p&gt;大概是在地下辛辛苦苦劳动了十几年，好不容易来到地面上，但每次上来的时候都是夏天，所以以为这个世界大概只有夏天。所以看到了几个眼珠漂亮的像宝石的蝉们，在谈论着，“有几个土家伙真的是滑稽得很，说天寒时候，周围都是白色，还说小时候偷偷从下面钻出来看过”，然后一阵哄笑，但笑起来的时候又挺丑。&lt;/p&gt;
-&lt;p&gt;说到刚刚遇到的那几只不求偶的蝉，另一边的讨论组也正在谈论它们，大致意思是这并不是什么重要的事，对于蝉族来说，少几个去完成他们的繁衍任务并不打紧，相反，这些反骨蝉们，没有后继倒是更省事一些。&lt;/p&gt;
-&lt;p&gt;再往上爬着，看到了几个银翼的蝉，挺好看的，好像也在窃窃私语，凑近了才听到一些微弱的声音，“从老家伙那里偷点树汁来，咱也该镀镀金了”，才知道原来是树大蝉美。&lt;/p&gt;
-&lt;p&gt;好奇心消失的时候，也没了继续往上爬的动力了。离开了大树往边上走着，这边的蝉鸣也没有歇着，不过也不是求偶的了，也是励志：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;“遥知星奔川骛，朝露溘至，虽此生苦短，汝若几世箕裘相继，兀兀穷年，必得一席之地，落卵于神树之脚，蜕而成金翅矣”&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;确实应该挺励志的，但可能物种不同，听起来没太多感受，毕竟我也不需要在地下苦干，在树上生活。所以岁聿云暮，我大概也还是鹿鹿鱼鱼，不稂不莠。&lt;/p&gt;
-&lt;p&gt;醒了。&lt;/p&gt;
-&lt;p&gt;只想在没有春蛙秋蝉聒舌的下午，安静的睡个好觉。&lt;/p&gt;
-</content>
-  </entry>
-  <entry>
-    <title>小工具(三)</title>
-    <link href="https://dfine.tech/posts/a64e7c3f/"/>
-    <id>https://dfine.tech/posts/a64e7c3f/</id>
-    <published>2020-08-10T19:57:25+08:00</published>
-    <updated>2020-08-10T19:57:25+08:00</updated>
-    <category term="bashtop"/>
-    <category term="xxd"/>
-    <category term="proxychains"/>
-    <content type="html">&lt;p&gt;竟然真的有后续！！！(Again)&lt;/p&gt;
-&lt;!--more--&gt;
-&lt;h3 id=&quot;花里胡哨的命令行监视器bashtop&quot;&gt;花里胡哨的命令行监视器bashtop&lt;/h3&gt;
-&lt;p&gt;作用基本上就跟top差不多，不过视觉效果还不错。对比一下，&lt;br&gt;
-top命令:&lt;br&gt;
-&lt;img src=&quot;https://fastly.jsdelivr.net/gh/newdee/BlogImage/20200812160003.png&quot; width=&quot;500&quot; height=&quot;500&quot; alt=&quot;&quot; loading=&quot;lazy&quot;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;https://github.com/aristocratos/bashtop&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;bashtop&lt;/a&gt;命令:&lt;br&gt;
-&lt;img src=&quot;https://fastly.jsdelivr.net/gh/newdee/BlogImage/20200812160404.png&quot; width=&quot;500&quot; height=&quot;500&quot; alt=&quot;&quot; loading=&quot;lazy&quot;&gt;&lt;/p&gt;
-&lt;p&gt;其中，最上面是CPU资源使用情况，左侧是内存和网络资源使用情况，右边是和top一样的进程状态，可以使用方向键来选择进程，或者翻页键来翻页，按f可以filter需要找的进程。&lt;br&gt;
-在选中进程之后，可以使用回车键查看该进程详细信息，t和k健可以terminate或者kill进程，i可以中断进程(interrupt)。&lt;br&gt;
-按q退出，按ESC可以跳回主界面，如果不清楚命令或者快捷键，可以选择HELP查看，总之使用方法比top简单不少。&lt;br&gt;
-缺点，就是感觉没有top出来的快，可能是因为要在terminal上绘图。&lt;/p&gt;
-&lt;h3 id=&quot;文件格式转换工具xxd&quot;&gt;文件格式转换工具xxd&lt;/h3&gt;
-&lt;p&gt;xxd是linux上比较老的文件格式转换工具了，经常使用vim的在打开二进制文件的时候输入的&lt;code&gt;!xxd&lt;/code&gt;就是这个命令，一般作用是将文件转为十六进制。&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;Usage:
-       xxd [options] [infile [outfile]]
-    or
-       xxd -r [-s [-]offset] [-c cols] [-ps] [infile [outfile]]
-Options:
-    -a          toggle autoskip: A single &amp;#39;*&amp;#39; replaces nul-lines. Default off.
-    -b          binary digit dump (incompatible with -ps,-i,-r). Default hex.
-    -C          capitalize variable names in C include file style (-i).
-    -c cols     format &amp;lt;cols&amp;gt; octets per line. Default 16 (-i: 12, -ps: 30).
-    -E          show characters in EBCDIC. Default ASCII.
-    -e          little-endian dump (incompatible with -ps,-i,-r).
-    -g          number of octets per group in normal output. Default 2 (-e: 4).
-    -h          print this summary.
-    -i          output in C include file style.
-    -l len      stop after &amp;lt;len&amp;gt; octets.
-    -o off      add &amp;lt;off&amp;gt; to the displayed file position.
-    -ps         output in postscript plain hexdump style.
-    -r          reverse operation: convert (or patch) hexdump into binary.
-    -r -s off   revert with &amp;lt;off&amp;gt; added to file positions found in hexdump.
-    -s [+][-]seek  start at &amp;lt;seek&amp;gt; bytes abs. (or +: rel.) infile offset.
-    -u          use upper case hex letters.
-    -v          show version: &amp;quot;xxd V1.10 27oct98 by Juergen Weigert&amp;quot;.
-&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;h4 id=&quot;文件转十六进制&quot;&gt;文件转十六进制&lt;/h4&gt;
-&lt;p&gt;最简单的方式是&lt;code&gt;xxd file&lt;/code&gt;,会在终端输出转换后该文件的十六进制内容，使用重定向或者管道可以写到文件或作用于其他输入。&lt;br&gt;
-如果文件比较大，可能转换比较慢，而且很多并不是我们需要的话，可以使用&lt;code&gt;-s&lt;/code&gt;或者&lt;code&gt;-l&lt;/code&gt;参数。&lt;br&gt;
-&lt;code&gt;-s&lt;/code&gt;参数如上所示，“start at &lt;seek&gt; bytes abs”，从指定位置开始转换。
-&lt;code&gt;-l&lt;/code&gt;参数则是指定要转换内容的长度。&lt;/p&gt;
-&lt;h4 id=&quot;二进制文件的比较&quot;&gt;二进制文件的比较&lt;/h4&gt;
-&lt;p&gt;如果要比较两个二进制文件内容是否一致，可以借助于&lt;code&gt;xxd&lt;/code&gt;命令。&lt;br&gt;
-例如，需要比较两个原始的yuv格式视频文件是否一致，比如两种方式通过h264解码出来的文件，平常的&lt;code&gt;diff&lt;/code&gt;命令是无法完成的，可以先利用xxd命令转成十六进制后再进行比较。&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;xxd a.yuv &amp;gt; a.hex
-xxd b.yuv &amp;gt; b.hex
-diff a.hex b.hex &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;之所以举这个例子，是因为yuv是原始视频数据，比如一个1920x1080的h264编码后的视频大小只有8M多，但是其对应的解码后的yuv大小则可能有1.1G多，而使用xxd转成十六进制文件之后，体积可以达到4.5G，直接用&lt;code&gt;diff&lt;/code&gt;命令比较费时，而且用vim打开还容易卡死。而通常只需要比较其中一部分可以判断出解码的文件是否正常，这时候就可以在&lt;code&gt;xxd&lt;/code&gt;命令转换的时候加上&lt;code&gt;-l&lt;/code&gt;或者&lt;code&gt;-s&lt;/code&gt;参数，指定比较的文件位置和长度，可以很快的得到结果。&lt;/p&gt;
-&lt;p&gt;当然，比较方式也不是绝对的，对于视频文件，使用&lt;code&gt;ffmpeg&lt;/code&gt;也可以查看许多详细信息。&lt;/p&gt;
-&lt;h3 id=&quot;应用代理工具proxychains&quot;&gt;应用代理工具proxychains&lt;/h3&gt;
-&lt;p&gt;这个其实很早以前打算说的，不过忘记了。作用有点像chrome里的SwitchyOmega之类的扩展程序，不同的是，SwitchyOmega是针对特定网页选择本地的代理端口和协议，proxychains是针对某个命令或者应用选择本地代理端口和协议。&lt;br&gt;
-安装方法比较简单，ubuntu下直接使用apt命令可以安装:&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;sudo&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; apt&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; install&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; proxychains&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;安装好之后，配置文件放在&lt;code&gt;/etc&lt;/code&gt;目录下的&lt;code&gt;proxychains.conf&lt;/code&gt;文件，修改里面的协议和端口即可。&lt;br&gt;
-使用方式是直接在命令前加上&lt;code&gt;proxychains&lt;/code&gt;,这样只对该命令代理，不影响其他应用。&lt;br&gt;
-比如使用ubuntu的&lt;code&gt;snap&lt;/code&gt;命令下载软件时，通常国内会比较慢，如果有代理，则可以使用:&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;proxychains&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; sudo&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; snap&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; install&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; xxx&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;其实很多工具也不是啥新鲜玩意，不过有时候确实挺实用的，不过仅仅对工具而言，没有任何性质，怎么用在于个人。&lt;/p&gt;
 </content>
   </entry>
 </feed>
