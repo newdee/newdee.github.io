@@ -4,9 +4,75 @@
   <subtitle>dfine's Blog</subtitle>
   <link href="https://dfine.tech/atom.xml" rel="self"/>
   <link href="https://dfine.tech/"/>
-  <updated>2026-08-19T16:12:30+08:00</updated>
+  <updated>2026-08-21T22:28:22+08:00</updated>
   <id>https://dfine.tech/</id>
   <author><name>dfine</name></author>
+  <entry>
+    <title>magpie 本地语义搜索</title>
+    <link href="https://dfine.tech/posts/88b0593b/"/>
+    <id>https://dfine.tech/posts/88b0593b/</id>
+    <published>2026-08-21T22:28:22+08:00</published>
+    <updated>2026-08-21T22:28:22+08:00</updated>
+    <category term="Rust"/>
+    <category term="Tauri"/>
+    <category term="工具"/>
+    <content type="html">&lt;p&gt;星标过的仓库再也没打开过第二次，截图知道长什么样却翻不到，书签埋在几层文件夹里，这些东西的共同点是存的时候很顺手、找的时候全靠运气。&lt;br&gt;
+喜鹊爱叼亮闪闪的东西回窝，然后忘了放哪儿，所以叫 magpie。按一下 &lt;code&gt;Alt+Space&lt;/code&gt;，把还记得的那点描述打进去，或者直接丢一张图进去，回车。&lt;br&gt;
+本地跑，不联网，不扫全盘。&lt;/p&gt;
+&lt;!--more--&gt;
+&lt;h3 id=&quot;三个源&quot;&gt;三个源&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;Tab&lt;/code&gt; 在三个源之间切。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;本地文件&lt;/strong&gt;——你手动加进来的目录，里面每个文件都能按名字找到；认识的格式连内容一起进全文索引。约八十种纯文本与代码格式整篇读进去，PDF 走 pdf-inspector 抽文字，docx/xlsx/pptx 拆出文本部分，剩下的视频、压缩包、二进制按文件名索引。图片单独走视觉模型。&lt;br&gt;
+&lt;strong&gt;GitHub 星标&lt;/strong&gt;——贴一个不需要任何 scope 的 token，整份星标列表同步下来：名字、描述、topics，加上完整 README。取消星标能识别，README 拉取带 ETag，只有内容真变了才重新嵌入。每行显示最后推送时间，荒废的项目一眼能看出来。&lt;br&gt;
+&lt;strong&gt;浏览器书签&lt;/strong&gt;——直接读本地的书签文件，不走浏览器 API、不需要登录。Chromium 系的按磁盘上的 profile 布局自动发现，Chrome、Edge、Brave、Vivaldi、Arc 以及各种小众分支都认，加上 Firefox，所有 profile 一起读。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&quot;检索&quot;&gt;检索&lt;/h3&gt;
+&lt;p&gt;关键词和语义各自召回一路，再按名次融合。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/images/magpie-retrieval.svg&quot; alt=&quot;magpie 的一次检索&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
+&lt;p&gt;关键词那路是 SQLite 的 FTS5，BM25 排序；语义那路是本地跑的 &lt;code&gt;multilingual-e5-small&lt;/code&gt;，384 维。两路各取前五十条，交给倒数排名融合。&lt;br&gt;
+选融合而不是加权求和，是因为 BM25 的分数和余弦相似度不是一个量纲，直接加权等于拍脑袋定系数，换个语料就得重调。倒数排名融合只吃名次，两路都靠前的会被抬上来，只在一路出现的也不会被埋掉。余弦值仍然有用，但只以 0.005 的权重叠上去，作用是破平局，不是主导排序。&lt;br&gt;
+跨语言是白送的。e5 是多语言模型，中文查询能命中英文 README 和代码注释，反过来也行，一百多种语言。&lt;br&gt;
+长内容切块，每块约 1600 字符、重叠 200 字符，一块一个向量，一个文件最多 128 块。检索时一个文件按它最好的那一块算分，所以一句话埋在第一百页里也捞得出来，README 很长的仓库也不会因为整体稀释而沉底。切块优先在换行处断，不硬切在词中间。&lt;br&gt;
+向量不是每次查询去库里读，是全部常驻内存。分块之后一次按键要读几十 MB，边打字边查撑不住。L2 归一化之后余弦就是点积，几万块全量暴力算是十几毫秒的事，召回率 100%，省掉一整套近似索引。真到撑不住那天，&lt;code&gt;sqlite-vec&lt;/code&gt; 落进同一个文件就行。&lt;br&gt;
+模型没就绪也能用。查询向量是可空的，没有就只走关键词那一路。首次启动要下大约 700 MB 模型，这段时间搜索照常出结果，不是转圈等。&lt;/p&gt;
+&lt;h3 id=&quot;图片&quot;&gt;图片&lt;/h3&gt;
+&lt;p&gt;图片用 SigLIP 2 嵌入，文字和图片在同一个空间里，所以两个方向都通。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;文字找图——打「海边日落」，或者任何语言的同义描述，匹配的照片和别的结果一起排出来，带缩略图。&lt;br&gt;
+图找图——把图拖进面板、粘贴一张截图，或者点选图按钮，返回最相似的若干张，带余弦相似度百分比。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;这块没用现成的封装。fastembed 的 ImageEmbedding 对三维输出默认按 CLS token 池化，而 SigLIP 用的是 MAP head、根本没有 CLS token，套上去出来的向量是错的。所以这一层自己持有 ONNX session、自己做预处理和输出选择。&lt;br&gt;
+图片向量上带着模型标识，换了模型或者换了权重文件，旧向量自动作废重算，不会留下两个空间里的向量混在一起比大小。损坏读不出来的图片会打一个零维标记，下次不再重试。&lt;/p&gt;
+&lt;h3 id=&quot;只读你指定的目录&quot;&gt;只读你指定的目录&lt;/h3&gt;
+&lt;p&gt;这条是靠结构保证的，不是靠承诺。&lt;/p&gt;
+&lt;p&gt;magpie 只索引你显式添加的目录，指向你的工作目录，别的地方一个字节都不会读。目录内递归，但 &lt;code&gt;.gitignore&lt;/code&gt; 规则照样生效（哪怕那个目录不是 git 仓库），隐藏文件跳过，符号链接不跟出所选目录。加目录的时候会挡住嵌套和重复。&lt;br&gt;
+索引就是用户目录下的一个 SQLite 文件。嵌入模型走 ONNX 本地跑，一次性下载完之后整个东西离线可用。书签直接读本地文件。没有任何东西发出去。&lt;br&gt;
+设置里能看到到底索引了哪些目录，删掉一个，它的文件记录、全文索引、向量一起抹掉。每个目录和星标索引都有单独的重建按钮。&lt;/p&gt;
+&lt;p&gt;索引是增量的：启动时、手动刷新、以及每三十分钟的定时器，各扫一遍新增、修改和删除。mtime 和大小都没变的文件直接跳过。&lt;/p&gt;
+&lt;h3 id=&quot;用法&quot;&gt;用法&lt;/h3&gt;
+&lt;p&gt;从 &lt;a href=&quot;https://github.com/newdee/magpie/releases&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;Releases&lt;/a&gt; 拿构建：Windows 的 NSIS 安装包，macOS 的 dmg（Apple Silicon），Linux 的 AppImage/deb/rpm。&lt;/p&gt;
+&lt;p&gt;macOS 的包没签名，从浏览器下 dmg 会被 Gatekeeper 拦。用 curl 装可以完全绕开隔离属性：&lt;/p&gt;
+&lt;figure class=&quot;code&quot; data-lang=&quot;sh&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;sh&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;curl&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -L&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; https://github.com/newdee/magpie/releases/latest/download/magpie_aarch64.app.tar.gz&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt; |&lt;/span&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt; tar&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; xz&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -C&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; /Applications&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;自己编译：&lt;/p&gt;
+&lt;figure class=&quot;code&quot; data-lang=&quot;sh&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;sh&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;pnpm&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; install&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;pnpm&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; tauri&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; dev&lt;/span&gt;&lt;span style=&quot;color:#A0ADA0;--shiki-dark:#758575DD&quot;&gt;      # 开发&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;pnpm&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; tauri&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; build&lt;/span&gt;&lt;span style=&quot;color:#A0ADA0;--shiki-dark:#758575DD&quot;&gt;    # 出包&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;cargo&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; test&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -p&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; magpie-core&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;键位就这些：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;Alt+Space&lt;/code&gt; 唤出或收起（可改）· &lt;code&gt;↑&lt;/code&gt; &lt;code&gt;↓&lt;/code&gt; 与 &lt;code&gt;PgUp&lt;/code&gt; &lt;code&gt;PgDn&lt;/code&gt; 翻结果 · &lt;code&gt;Enter&lt;/code&gt; 打开，仓库和书签进浏览器，文件在资源管理器/访达里定位 · &lt;code&gt;Ctrl+Enter&lt;/code&gt; 把输入交给浏览器，像网址就直接开，否则搜一下 · &lt;code&gt;Tab&lt;/code&gt; 换源 · &lt;code&gt;Shift+Tab&lt;/code&gt; 切本地范围（全部/文本/图片）或星标排序 · &lt;code&gt;Esc&lt;/code&gt; 依次清掉图片查询、关设置、收窗口&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;面板停在屏幕上方居中，压在所有窗口之上，失焦不隐藏——不然拖放就没法用了，拖标签条可以挪位置。&lt;/p&gt;
+&lt;h3 id=&quot;限制&quot;&gt;限制&lt;/h3&gt;
+&lt;p&gt;扫描 PDF 和截图里的文字现在读不出来，那种 PDF 只能按文件名找到，OCR 还没做。&lt;br&gt;
+没有预览面板，命中之后只能开出去看。&lt;br&gt;
+macOS 的包没签名也没公证，装的时候要多一步。&lt;br&gt;
+向量是暴力算的，几万块没问题，真堆到几十万得换检索结构。&lt;br&gt;
+Twitter 的喜欢想做，但只能走数据导出的归档文件，官方 API 现在要钱。&lt;/p&gt;
+&lt;p&gt;代码是 MIT，Rust 核心在 &lt;code&gt;core/&lt;/code&gt;，Tauri 壳很薄，前端就一个窗口。起因是星标列表只能按名字搜，而人记得住的通常是「那个用 Rust 写的、干什么用的东西」，偏偏就是想不起来叫什么。现在把那句话打进去能出来，暂时就够用了。&lt;/p&gt;
+</content>
+  </entry>
   <entry>
     <title>OpenViking 的上下文组织与检索</title>
     <link href="https://dfine.tech/posts/befcc948/"/>
@@ -2040,371 +2106,6 @@ Neon 的做法是把视频音轨渲染到你选的输出设备（注意是输出
 &lt;p&gt;代码在 &lt;a href=&quot;https://github.com/newdee/neon&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;newdee/neon&lt;/a&gt;，MIT。当前 0.1.4。&lt;/p&gt;
 &lt;p&gt;media source 的接口面和事件契约参考了 &lt;a href=&quot;https://github.com/smourier/VCamSample&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;smourier/VCamSample&lt;/a&gt;，那是我读 &lt;code&gt;MFCreateVirtualCamera&lt;/code&gt; 时唯一找到的完整可跑样例，省了我大量时间。&lt;/p&gt;
 &lt;p&gt;有 Windows 11 的话装个包试试，一条视频当摄像头这件事比想象的有用 —— 至少下次开会不想露脸的时候有个正当理由了。&lt;/p&gt;
-</content>
-  </entry>
-  <entry>
-    <title>LiteReality-Agent笔记: 从一次扫描到可交互的房间</title>
-    <link href="https://dfine.tech/posts/e2482d34/"/>
-    <id>https://dfine.tech/posts/e2482d34/</id>
-    <published>2026-08-10T14:20:00+08:00</published>
-    <updated>2026-08-10T14:20:00+08:00</updated>
-    <category term="三维重建"/>
-    <category term="Agent"/>
-    <category term="Blender"/>
-    <category term="Python"/>
-    <content type="html">&lt;p&gt;好久没写点正经的东西了，上一篇还是折腾容器的事。这两天读了一个叫LiteReality-Agent的项目，是用手机扫一遍房间，然后端到端生成一个可编辑、可渲染、门窗抽屉都能动的三维场景。&lt;br&gt;
-本来只想看看它怎么调模型的，结果被它的工程组织方式吸引了，索性做个笔记。主要记录它的流水线结构、agent的关进笼子的方式，以及几处让我后背发凉的坑。&lt;/p&gt;
-&lt;!--more--&gt;
-&lt;center&gt;
-&lt;p&gt;&lt;picture&gt;&lt;source srcset=&quot;/images/litereality-demo.jpg.webp&quot; type=&quot;image/webp&quot;&gt;&lt;img src=&quot;/images/litereality-demo.jpg&quot; alt=&quot;RGBD扫描与重建结果&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; width=&quot;1440&quot; height=&quot;810&quot;&gt;&lt;/picture&gt;&lt;/p&gt;
-&lt;/center&gt;
-&lt;h3 id=&quot;先说问题在哪&quot;&gt;先说问题在哪&lt;/h3&gt;
-&lt;p&gt;手机扫房间在2026年已经不难了，Apple的RoomPlan走一圈就能给出一串RGB帧、深度、ARKit相机位姿，以及一个&lt;code&gt;room.usdz&lt;/code&gt;，里面有墙面、门窗洞口和一组粗糙的物体包围盒。&lt;br&gt;
-难的是这堆东西离「能用的三维场景」还差得远。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;RoomPlan给的是物体包围盒加类别标签，做图形要的是有真实几何和材质的网格；&lt;br&gt;
-给的是不可编辑的usdz，要的是能改、能重编译、能导出的场景源；&lt;br&gt;
-给的是静态几何，要的是门会转、抽屉会拉、洗碗机门会翻下来；&lt;br&gt;
-给的是「大概像个房间」，要的是「就是这间屋子」。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;最后一条最容易被忽略。多数生成式场景重建的验收标准是「看起来像个合理的房间」，而不是「和我扫的那间对得上」。这个项目整条设计都在咬后者。&lt;/p&gt;
-&lt;p&gt;顺手数了一下规模: &lt;code&gt;src/&lt;/code&gt;下183个python文件，28219行；&lt;code&gt;tests/&lt;/code&gt;下41个&lt;code&gt;test_*.py&lt;/code&gt;；100个提交；要求python &lt;code&gt;&amp;gt;=3.10,&amp;lt;3.13&lt;/code&gt;；Apache-2.0；版本号还是&lt;code&gt;0.0.1&lt;/code&gt;，Development Status写的Alpha。&lt;br&gt;
-一个两万八千行的alpha项目，架构文档能和代码逐条对得上，这事本身就不多见。&lt;/p&gt;
-&lt;h3 id=&quot;一条命令&quot;&gt;一条命令&lt;/h3&gt;
-&lt;p&gt;支持的入口只有一个CLI。&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;uv&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; run&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; litereality&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; run&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; /path/to/capture&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;没有扫描数据也能试，官方放了示例房间。&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;git&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; clone&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; https://github.com/LiteReality/example-scans.git&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;uv&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; run&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; litereality&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; run&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; example-scans/&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt;&amp;#x3C;&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;sca&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;n&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt;&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;跑完之后直接在浏览器里走进去。&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;uv&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; run&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; litereality&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; view&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; run/&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt;&amp;#x3C;&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;sca&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;n&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt;&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;产物是通用格式，&lt;code&gt;room_preview/Room.glb&lt;/code&gt;材质已烘焙、动画clip完整，Blender/Unity/Unreal/Web都能吃；&lt;code&gt;room_preview/Room.blend&lt;/code&gt;是同一个房间的Blender场景；&lt;code&gt;room/&lt;/code&gt;是可编辑的源，整个房间在这里定义。&lt;/p&gt;
-&lt;h3 id=&quot;五个stage两个phase&quot;&gt;五个stage，两个phase&lt;/h3&gt;
-&lt;p&gt;架构文档第一句就把全貌摊开了。&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;cli.py → PipelineRunner → scene_init                    → realism_authoring
-                          ingest → reconstruct → seed      author → publish&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;五个公开stage声明在&lt;code&gt;pipeline/stages.py&lt;/code&gt;里，十几行看完。&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;STAGES = (
-    Stage(&amp;quot;ingest&amp;quot;, ingest.run, is_complete=ingest.complete),
-    Stage(&amp;quot;reconstruct&amp;quot;, reconstruct.run, (&amp;quot;ingest&amp;quot;,), is_complete=reconstruct.complete),
-    Stage(&amp;quot;seed&amp;quot;, seed.run, (&amp;quot;reconstruct&amp;quot;,), is_complete=seed.complete),
-    Stage(&amp;quot;author&amp;quot;, author.run, (&amp;quot;seed&amp;quot;,), is_complete=author.complete),
-    Stage(&amp;quot;publish&amp;quot;, publish.run, (&amp;quot;author&amp;quot;,), is_complete=publish.complete),
-)&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;每个stage带两样东西: 前置依赖元组，和一个&lt;code&gt;is_complete(context)&lt;/code&gt;谓词。这两个撑起了整个可恢复语义，后面会看到。&lt;/p&gt;
-&lt;h4 id=&quot;确定性与agentic的分界&quot;&gt;确定性与agentic的分界&lt;/h4&gt;
-&lt;p&gt;这是整个项目最重要的一条线。&lt;br&gt;
-&lt;code&gt;scene_init&lt;/code&gt;是&lt;strong&gt;确定性的&lt;/strong&gt;——读扫描、检测、生成物体、拼成种子房间，同样输入出同样东西，没有模型在里面拍脑袋做布局决策。&lt;code&gt;realism_authoring&lt;/code&gt;是agentic的——agent拿着种子房间，对着原始扫描的照片看，然后改代码，直到房间和照片对上。&lt;br&gt;
-两半可以各自单独跑。&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;uv&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; run&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; litereality&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; run&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; /path/to/capture&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; --through&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; seed&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;uv&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; run&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; litereality&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; stage&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; author&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; run/my-room&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; --force&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; --polish&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; --live&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;&lt;code&gt;--polish&lt;/code&gt;在authoring之后追加三个可选pass: 物体精修、材质、模型驱动的质量检查。&lt;code&gt;--live&lt;/code&gt;开一个浏览器视图，边跑边看房间被搭起来，旁边是agent的完整trace。&lt;br&gt;
-把这条线画明，调试时永远知道该骂谁: 布局歪了是&lt;code&gt;seed&lt;/code&gt;的问题，材质不对是agent的问题。很多把LLM塞进流水线的项目坏在这条线是糊的。&lt;/p&gt;
-&lt;h3 id=&quot;pipelinerunner&quot;&gt;PipelineRunner&lt;/h3&gt;
-&lt;p&gt;&lt;code&gt;pipeline/runner.py&lt;/code&gt;只有154行，但把可恢复流水线这件事做对了。状态落在&lt;code&gt;run/&amp;lt;scene&amp;gt;/.litereality/pipeline.json&lt;/code&gt;，原子写。&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;python&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;python&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt;def&lt;/span&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt; _write_state&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;(&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;self&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;,&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; context&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;:&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; RunContext&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;,&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; state&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;:&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; dict&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;[&lt;/span&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt;str&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;,&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; Any&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;])&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; -&gt;&lt;/span&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt; None&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;:&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;    context&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;state_path&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;parent&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;mkdir&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;(&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt;parents&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;True&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;,&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; exist_ok&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;True&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;)&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;    tmp &lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; context&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;state_path&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;with_suffix&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;(&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;.tmp&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;)&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;    tmp&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;write_text&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;(&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;json&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;dumps&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;(&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;state&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;,&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; indent&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#2F798A;--shiki-dark:#4C9A91&quot;&gt;2&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;,&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; sort_keys&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;True&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;),&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; encoding&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;utf-8&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;)&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;    tmp&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;replace&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;(&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;context&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;state_path&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;)&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;先写&lt;code&gt;.tmp&lt;/code&gt;再&lt;code&gt;replace&lt;/code&gt;，中途断电不会留下半个JSON。基本功，但很多人不做。&lt;/p&gt;
-&lt;h4 id=&quot;force会级联失效下游&quot;&gt;force会级联失效下游&lt;/h4&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;forced_indexes = [i for i, stage in enumerate(self.stages) if stage.name in force]
-invalidate_from = min(forced_indexes) if forced_indexes else len(self.stages)
-for stage in self.stages[invalidate_from:]:
-    prior.pop(stage.name, None)&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;强制重跑&lt;code&gt;reconstruct&lt;/code&gt;，那么&lt;code&gt;seed&lt;/code&gt;、&lt;code&gt;author&lt;/code&gt;、&lt;code&gt;publish&lt;/code&gt;的完成记录全部作废。这是对的，上游变了下游的「已完成」就是谎话。见过太多流水线在这里偷懒，结果拿旧的authoring结果配新几何，产出一个谁也解释不了的场景。&lt;/p&gt;
-&lt;h4 id=&quot;磁盘状态可以反过来认领内存状态&quot;&gt;磁盘状态可以反过来认领内存状态&lt;/h4&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;for prerequisite in stage.prerequisites:
-    dependency = self.by_name[prerequisite]
-    if (prerequisite not in completed
-            and dependency.is_complete is not None
-            and dependency.is_complete(context)):
-        reused = StageResult(prerequisite, StageStatus.REUSED)&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;直接跑&lt;code&gt;litereality stage author&lt;/code&gt;，runner发现&lt;code&gt;seed&lt;/code&gt;没在状态文件里，但磁盘上&lt;code&gt;Room.py&lt;/code&gt;确实躺着，那就承认它，标成&lt;code&gt;REUSED&lt;/code&gt;。这让状态文件丢了不再是灾难，磁盘产物本身就是事实来源。&lt;/p&gt;
-&lt;h4 id=&quot;环境变量的兼容桥被关在编排边界&quot;&gt;环境变量的兼容桥被关在编排边界&lt;/h4&gt;
-&lt;p&gt;一部分从旧代码移植来的stage还在读全局环境变量。作者没有逐个去改，而是在唯一一处用&lt;code&gt;patch.dict&lt;/code&gt;把环境注进去，stage一返回立刻还原调用方的进程环境。&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;# Several ported stage implementations still read canonical environment
-# names. Keep that compatibility bridge at the orchestration boundary and
-# restore the caller&amp;#39;s process immediately after the stage returns.
-with patch.dict(os.environ, context.environment, clear=True):
-    result = stage.run(context, stage_options)&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;这是我很欣赏的处理历史债的姿态: 把脏东西收敛到一个点，并在注释里写明它为什么在那里。既不假装它不存在，也不为了洁癖去做一次高风险大重构。&lt;/p&gt;
-&lt;p&gt;CLI层的状态输出也干净。&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;✓ ingest       completed   142.3s
-↻ reconstruct  reused        0.0s
-⊘ author       skipped       0.0s
-✗ publish      failed       12.1s — final compile failed; see ...&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;h3 id=&quot;房间是一段可读的程序&quot;&gt;房间是一段可读的程序&lt;/h3&gt;
-&lt;p&gt;这是整个项目最聪明的一个决定: 房间的源不是JSON，不是usdz，是一个python程序。&lt;br&gt;
-格式契约如下。&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;Room/
-├── Room.py                语义外壳 + 物体摆放程序
-├── Room.md                编辑指南（给agent看的）
-├── manifest.json          物体到RoomPlan的映射
-└── Objects/
-    ├── Procedural/&amp;lt;name&amp;gt;/  object.py, object.md, textures.json
-    └── Static/&amp;lt;name&amp;gt;/      源GLB + 统一的object.py包装&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;编译产物单独放，随时可重新生成。&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;room_preview/
-├── Room.glb
-├── Room.blend
-├── room_layout.json
-└── Object/&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;&lt;code&gt;Room.py&lt;/code&gt;里嵌的是可读的几何: 墙的端点、门窗洞口、地板天花板高度、物体包围盒。程序化物体保留可编辑的Blender构建代码和纹理配方，神经网络生成的静态资产保留源GLB。&lt;br&gt;
-为什么这个决定重要? 因为它让「agent编辑场景」退化成了「agent编辑代码」——一个LLM已经很擅长的问题。不需要发明场景编辑DSL，不需要给agent一堆&lt;code&gt;move_object(id, x, y, z)&lt;/code&gt;工具，agent就用它最熟的&lt;code&gt;Read&lt;/code&gt;/&lt;code&gt;Edit&lt;/code&gt;/&lt;code&gt;Write&lt;/code&gt;改python文件，然后重新编译看结果。&lt;br&gt;
-&lt;code&gt;room_ops&lt;/code&gt;包拥有这个表示，以及所有不依赖流水线状态的操作: 读写manifest、编译Blender和GLB、渲染、导出、起可行走的viewer。公开API就两行。&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;from litereality_agent.room_ops import compile_room, export_scene
-
-room = export_scene(&amp;quot;office-elliott&amp;quot;)
-glb = compile_room(room)&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;还有一条纪律: import &lt;code&gt;room_ops&lt;/code&gt;不会启动Blender，只有显式的compile/render操作才会。&lt;/p&gt;
-&lt;h3 id=&quot;agent的能力工具是个闭集&quot;&gt;agent的能力工具是个闭集&lt;/h3&gt;
-&lt;p&gt;agent手里除了&lt;code&gt;Read&lt;/code&gt;/&lt;code&gt;Edit&lt;/code&gt;/&lt;code&gt;Write&lt;/code&gt;/&lt;code&gt;Glob&lt;/code&gt;，还有六个领域能力工具，&lt;code&gt;agent/tools/default_registry.py&lt;/code&gt;是唯一真值来源。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;code&gt;fetch_material&lt;/code&gt;: 从Poly Haven抓真实PBR材质集(diffuse+rough+normal)，可选重新着色&lt;br&gt;
-&lt;code&gt;select_views&lt;/code&gt;: 为房间、某面墙或某个物体挑最合适的采集帧，绝不让agent猜帧号&lt;br&gt;
-&lt;code&gt;render&lt;/code&gt;: 针对一个目标层出「渲染图 ‖ 照片」对照，自动取景并重新编译&lt;br&gt;
-&lt;code&gt;grid&lt;/code&gt;: 在表面拼图上画公制标尺，读出装置的(u, z)米坐标而不是估&lt;br&gt;
-&lt;code&gt;critic&lt;/code&gt;: VLM打分，对着目标给&lt;code&gt;{pass, score, issues}&lt;/code&gt;，是判官&lt;br&gt;
-&lt;code&gt;check_collisions&lt;/code&gt;: 真网格穿插和包含检测，object↔object、穿墙、出房间、离地，还有机器人风格的铰接门窗检查，每条都附一个公制的挪动或缩放修正建议&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;关键设计在&lt;code&gt;select_views&lt;/code&gt;和&lt;code&gt;grid&lt;/code&gt;这两个: 凡是agent容易「合理地猜错」的量，都变成一次工具调用去读。帧号、米制坐标，这些东西LLM编起来毫无阻力，而且编出来的值看着完全合理。做成可查询的工具，比在prompt里写「请不要猜」有效得多。&lt;br&gt;
-&lt;code&gt;critic&lt;/code&gt;是个VLM judge，输入图像和一句目标描述，输出结构化的通过与否加问题列表。有了它authoring才成为闭环，而不是一次开环生成。&lt;br&gt;
-另外&lt;code&gt;compile&lt;/code&gt;不是注册工具，它是&lt;code&gt;render&lt;/code&gt;内部用的共享代码。agent只能通过&lt;code&gt;render&lt;/code&gt;顺带编译，不能单独调编译——少一个工具，少一条走错的路。&lt;/p&gt;
-&lt;h4 id=&quot;退役的工具也留了记录&quot;&gt;退役的工具也留了记录&lt;/h4&gt;
-&lt;p&gt;&lt;code&gt;agent/tools/README.md&lt;/code&gt;里有个「retired tools」小节，写着旧的闭环驱动器（&lt;code&gt;agent/harness/loop.py&lt;/code&gt;，一套11个原语加3个复合的闭集配裸API循环）已经删除，退役的原语被停放在&lt;code&gt;legacy/&lt;/code&gt;下仅供参考，活跃路径没有任何东西import它们。&lt;br&gt;
-把「我们试过什么、为什么不用了、残骸在哪」写进文档，比只留下当前状态有价值得多。半年后有人问「为什么不做成闭集工具」，答案在仓库里。&lt;/p&gt;
-&lt;h3 id=&quot;harness和model是两个正交旋钮&quot;&gt;harness和model是两个正交旋钮&lt;/h3&gt;
-&lt;p&gt;&lt;code&gt;agent/providers/base.py&lt;/code&gt;开头就点明的抽象，我认为是这个项目最有普适价值的一条。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;harness   agent循环: 文件工具、权限模型、MCP接线、hooks、事件流&lt;br&gt;
-model     循环里的那颗脑子(&lt;code&gt;HARNESS_MODEL&lt;/code&gt;、&lt;code&gt;LR_PROCEDURAL_MODEL&lt;/code&gt;…)&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;选择靠配置解析，优先级是&lt;code&gt;LR_&amp;lt;ROLE&amp;gt;_PROVIDER&lt;/code&gt; &amp;gt; &lt;code&gt;LR_AGENT_PROVIDER&lt;/code&gt; &amp;gt; &lt;code&gt;claude&lt;/code&gt;。支持两个harness: &lt;code&gt;claude&lt;/code&gt;走&lt;code&gt;claude_agent_sdk&lt;/code&gt;，&lt;code&gt;codex&lt;/code&gt;走&lt;code&gt;codex exec&lt;/code&gt;。&lt;/p&gt;
-&lt;h4 id=&quot;harness不是功能等价的而且这件事被显式建模了&quot;&gt;harness不是功能等价的，而且这件事被显式建模了&lt;/h4&gt;
-&lt;p&gt;每个harness声明一个&lt;code&gt;supports&lt;/code&gt;集合，调用方分支判断而不是假设。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;code&gt;hooks&lt;/code&gt;: 能在工具调用真正执行前拒绝或引导它，用于step budget的优雅收尾&lt;br&gt;
-&lt;code&gt;inproc_tools&lt;/code&gt;: 能力工具跑在本进程，不用stdio MCP子进程&lt;br&gt;
-&lt;code&gt;cost&lt;/code&gt;: 会报告这次session花了多少钱&lt;br&gt;
-&lt;code&gt;skills&lt;/code&gt;: 原生加载&lt;code&gt;.claude/skills&lt;/code&gt;包&lt;br&gt;
-&lt;code&gt;restricted&lt;/code&gt;: 工具白名单真的被执行(Codex永远有shell权限)&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;源码注释里那句话写得很好。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;Harnesses are NOT feature-equivalent, and pretending otherwise is how a step budget silently stops existing.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;具体差异: Claude Code在进程内托管能力工具、能用&lt;code&gt;PreToolUse&lt;/code&gt; hook引导session收尾、报告成本、遵守工具白名单、把文件读取暴露成可观测的&lt;code&gt;Read&lt;/code&gt;调用。Codex跑在进程外，能力工具通过&lt;code&gt;agent/tools/mcp_server.py&lt;/code&gt;走stdio MCP桥接，step budget退化成硬停，shell权限没法收回，不报成本。&lt;br&gt;
-然后是我最喜欢的部分——&lt;code&gt;providers.describe()&lt;/code&gt;把这些差距打印到stage头部。&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;if spec.step_budget &amp;gt; 0:
-    native = &amp;quot;hooks&amp;quot; in harness.supports
-    parts.append(
-        f&amp;quot;step budget={spec.step_budget}&amp;quot;
-        + (f&amp;quot; (wind-down at {max(1, spec.step_budget - max(0, spec.step_reserve))})&amp;quot;
-           if native
-           else f&amp;quot; (HARD STOP — {harness.name} has no pre-tool hook, no wind-down)&amp;quot;)
-    )
-...
-if spec.file_tools and &amp;quot;restricted&amp;quot; not in harness.supports:
-    parts.append(&amp;quot;WARNING: tool allowlist not enforced (shell access is always on)&amp;quot;)&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;配套的注释是。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;A missing capability must be visible in the log. …a run that quietly lost its graceful landing looks identical to one that never had it.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;降级运行绝不能长得像正常运行。这条我准备直接搬到自己项目里。&lt;/p&gt;
-&lt;h4 id=&quot;step-budget的优雅落地&quot;&gt;step budget的优雅落地&lt;/h4&gt;
-&lt;p&gt;&lt;code&gt;SessionSpec&lt;/code&gt;里这两个字段设计得很细。&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;# Graceful landing: at `step_budget` tool calls the session ends; for the last `step_reserve`
-# of them the capability tools are switched off so what remains goes to final edits.
-# 0 disables. Honoured natively where &amp;quot;hooks&amp;quot; is supported, emulated (hard stop) otherwise.
-step_budget: int = 0
-step_reserve: int = 0&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;不是到点就砍，而是到点前留一段预算，把能力工具关掉，逼agent用剩下的步数把编辑落盘。做过长agent循环的人都懂这个痛: 硬停最恶劣的形态是agent刚渲染完、正准备改文件，被掐了，一轮全废。&lt;/p&gt;
-&lt;h4 id=&quot;事件流被归一化了&quot;&gt;事件流被归一化了&lt;/h4&gt;
-&lt;p&gt;&lt;code&gt;TextBlock&lt;/code&gt;、&lt;code&gt;ToolUseBlock&lt;/code&gt;、&lt;code&gt;ToolResultBlock&lt;/code&gt;、&lt;code&gt;AgentMessage&lt;/code&gt;、&lt;code&gt;SessionResult&lt;/code&gt;，字段名故意对齐&lt;code&gt;claude_agent_sdk&lt;/code&gt;的block形状，这样&lt;code&gt;ToolNarrator&lt;/code&gt;、&lt;code&gt;AgentTrace&lt;/code&gt;、拼图覆盖率检查、&lt;code&gt;Room.py&lt;/code&gt; checkpointer这些消费者一套代码吃两个harness。&lt;br&gt;
-&lt;code&gt;AgentMessage.raw&lt;/code&gt;保留harness自己的原始对象，所以raw trace sidecar是逐字保真的。&lt;code&gt;normalise_blocks&lt;/code&gt;对不认识的block类型原样透传而不是丢掉。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;Unknown blocks are kept rather than dropped: consumers ignore what they do not recognise, but the raw trace should never lose something because this mapping had not heard of it.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;还有一条带血的注释，在&lt;code&gt;ToolResultBlock&lt;/code&gt;上。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;Carries &lt;code&gt;tool_use_id&lt;/code&gt;, never the tool's name — see tool_narration.py for what reading a name off this block cost us.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;「从这个block上读工具名，让我们付了什么代价」。这种注释比任何设计文档都值钱。&lt;/p&gt;
-&lt;h3 id=&quot;复杂度路由-trellis还是procedural&quot;&gt;复杂度路由: TRELLIS还是procedural&lt;/h3&gt;
-&lt;p&gt;物体重建不是一条路走到黑，&lt;code&gt;classify_complexity.py&lt;/code&gt;给每个物体做路由。&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;object_init产出干净参考图
-  → classify_complexity路由
-      ├── 椅子 / 沙发 / 抽象几何   → TRELLIS（神经生成，静态GLB）
-      └── 规则盒体 / 家电几何      → procedural（Blender原语 + PBR）&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;这个划分很务实。TRELLIS擅长有机形状，但它给不了你正确的关节；而桌子、储物柜、洗碗机、电视、水槽这类东西几何规则，但运动方式必须对。&lt;br&gt;
-procedural路线的核心洞见写在&lt;code&gt;models/object_generation/README.md&lt;/code&gt;里。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;RoomPlan only detects a fixed set of object categories, so we hand-author a detailed spec per category — geometry, materials, and exactly how each part moves.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;因为RoomPlan的类别集是封闭有限的，所以「每个类别手写一份详细规格」是可完成的工作量，不是无底洞。&lt;code&gt;category_specs.py&lt;/code&gt;是16KB纯领域知识，定义了每类物体的几何、材质，以及每个部件具体怎么动。生成时把类别规格、该物体真实的RoomPlan尺寸、干净参考图一起注入agent prompt。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;the dishwasher door drops to horizontal, the drawer pulls out along +Y, the cabinet door swings on its outer vertical edge&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;洗碗机门翻到水平、抽屉沿+Y拉出、柜门绕外侧竖边旋转。这些不是模型猜的，是规格里写死的。&lt;br&gt;
-产物里每个运动部件带glTF node extras，有&lt;code&gt;articulation_type&lt;/code&gt;(revolute或prismatic)、&lt;code&gt;articulation_axis&lt;/code&gt;、&lt;code&gt;limit_min&lt;/code&gt;和&lt;code&gt;limit_max&lt;/code&gt;，仿真器可以直接读。这就是「可交互」三个字的落点，不是「能点击」，是物理仿真意义上的关节。&lt;br&gt;
-顺带，这条路线的驱动是一个Claude Code skill(&lt;code&gt;image-to-articulated-glb&lt;/code&gt;)，装在&lt;code&gt;articulated-glb-agent/.claude/skills/&lt;/code&gt;下，再被python launcher批量调用。用skill封装「图到铰接GLB」这个能力，这个组合挺有启发性。&lt;/p&gt;
-&lt;h3 id=&quot;最后一道闸门不含模型&quot;&gt;最后一道闸门不含模型&lt;/h3&gt;
-&lt;p&gt;agent会犯错，所以收尾是纯几何的。&lt;code&gt;pipeline/room_qc/checks.py&lt;/code&gt;的docstring直接列清了要报什么。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;code&gt;below_floor&lt;/code&gt; / &lt;code&gt;above_ceiling&lt;/code&gt;: 物体穿出地板或天花板&lt;br&gt;
-&lt;code&gt;floating&lt;/code&gt; / &lt;code&gt;sunk&lt;/code&gt;: 落地家具没落在地上&lt;br&gt;
-&lt;code&gt;outside_room&lt;/code&gt;: 物体中心跑到房间轮廓外&lt;br&gt;
-&lt;code&gt;wall_clash&lt;/code&gt;: 家具插进墙板&lt;br&gt;
-&lt;code&gt;object_clash&lt;/code&gt;: 两件家具互相穿插&lt;br&gt;
-&lt;code&gt;fixture_over_opening&lt;/code&gt;: 墙面装置压在门窗洞口上&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;关键在下一句: 正确的重叠不报。台下式水槽本来就在台面里、嵌入式烤箱本来就在橱柜里、椅子本来就塞在桌子下，这些在&lt;code&gt;EXPECTED_CONTAINMENT&lt;/code&gt;和&lt;code&gt;PASSTHROUGH&lt;/code&gt;里白名单化。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;Everything is pure arithmetic over AABBs, so it's fast, exact, and needs no LLM.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;一个agentic项目最后用纯AABB算术把关，这个层次感是对的: 能用算术判定的事情不要交给模型。报出来的问题由&lt;code&gt;room_qc/fix.py&lt;/code&gt;挪动家具解决。&lt;br&gt;
-而且盒体运算只有一份，住在每轮agent调用都会用的那个工具里(&lt;code&gt;agent/tools/check_collisions/source/geometry.py&lt;/code&gt;)，&lt;code&gt;checks.py&lt;/code&gt;只拥有「报告」这件事，因为「房间算不算过关」是流水线的决定。同一套几何判定，agent自查和流水线终检共用，不可能出现两套标准。&lt;/p&gt;
-&lt;h4 id=&quot;两个静默失效的教训&quot;&gt;两个静默失效的教训&lt;/h4&gt;
-&lt;p&gt;第一个是&lt;code&gt;python-fcl&lt;/code&gt;不能做可选依赖。&lt;code&gt;pyproject.toml&lt;/code&gt;里有一段异常长的注释。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;QC true-mesh collision. NOT optional: publish runs &lt;code&gt;room_qc.correct&lt;/code&gt; on every default run and only records a warning if it exits non-zero, so a missing FCL turned the deterministic clash gate into a silent no-op.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;缺了FCL，那道确定性碰撞闸门就变成空操作，而且只留一条warning。作者的判断是预编译wheel覆盖所有支持的平台，代价是几MB和零编译，比发一个悄悄什么都不干的闸门便宜得多。&lt;br&gt;
-第二个是不烘焙材质，发布出去的是另一个房间。&lt;code&gt;publish/__init__.py&lt;/code&gt;里的注释。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;a procedural wall/floor/ceiling material (&lt;code&gt;two_tone_mat&lt;/code&gt;, &lt;code&gt;carpet_mat&lt;/code&gt;, &lt;code&gt;ceiling_tile_mat&lt;/code&gt;) has no glTF representation, so it exports with neither a texture nor a baseColorFactor and renders WHITE. Flat-RGB and fetched-image materials survive either way, which is why this stayed invisible until a room used procedural ones.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;程序化材质在glTF里没有表示，导出后既没纹理也没baseColorFactor，渲染成纯白。而平色和贴图材质两种路径都活得下来，所以这个bug一直隐身，直到某个房间真的用了程序化材质。修法是publish时显式调&lt;code&gt;api.bake_room()&lt;/code&gt;，让agent看到的每张渲染图和最终产物走同一条烘焙路径。&lt;br&gt;
-这两条读的时候都有点后背发凉。验证通道自己失效是最难发现的一类bug，因为所有指示灯都是绿的。&lt;/p&gt;
-&lt;h3 id=&quot;配置&quot;&gt;配置&lt;/h3&gt;
-&lt;p&gt;&lt;code&gt;LiteRealitySettings&lt;/code&gt;用&lt;code&gt;pydantic-settings&lt;/code&gt;，加载顺序是进程环境 &amp;gt; &lt;code&gt;.env&lt;/code&gt; &amp;gt; &lt;code&gt;models.env&lt;/code&gt; &amp;gt; 类型化默认值。&lt;code&gt;models.env&lt;/code&gt;是仓库自带的模型默认值，&lt;code&gt;.env&lt;/code&gt;是你机器上的密钥和路径，每行用&lt;code&gt;${VAR:-default}&lt;/code&gt;所以shell里已有的值一定赢。&lt;br&gt;
-一次性在组合边界解析完，然后&lt;code&gt;apply_environment()&lt;/code&gt;用&lt;code&gt;setdefault&lt;/code&gt;铺到环境里，不覆盖调用方的shell。&lt;/p&gt;
-&lt;p&gt;两个校验细节值得看。未知harness必须在这里炸，而不是在付费session深处。&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;# An unknown harness name must fail HERE, at the composition boundary, rather than deep
-# inside a paid session: `LR_AGENT_PROVIDER=codexx` would otherwise fall through to the
-# claude default and silently run the wrong agent.
-self.agent_provider = self._checked_provider(self.agent_provider) or &amp;quot;claude&amp;quot;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;&lt;code&gt;LR_AGENT_PROVIDER=codexx&lt;/code&gt;多打一个x，会静默fall through到claude默认值，跑错agent还花你的钱。&lt;br&gt;
-半个token pair不能算「已配置」。&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;python&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;python&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt;def&lt;/span&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt; modal_credentials&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;(&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;self&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;)&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; -&gt;&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; tuple&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;[&lt;/span&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt;str&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;,&lt;/span&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt; str&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;]&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt; |&lt;/span&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt; None&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;:&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt;    &quot;&quot;&quot;&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;...Half a token pair cannot authenticate, so it must not read as configured —&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;    otherwise the runtime selects Modal and fails at the call instead of falling back&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;    or saying what is missing.&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt;&quot;&quot;&quot;&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;    if&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; self&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;modal_token_id &lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt;and&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; self&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;modal_token_secret&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;:&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;        return&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; (&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt;...&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;)&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;    return&lt;/span&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt; None&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;只填了&lt;code&gt;MODAL_TOKEN_ID&lt;/code&gt;没填secret，如果算作配置了Modal，运行时就会选择Modal然后在真正调用时失败，而不是回退或者告诉你缺什么。&lt;br&gt;
-还有一个挺可爱的兼容处理: &lt;code&gt;models.env&lt;/code&gt;被python-dotenv读，而dotenv不展开用作默认值的&lt;code&gt;$VAR&lt;/code&gt;，所以&lt;code&gt;${VAR:-$OTHER}&lt;/code&gt;会原样到达变成字面量&lt;code&gt;$other&lt;/code&gt;。代码把以&lt;code&gt;$&lt;/code&gt;开头当作未设置。&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;if not chosen or chosen.startswith(&amp;quot;$&amp;quot;):
-    return None&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;h4 id=&quot;modelsenv&quot;&gt;models.env&lt;/h4&gt;
-&lt;p&gt;这个文件写得像文档，一个地方选完所有模型。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;code&gt;LR_AGENT_PROVIDER&lt;/code&gt;: 哪个agent harness，默认&lt;code&gt;claude&lt;/code&gt;&lt;br&gt;
-&lt;code&gt;HARNESS_MODEL&lt;/code&gt;: 写和改&lt;code&gt;Room.py&lt;/code&gt;的编辑者，也驱动classify和VLM reader，默认&lt;code&gt;claude-opus-5&lt;/code&gt;，这是主要旋钮&lt;br&gt;
-&lt;code&gt;HARNESS_CRITIC_MODEL&lt;/code&gt;: VLM critic，默认跟随&lt;code&gt;HARNESS_MODEL&lt;/code&gt;&lt;br&gt;
-&lt;code&gt;LR_CHAIR_JUDGE_MODEL&lt;/code&gt;: 椅子类型判官(框架、扶手、软包、底座属性)&lt;br&gt;
-&lt;code&gt;LR_PROCEDURAL_MODEL&lt;/code&gt;: 铰接GLB的程序化agent&lt;br&gt;
-&lt;code&gt;LR_COMPLETENESS_MODEL&lt;/code&gt;: 完整性闸门，参考图对渲染图判「有没有缺件」&lt;br&gt;
-&lt;code&gt;LR_OPENAI_IMAGE_MODEL&lt;/code&gt;: 参考图生成，默认&lt;code&gt;gpt-image-2&lt;/code&gt;&lt;br&gt;
-&lt;code&gt;LR_DINO_MODEL&lt;/code&gt; / &lt;code&gt;LR_DINO_EMBED_MODEL&lt;/code&gt;: GroundingDINO检测与DINOv2分组嵌入&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;&lt;code&gt;LR_COMPLETENESS_MODEL&lt;/code&gt;的注释很诚实。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;Runs once per build attempt per object and sits on the critical path. …Lowering it is tempting but two-sided: too lenient ships objects missing parts, too strict costs a full agent rebuild.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;降配是双向风险: 太松就发出缺零件的物体，太严就白烧一次完整重建。把这种权衡写在配置项旁边，而不是留给后人试错。&lt;br&gt;
-另外注释里明确写了&lt;code&gt;claude-fable-5&lt;/code&gt;太贵且并不比&lt;code&gt;claude-opus-5&lt;/code&gt;强，所以默认不用。这种基于实测的取舍记录，比任何benchmark表都实用。&lt;/p&gt;
-&lt;h3 id=&quot;运行时隔离&quot;&gt;运行时隔离&lt;/h3&gt;
-&lt;p&gt;TRELLIS和GroundingDINO需要GPU，项目的默认选择是托管在Modal上。&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;uv&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; sync&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; --frozen&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; --extra&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; modal&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; --group&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; dev&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;cp&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; .env.example&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; .env&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;uv&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; run&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; litereality&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; setup&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt;SANITY_DEEP&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;1&lt;/span&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt; uv&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; run&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; python&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; sanity.py&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;理由说得很直白: 本机不跑重活，一台没独显的Apple Silicon Mac就够，而且检测能并行铺开到多个容器，不用在一张卡后面排队。有自己的Linux GPU就走&lt;code&gt;deploy/local-gpu.md&lt;/code&gt;。&lt;br&gt;
-绑定逻辑在&lt;code&gt;models/registry.py&lt;/code&gt;，短得可以全文引用。&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;python&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;python&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt;def&lt;/span&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt; gen3d_from_settings&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;(&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;settings&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;None&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;):&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;    settings &lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; settings &lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt;or&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; load_settings&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;()&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;    if&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; settings&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;modal_configured&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;():&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;        from&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; litereality_agent&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;models&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;trellis&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;modal &lt;/span&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;import&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; ModalTrellisService&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;        return&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; ModalTrellisService&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;(&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt;...&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;)&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;    if&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; settings&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;trellis_python&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;:&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;        from&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; litereality_agent&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;models&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;trellis&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;service &lt;/span&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;import&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; LocalTrellisService&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;        return&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; LocalTrellisService&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;(&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt;python&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt;str&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;(&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;settings&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;trellis_python&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;))&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;    raise&lt;/span&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt; RuntimeError&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;(&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt;        &quot;&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;TRELLIS is not configured: set MODAL_TOKEN_ID and MODAL_TOKEN_SECRET for hosted &lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt;        &quot;&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;execution (the default), or TRELLIS_PYTHON for an explicit local GPU runtime.&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;    )&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;分层很清楚: model包拥有一条推理路径，runtime拥有「在哪执行」。&lt;code&gt;deploy/modal/&lt;/code&gt;里是托管模型的包装，应用代码永远不import它。重依赖也隔离在自己的环境里(&lt;code&gt;--extra detect&lt;/code&gt;和&lt;code&gt;--extra gen3d&lt;/code&gt;)，不污染轻量的agent循环环境。&lt;br&gt;
-顺带，CLI和单元测试不会启动DINO、TRELLIS、Blender，也不发起付费调用。这条保证让「随手跑一下测试」成为可能。&lt;/p&gt;
-&lt;h3 id=&quot;工程纪律&quot;&gt;工程纪律&lt;/h3&gt;
-&lt;p&gt;这部分其实是我读完最想聊的。&lt;/p&gt;
-&lt;h4 id=&quot;依赖方向被测试执法&quot;&gt;依赖方向被测试执法&lt;/h4&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;cli.py → pipeline → agent → room_ops
-                ↘ models → runtimes
-                ↘ room_ops&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;箭头从调用方指向依赖。models、room_ops、可复用agent永远不import pipeline。这条规则不是写在文档里靠自觉，是&lt;code&gt;tests/test_architecture.py&lt;/code&gt;在跑的。&lt;br&gt;
-架构文档还专门写了不存在什么。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;There are no top-level &lt;code&gt;services&lt;/code&gt;, &lt;code&gt;adapters&lt;/code&gt;, or &lt;code&gt;shared&lt;/code&gt; packages. There is also no nested &lt;code&gt;pipeline/stages&lt;/code&gt; package.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;声明不存在的东西，是防止架构熵增的好办法。下一个人想加&lt;code&gt;shared/&lt;/code&gt;之前，会先在文档里撞到这句话。&lt;/p&gt;
-&lt;h4 id=&quot;测试默认离线且快&quot;&gt;测试默认离线且快&lt;/h4&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;addopts = &amp;quot;-m &amp;#39;not blender and not scan and not live&amp;#39; --strict-markers&amp;quot;
-markers = [
-    &amp;quot;blender: needs a Blender install ($LITEREALITY_BLENDER) — run with `-m blender`&amp;quot;,
-    &amp;quot;scan: needs real scan data under scans_uploaded/ — run with `-m scan`&amp;quot;,
-    &amp;quot;live: makes paid model calls — run with `-m live`&amp;quot;,
-]&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;注释是「The default run must stay offline and fast, so it is worth running before every commit.」三个marker把「需要Blender」「需要真实扫描」「要花钱」分层剥离，默认套件保持离线，所以它值得在每次提交前跑。加上&lt;code&gt;--strict-markers&lt;/code&gt;，打错marker名字会直接失败而不是静默失效——又一个防静默的例子。&lt;br&gt;
-安全的本地验证只有三条命令。&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;uv&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; run&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; ruff&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; check&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; src&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; tests&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; sanity.py&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; scripts&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;uv&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; run&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; pytest&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -q&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;uv&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; build&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;根目录还有个24440字节的&lt;code&gt;sanity.py&lt;/code&gt;，配&lt;code&gt;SANITY_DEEP=1&lt;/code&gt;做深度检查。对一个依赖Blender加三个模型加一个云运行时加两个agent CLI的项目来说，把「你的环境到底行不行」做成一个可执行的自检，是省下无数issue的投资。&lt;/p&gt;
-&lt;h4 id=&quot;唯一副本测试钉死&quot;&gt;唯一副本，测试钉死&lt;/h4&gt;
-&lt;p&gt;&lt;code&gt;agent/tools/README.md&lt;/code&gt;里说明了哪些原语是共享而非某个工具独有的，以及为什么。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;code&gt;config.py&lt;/code&gt;: harness路径和旋钮，四个工具加pipeline的&lt;code&gt;evidence.py&lt;/code&gt;都要&lt;br&gt;
-&lt;code&gt;scan.py&lt;/code&gt;: &lt;code&gt;scan_from_room&lt;/code&gt;和&lt;code&gt;config_for&lt;/code&gt;，&lt;code&gt;tests/test_scan_inference.py&lt;/code&gt;钉死只存在一份&lt;br&gt;
-&lt;code&gt;overlay.py&lt;/code&gt;: 墙面投影，&lt;code&gt;compose&lt;/code&gt;和&lt;code&gt;select_views&lt;/code&gt;都要&lt;br&gt;
-&lt;code&gt;image_selection/&lt;/code&gt;: 表面几何加正视比较&lt;br&gt;
-&lt;code&gt;stitch_wall_image/&lt;/code&gt;: 矫正后的墙面拼图，四处使用&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;一句话交代动机: 「a per-tool copy is a bug waiting to happen」。写个测试来保证某个函数全仓库只有一份，这个手法我以前没想到过，但确实是对付「复制一份改改」这种腐化的最直接办法。&lt;br&gt;
-另外有些包装是故意的: &lt;code&gt;compile&lt;/code&gt;包着&lt;code&gt;room_ops.compile_room&lt;/code&gt;(格式自己的编译器)，&lt;code&gt;fetch_material&lt;/code&gt;包着&lt;code&gt;compile/fetch_textures&lt;/code&gt;(因为&lt;code&gt;textures.json&lt;/code&gt;是Room格式契约的一部分)。文档里标了deliberately。把「这里看起来该合并但我们没合并」写清楚，省掉后人一次好心的错误重构。&lt;/p&gt;
-&lt;h3 id=&quot;抛开三维重建能抄的几点&quot;&gt;抛开三维重建，能抄的几点&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;把确定性的和agentic的显式分层，不让模型参与能用算术解决的决策，最后一道闸门用纯几何。&lt;/li&gt;
-&lt;li&gt;agent容易「合理地猜错」的量做成工具去读。帧号、米制坐标，LLM编这些毫无阻力且编得很合理。&lt;/li&gt;
-&lt;li&gt;把场景或配置变成代码，让「编辑」退化成「改代码」，直接复用LLM最强的能力。&lt;/li&gt;
-&lt;li&gt;harness和model是两个正交旋钮，而且harness之间不是功能等价的，用&lt;code&gt;supports&lt;/code&gt;集合显式建模差异。&lt;/li&gt;
-&lt;li&gt;降级运行绝不能长得像正常运行，缺失的能力必须打进日志。&lt;/li&gt;
-&lt;li&gt;长agent循环要留优雅落地的预算，到点前关掉能力工具。&lt;/li&gt;
-&lt;li&gt;配置错误在组合边界炸掉，不要漏进付费session。&lt;/li&gt;
-&lt;li&gt;警惕验证通道自己失效，这类问题只能靠「改输入看输出是否真的变」来抓。&lt;/li&gt;
-&lt;li&gt;文档要写「不存在什么」和「我们试过什么」。&lt;/li&gt;
-&lt;li&gt;把权衡写在配置项旁边，替后人省掉一轮试错。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&quot;上手清单&quot;&gt;上手清单&lt;/h3&gt;
-&lt;p&gt;需要的东西: &lt;code&gt;uv&lt;/code&gt;；Blender 5.x(测试于5.1，&lt;code&gt;BLENDER_PATH&lt;/code&gt;指向安装目录而不是可执行文件)；OpenAI API key用于参考图生成，通常每个场景不到一美元；一个已登录的agent CLI在&lt;code&gt;PATH&lt;/code&gt;上，&lt;code&gt;claude&lt;/code&gt;是默认，&lt;code&gt;codex&lt;/code&gt;也支持；以及一个跑GPU的地方，Modal账号(推荐，免费额度够，Mac也能用)或者显存不小于24GB的Linux机器。平台上macOS的Apple Silicon和Linux都测过。&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;uv&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; sync&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; --frozen&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; --extra&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; modal&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; --group&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; dev&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;cp&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; .env.example&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; .env&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;uv&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; run&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; litereality&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; setup&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt;SANITY_DEEP&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;1&lt;/span&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt; uv&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; run&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; python&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; sanity.py&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;uv&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; run&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; litereality&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; run&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; /path/to/capture&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;uv&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; run&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; litereality&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; view&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; run/&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt;&amp;#x3C;&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;sca&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;n&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt;&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;扫描端是免费的&lt;a href=&quot;https://apps.apple.com/gb/app/litereality/id6774158260&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;LiteReality Scanner&lt;/a&gt;，走一圈就够。&lt;/p&gt;
-&lt;h3 id=&quot;局限&quot;&gt;局限&lt;/h3&gt;
-&lt;p&gt;免得读起来像软文，说说不好的地方。&lt;br&gt;
-版本还是&lt;code&gt;0.0.1&lt;/code&gt;，Development Status是Alpha，技术报告没出。整条推理链路挂在&lt;code&gt;claude&lt;/code&gt;或&lt;code&gt;codex&lt;/code&gt;的登录态上，不是纯API key就能起，这对复现和CI是个真实的摩擦点。成本也不透明，参考图生成有报价，但authoring那一大段跑在订阅制CLI上，注释里明说not metered，所以很难算清一个场景的真实开销，Codex harness干脆不报成本。&lt;br&gt;
-Codex路线是明确的二等公民，没有pre-tool hook、没有工具白名单、不报成本，文档诚实标出来了，但不用Claude的话体验是降级的。物体精修更是只支持Claude，因为&lt;code&gt;render_object&lt;/code&gt;工具是围绕活跃session状态按物体动态构建的，stdio桥接没有registry条目可以重建。作者的处理是报明确的错然后失败，而不是在没有唯一自检工具的情况下硬跑，这个选择我赞成。&lt;/p&gt;
-&lt;p&gt;不过话说回来，这个项目真正的贡献我觉得不是「用LLM做三维重建」，而是演示了一套把agent关进笼子的工程范式。笼子的骨架是可恢复的确定性流水线、代码化的领域表示、闭集能力工具、不含模型的终检闸门，以及对降级路径的强制可见性。agent在笼子里干它最擅长的事——看图、改代码、迭代，笼子保证它改不出可验证边界之外的东西。&lt;br&gt;
-两万八千行代码、41个测试文件、100个提交，做到架构文档和代码逐条对得上，注释里还留着「这个bug让我们付了什么代价」，这种密度的工程自觉，2026年的agentic项目里不算常见。&lt;/p&gt;
-&lt;p&gt;仓库在&lt;a href=&quot;https://github.com/ZheningHuang/LiteReality-Agent&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;这里&lt;/a&gt;，项目主页在&lt;a href=&quot;https://litereality.github.io/Litereality-agent-site/&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;这里&lt;/a&gt;。&lt;/p&gt;
-&lt;p&gt;看完之后手有点痒，感觉自己那几个项目的日志该重写了。&lt;/p&gt;
 </content>
   </entry>
 </feed>
