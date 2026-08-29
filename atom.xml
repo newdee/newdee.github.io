@@ -4,9 +4,92 @@
   <subtitle>dfine's Blog</subtitle>
   <link href="https://dfine.tech/atom.xml" rel="self"/>
   <link href="https://dfine.tech/"/>
-  <updated>2026-08-25T16:36:58+08:00</updated>
+  <updated>2026-08-29T10:12:00+08:00</updated>
   <id>https://dfine.tech/</id>
   <author><name>dfine</name></author>
+  <entry>
+    <title>lamarck 按真实调用进化 skill</title>
+    <link href="https://dfine.tech/posts/689b2288/"/>
+    <id>https://dfine.tech/posts/689b2288/</id>
+    <published>2026-08-29T10:12:00+08:00</published>
+    <updated>2026-08-29T10:12:00+08:00</updated>
+    <category term="Agent"/>
+    <category term="Node"/>
+    <category term="架构"/>
+    <content type="html">&lt;p&gt;skill 写完就定死了，哪条指令没写清楚、哪一段从来没人用到，只能靠自己隔一阵翻出来重读。&lt;br&gt;
+&lt;a href=&quot;https://github.com/newdee/lamarck-skill&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;lamarck&lt;/a&gt; 换个办法：装上之后它在后台看着每一次真实调用，攒够同一类证据才提出一处改动，改完立刻验，变差就退回去。用进的留下，废退的剪掉。&lt;br&gt;
+所有不可逆的一步都要你点头，账本留在本地。&lt;/p&gt;
+&lt;!--more--&gt;
+&lt;h3 id=&quot;它解决什么&quot;&gt;它解决什么&lt;/h3&gt;
+&lt;p&gt;现有的做法基本是两类。一类拿基准分数当信号，跑离线评测；一类拿人编的测试 prompt 加评委打分，一次挑一个 skill 来优化。共同点是信号都来自专门造出来的考场。&lt;/p&gt;
+&lt;p&gt;lamarck 的信号是生产遥测：你真实的调用、你真实的纠正。你打断它说「不是这个意思」，这句话就是 ground truth，比任何模型自评都硬。范围也不同，装一次之后所有已装的 skill 都在观察下，不需要逐个挑、逐个写测试用例。&lt;/p&gt;
+&lt;p&gt;代价是它必须常驻，而常驻的东西一旦贵就没人留着。这是整个设计的第一约束。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/images/lamarck-loop.svg&quot; alt=&quot;lamarck 的一轮进化&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
+&lt;h3 id=&quot;两个钩子&quot;&gt;两个钩子&lt;/h3&gt;
+&lt;p&gt;只挂两个。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;PostToolUse&lt;/code&gt; 匹配 &lt;code&gt;Skill&lt;/code&gt;，每次调用往待评队列追一行：时间、会话、技能名、参数前 200 字，还有一枚基因哈希，也就是那个 skill 的 &lt;code&gt;SKILL.md&lt;/code&gt; 在调用当刻的内容摘要取前 8 位。这枚戳是后面版本分窗统计的全部依据。插件类技能名字里带冒号、路径解析不出来，戳留空。&lt;/p&gt;
+&lt;p&gt;这一行里不存执行痕迹，只存一个指向会话 transcript 的路径。完整执行日志本来就在那儿躺着，没必要再抄一份；代价是 transcript 被清理之后指针会失效，所以消费端必须能退化处理。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;Stop&lt;/code&gt; 钩子负责触发评估。它的做法是整个设计里最省的一处：不加载 &lt;code&gt;SKILL.md&lt;/code&gt;，而是把一份精简的判词规程整段写进阻断理由的字符串里，交给模型执行完就丢。每轮都重载一份长协议，代价压在每一次对话上，那种东西装两天就会被卸掉。只有证据攒够、要动真格提案时，才去读完整的 &lt;code&gt;SKILL.md&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;两个钩子都吞掉所有异常、永远退出 0，不允许把主流程搞挂。但异常不会凭空消失，会往 &lt;code&gt;data/hook-errors.log&lt;/code&gt; 留一行，那个文件安静就是健康。目录里放一个名为 &lt;code&gt;off&lt;/code&gt; 的文件即全部静默，手动调用仍然可用。&lt;/p&gt;
+&lt;p&gt;还有两处防自噬：技能名等于 &lt;code&gt;lamarck&lt;/code&gt; 的调用直接跳过，免得评估器评估自己评估自己；&lt;code&gt;stop_hook_active&lt;/code&gt; 保证一轮最多阻断一次。只有本会话的条目会触发评估，别的会话没有上下文证据，留给手动跑。&lt;/p&gt;
+&lt;h3 id=&quot;四维判词&quot;&gt;四维判词&lt;/h3&gt;
+&lt;p&gt;每条待评条目判四样，每样限五行以内，只许引用真实可见的执行痕迹，看不见就归档，不许编。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;trigger_fit&lt;/code&gt;：这次触发对不对，还是误触发、还是该用另一个 skill&lt;br&gt;
+&lt;code&gt;gaps[]&lt;/code&gt;：skill 的指令里缺了什么，每条写成「缺了 X，导致 Y」&lt;br&gt;
+&lt;code&gt;outcome&lt;/code&gt;：干净 / 被纠正 / 失败，用户的原话要引进来&lt;br&gt;
+&lt;code&gt;friction&lt;/code&gt;：白走的弯路，可以为空&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;判词逐行落进账本。有可复用的教训另写进 learnings，被纠正和失败的还要蒸馏成一条回归用例，存成 &lt;code&gt;{essence, expect, src}&lt;/code&gt;。这批用例的来源是真实调用痕迹，分布是真的，一条都不用手写。&lt;/p&gt;
+&lt;p&gt;尺子也是长出来的。每个 skill 有自己的 rubric，用户纠正一次即可入册，但每条必须带账本出处，没出处禁止写入；淘汰的进 attic 不删。rubric 跟协议同库 git 版本化，可以 diff 可以回滚，而遥测本身被 gitignore 挡在外面，只留本地。&lt;/p&gt;
+&lt;h3 id=&quot;证据门&quot;&gt;证据门&lt;/h3&gt;
+&lt;p&gt;提案不是想提就能提。八个条件同时成立才行，下面挑几条展开。&lt;/p&gt;
+&lt;p&gt;证据至少两次。同一类缺口要在两次独立调用里都出现。单次观察永远不触发编辑，n=1 是噪声。但提案生成时要综合这个 skill 的全部在案证据，不只是撞线的那两条。&lt;/p&gt;
+&lt;p&gt;场景围栏这条管的是跨场景污染。证据全部来自同一个场景标签时，只允许做场景分支式增量，新增一段「当某场景时……」，不得改写共享核心。要动共享核心，得拿出至少两个不同场景的证据。这条是防止你为 B 场景做的优化把 A 场景依赖的部分改坏，切回去就退化。&lt;/p&gt;
+&lt;p&gt;回放也不许只测触发场景。任何编辑的回放验证必须带上其他场景的既有用例，不只是触发场景的。回放语料就是全部历史场景的记忆，「切回旧场景会不会崩」在施工前就演过一遍。&lt;/p&gt;
+&lt;p&gt;反震荡拦的是覆写式打摆子。如果一个提案实质上推翻了最近十次里已经被接受的编辑，判定为震荡，禁止直接覆写，强制转成场景分支提案，并且把两个场景的证据摆在一起交给用户决定。没有这条，两种场景交替出现时协议会在两版之间反复横跳。&lt;/p&gt;
+&lt;p&gt;净增长预算管的是只涨不减。提案要报净行数变化。让 &lt;code&gt;SKILL.md&lt;/code&gt; 超过 500 行，或者连续两次净增超过 10%，就必须同时附一个删减案。删除类提案是一等公民：九十天零引用的 rubric 条目、被证据标记为「误导或从未用到」的段落，主动产出修剪提案。用进废退的废退那一半在这里。&lt;/p&gt;
+&lt;p&gt;剩下三条是：提案必须具体到能写成定点的增删改并写明验证方式；被否过的同类提案进拒绝缓冲，除非有新类型证据否则不许重提；上一次编辑的验证还没跑完时该 skill 冻结，不接新提案。&lt;/p&gt;
+&lt;p&gt;门过了才轮到用户三选一：现在就改 / 只留提案 / 否决。否决连原因写进拒绝缓冲。非交互会话一律只留提案。施工是有界的，一次最多改三处、单处最多十行，禁止整文件重写。&lt;/p&gt;
+&lt;h3 id=&quot;验证与回滚&quot;&gt;验证与回滚&lt;/h3&gt;
+&lt;p&gt;改完不是就完了，三道验证依次上。&lt;/p&gt;
+&lt;p&gt;回放最快：从回归用例里取这个 skill 的历史场景，派新的 subagent 分别按旧版和新版跑，按 rubric 成对比。新版更差直接回滚，不用等下一次真实调用。&lt;/p&gt;
+&lt;p&gt;盲评是自然验证：被编辑 skill 的下一次真实调用，派一个独立 subagent，同时给它旧版全文、新版全文、这次调用的真实痕迹和 rubric，在同一上下文里比出 better / worse / tie。用成对比较而不是绝对打分，是因为绝对分跨会话有校准噪声，成对比可以抵消。平时单评委省成本，只有出现平局或者跟回放结论打架时才加派两个凑成三票多数。&lt;/p&gt;
+&lt;p&gt;版本分窗是统计兜底：按基因哈希把这个 skill 的健康度分窗算，编辑后的窗口样本够三条之后跟编辑前比，变差就判负优化。&lt;/p&gt;
+&lt;p&gt;回滚的语义按证据强度分级。回放和盲评是同输入直接对照，属于强证据，自动回滚；版本分窗是观察性统计，可能混着任务漂移，只出回滚提案，仍然走用户三选一。而且回滚被定义成恢复用户已经批准过的上一个基线，不算新编辑，所以不受三选一和有界编辑的约束，但必须落账并且明确告诉用户。&lt;/p&gt;
+&lt;p&gt;三种验证各记一行 verify 记录进账本，还要记这次动用了几个评委，成本本身也要核算。没落账的效果等于没有效果。&lt;/p&gt;
+&lt;h3 id=&quot;成熟度&quot;&gt;成熟度&lt;/h3&gt;
+&lt;p&gt;不是每次评估都有收益。场景不变时 skill 会收敛，继续全量评估就是纯浪费。&lt;/p&gt;
+&lt;p&gt;所以每个 skill 有两态。默认 active，每条待评条目全量四维评估。连续十次评估干净之后转 stable，之后每条只做一眼扫描，本回合没有纠正和异常就记一行 &lt;code&gt;stable-skip&lt;/code&gt; 并把连击加一。但每第五条仍然做全量评估，防止悄悄漂移。&lt;/p&gt;
+&lt;p&gt;唤醒回 active 的条件有四个，任一即触发：用户纠正或失败；抽样评估发现缺口；基因哈希变了，也就是被编辑或者被外部改动过，编辑之后的验证期必须全量；参数呈现出 rubric 场景标签覆盖不了的新场景，场景变了收敛的前提就不成立了。&lt;/p&gt;
+&lt;p&gt;收敛本身也是证据。报告会把 stable 状态和清白连击数当成一种生产可靠性凭证呈现：这个 skill 最近 N 次真实调用零纠正。stable 加上长期零引用的条目，就是废退修剪的天然候选。&lt;/p&gt;
+&lt;h3 id=&quot;谁能被改&quot;&gt;谁能被改&lt;/h3&gt;
+&lt;p&gt;白名单分三级，写在本地的 &lt;code&gt;config.json&lt;/code&gt; 里，不入库。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;evolve&lt;/code&gt;：过门的提案可以走用户三选一直接施工&lt;br&gt;
+&lt;code&gt;suggest&lt;/code&gt;：过门的提案只写进 &lt;code&gt;suggestions/&lt;/code&gt;，永不直接编辑&lt;br&gt;
+&lt;code&gt;observe&lt;/code&gt;（默认）：只记账、沉淀教训、长 rubric，不产生任何提案&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;新装的 skill 自动落进默认级，也就是只看不动。证据照样积累，哪天升到 evolve，历史证据立即可用。配置文件缺失时一律按 observe 处理并提示你去建。插件、marketplace 和 synced 来的 skill 无论怎么配都不会被直接编辑，上限就是 suggest。&lt;/p&gt;
+&lt;p&gt;十条 Iron Rules 兜底，改这一节本身都要用户明确批准。里面包括永不删除账本历史、永不删除已有观察和 rubric attic、每次编辑必须可回滚并写进 CHANGELOG。&lt;/p&gt;
+&lt;h3 id=&quot;怎么用&quot;&gt;怎么用&lt;/h3&gt;
+&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;npx lamarck-skill&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;一条命令：拷贝 skill、初始化本地配置、把两个钩子写进 &lt;code&gt;~/.claude/settings.json&lt;/code&gt;（先备份、只增不改、可重复执行），最后跑一遍自检让安装自证。装完重启 Claude Code 或者打开一次 &lt;code&gt;/hooks&lt;/code&gt; 让钩子加载。&lt;/p&gt;
+&lt;p&gt;卸载是 &lt;code&gt;npx lamarck-skill uninstall&lt;/code&gt;，只解钩子，文件和遥测都留着。&lt;/p&gt;
+&lt;p&gt;日常几乎不用管。想调节奏就 &lt;code&gt;/lamarck mode every&lt;/code&gt;、&lt;code&gt;manual&lt;/code&gt; 或者 &lt;code&gt;threshold N&lt;/code&gt;；想处理别的会话攒下的积压、或者看某个 skill 的完整证据、或者要那份进化战报，就手动跑一次 &lt;code&gt;/lamarck&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;头一周基本看不到动静，这是设计如此。钩子静静记账，默认攒满五条才触发一次评估，然后要同一个缺口出现两次才会有第一个提案。一周没有提案通常说明你的 skill 是健康的，不是它没在干活，翻 &lt;code&gt;data/ledger.jsonl&lt;/code&gt; 就能看见。&lt;/p&gt;
+&lt;h3 id=&quot;证据与限制&quot;&gt;证据与限制&lt;/h3&gt;
+&lt;p&gt;诚实政策是不做自评分：优化器拿自己的评委给自己的产出打分，什么也证明不了。所以证据分层摆出来，机制自检 48 项全过、跑在隔离沙盒里不碰真实遥测；变异基准是预注册协议之后再跑的，第一轮五个已知劣化变体抓出四个、两个已知改进变体零误拒，那个漏掉的被写进分析而不是藏起来；自我应用那条最实在，它自己的每次改动都是证据触发、有界、用户批准并验证过的，CHANGELOG 就是可审计的流水，包括在这套纪律下抓出并修掉的四个自身缺陷。&lt;/p&gt;
+&lt;p&gt;限制也得说清楚。&lt;/p&gt;
+&lt;p&gt;冷启动是真的，前期什么都不会发生，要攒够真实调用才有信号。&lt;br&gt;
+观察性统计混着任务漂移，所以版本分窗只敢出提案不敢自动回滚。&lt;br&gt;
+判词由模型给出，虽然只许引用真实痕迹、看不见就归档，但仍然不是零误判，证据门和用户在环是为此设的两道闸。&lt;br&gt;
+插件类 skill 拿不到基因哈希，版本分窗对它们不生效。&lt;br&gt;
+遥测的执行痕迹存的是指针，transcript 被清理之后就查不到原始上下文了。&lt;br&gt;
+生产案例还在积累中，要等真实用例攒够、连同任务漂移的观察性注意事项一起发，不先发结论。&lt;/p&gt;
+&lt;p&gt;路线图里说下一步不限于 skill：subagent 定义、CLAUDE.md 这类记忆文件、slash command、MCP 工具配置，凡是能反复在生产里被使用的、用来引导 agent 的文本产物，都可以套同一套遥测到账本到 rubric 到有门编辑的架构。真正被验证的其实是这套治理骨架，skill 只是第一个宿主。&lt;/p&gt;
+</content>
+  </entry>
   <entry>
     <title>FrontierAgent 的上下文压缩与重复抑制</title>
     <link href="https://dfine.tech/posts/d7c1648/"/>
@@ -2008,149 +2091,6 @@ Dangerous：不筛内容、不暂停。&lt;/p&gt;
 agent 以人的身份行事，是把「agent 做了什么」等同于「这个人做了什么」——审计因此简单，但也要求组织真的信任姿态与命令策略这两层闸门。&lt;br&gt;
 多 scope 隔离的代价是运维面变宽：每个 scope 一台沙箱，状态耐久也就意味着状态要管。&lt;/p&gt;
 &lt;p&gt;回头看，这套东西像是把「本地编码 agent」的那套信任与工具哲学，抬到了组织级——个人的照样是个人的，公司的才是公司的。&lt;/p&gt;
-</content>
-  </entry>
-  <entry>
-    <title>PersonaLive: 把肖像扩散模型压到能直播</title>
-    <link href="https://dfine.tech/posts/4bd1127b/"/>
-    <id>https://dfine.tech/posts/4bd1127b/</id>
-    <published>2026-08-10T19:20:00+08:00</published>
-    <updated>2026-08-10T19:20:00+08:00</updated>
-    <category term="视频处理"/>
-    <category term="扩散模型"/>
-    <category term="实时推理"/>
-    <category term="TensorRT"/>
-    <content type="html">&lt;p&gt;一张照片加一个摄像头，实时驱动照片里的人跟着你做表情、转头，输出能直接推流。这件事的难点不在效果，在帧率——扩散模型生成一帧要跑好几次 UNet，天生和实时是反的。&lt;br&gt;
-PersonaLive 是澳门大学、Dzine.ai 与大湾区大学 GVC Lab 的工作，CVPR2026 收录，代码和权重都放出来了。它给这个矛盾的答案很漂亮：&lt;strong&gt;不减少去噪步数，而是让不同新鲜度的帧共享同一次前向&lt;/strong&gt;。&lt;br&gt;
-这篇把它的流式去噪机制、三条条件通路、在线服务链路和 TensorRT 融合拆开记一遍。&lt;/p&gt;
-&lt;!--more--&gt;
-&lt;center&gt;
-&lt;p&gt;&lt;img src=&quot;/images/personalive-overview.svg&quot; alt=&quot;PersonaLive 在线服务总览&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;/center&gt;
-&lt;h3 id=&quot;定位&quot;&gt;定位&lt;/h3&gt;
-&lt;p&gt;肖像动画这条线上，质量和速度一直在打架。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;GAN 系（LivePortrait 那一路）快，单帧几毫秒，但表情迁移的自然度和身份保真有上限&lt;br&gt;
-扩散系（AnimateAnyone、X-NeMo 那一路）质量高，但一帧要跑 N 次 UNet，N 通常 20 以上&lt;br&gt;
-把 N 压到 4 是常规操作（蒸馏），但 4 次前向摊到每帧还是太贵&lt;br&gt;
-更麻烦的是长度：视频扩散一般按固定长度的片段生成，直播要的是无限长且不能有拼接痕迹&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;PersonaLive 的定位是 &lt;code&gt;real-time&lt;/code&gt; + &lt;code&gt;streamable&lt;/code&gt; + &lt;code&gt;infinite-length&lt;/code&gt; 三个词同时成立。核心手法下面单独说，先给它的规格：512×512、fp16、DDIM 4 步、ε 预测，&lt;code&gt;timestep_spacing&lt;/code&gt; 用 &lt;code&gt;trailing&lt;/code&gt;。&lt;/p&gt;
-&lt;h3 id=&quot;流式金字塔去噪&quot;&gt;流式金字塔去噪&lt;/h3&gt;
-&lt;p&gt;这是整个项目最值得看的一处，也是「4 步却只跑 1 次前向」的来源。&lt;/p&gt;
-&lt;center&gt;
-&lt;p&gt;&lt;img src=&quot;/images/personalive-streaming.svg&quot; alt=&quot;流式金字塔去噪&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;/center&gt;
-&lt;p&gt;常规 4 步 DDIM 是这样：拿一批帧，加噪到 t=999，跑一次 UNet 降到 666，再跑一次到 333，再跑一次到 0。同一批帧过了 4 次网络。&lt;br&gt;
-PersonaLive 把这个过程侧过来。它维护一个窗口队列 &lt;code&gt;latents_pile&lt;/code&gt;（一个 &lt;code&gt;deque&lt;/code&gt;），里面常驻 4 个窗口，每个窗口 4 帧，但每个窗口停在不同的噪声档上：&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;latents_pile   窗口A t=0    窗口B t=333   窗口C t=666   窗口D t=999
-                 最老          ↑             ↑           最新（刚入队）&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;每轮做三件事：新来的 4 帧驱动条件加噪到 t=999 追加成新窗口；把 4 个窗口拼成一个 16 帧的批，跑一次 UNet3D，DDIM 让每个窗口按自己的 timestep 各前进一档；最老的那个窗口这一步正好走到 t=0，&lt;code&gt;popleft&lt;/code&gt; 出来送 VAE 解码。&lt;/p&gt;
-&lt;p&gt;配置里就是这三个数：&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;yaml&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;yaml&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt;temporal_adaptive_step&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;:&lt;/span&gt;&lt;span style=&quot;color:#2F798A;--shiki-dark:#4C9A91&quot;&gt; 4&lt;/span&gt;&lt;span style=&quot;color:#A0ADA0;--shiki-dark:#758575DD&quot;&gt;    # 4 个窗口&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt;temporal_window_size&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;:&lt;/span&gt;&lt;span style=&quot;color:#2F798A;--shiki-dark:#4C9A91&quot;&gt; 4&lt;/span&gt;&lt;span style=&quot;color:#A0ADA0;--shiki-dark:#758575DD&quot;&gt;      # 每窗口 4 帧&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt;num_inference_steps&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;:&lt;/span&gt;&lt;span style=&quot;color:#2F798A;--shiki-dark:#4C9A91&quot;&gt; 4&lt;/span&gt;&lt;span style=&quot;color:#A0ADA0;--shiki-dark:#758575DD&quot;&gt;       # 4 步&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;timestep 表和步长写死在 pipeline 里：&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;timesteps = torch.tensor([999, 666, 333, 0], device=device).long()
-self.scheduler.set_step_length(333)&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;于是 4 步的计算量被摊平：一次前向 16 帧、吐出 4 帧成品，等效每帧 1/4 次 UNet 前向。而且队列长度恒定，&lt;strong&gt;输入 4 帧输出 4 帧，不随时间增长&lt;/strong&gt;，这就是「无限长」的来路——没有片段边界，也就没有拼接痕迹。&lt;/p&gt;
-&lt;p&gt;出队时用的是 &lt;code&gt;pred_original_sample&lt;/code&gt; 而不是最后一步的采样结果，所以送进 VAE 的 latent 里没有残余噪声。&lt;/p&gt;
-&lt;h4 id=&quot;首帧处理&quot;&gt;首帧处理&lt;/h4&gt;
-&lt;p&gt;队列刚开始是空的，直接跑会有 3 轮没有成品可吐，而且第一批画面会从参考姿态猛跳到驱动姿态。&lt;br&gt;
-它的处理是融合参考图时预填 12 帧阶梯噪声把队列一次填满，同时姿态和表情各做 12 步线性插值：&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;mot_bbox_param, kps_ref, kps_frame1, kps_dri = self.pose_encoder.interpolate_kps_online(
-    self.ref_cond_tensor, tgt_cond_tensor, num_interp=12+1)
-init_motion_hidden_states = self.interpolate_tensors(ref_motion, dri_motion[:,:1], num=12+1)[:,:-1]&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;从参考图的姿态平滑过渡到第一帧驱动姿态，所以开播瞬间不会抽一下。&lt;/p&gt;
-&lt;h4 id=&quot;抗身份漂移的补丁&quot;&gt;抗身份漂移的补丁&lt;/h4&gt;
-&lt;p&gt;流式生成跑久了，身份会往驱动者那边飘。它的对策是监控表情嵌入与历史的距离：&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;add_flag, motion_bank = self.calculate_dis(motion_bank, motion_hidden_state, threshold=17.)&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;最小 L2 距离超过 17 就把当前这帧干净图再过一次 Reference UNet，把写出的 16 层特征追加进 &lt;code&gt;kv_bank&lt;/code&gt;，等于给注意力多一个「这个人长这样」的锚点。全程最多追加 3 次，否则 KV 会无限膨胀——这个上限还和后面 TensorRT 的动态维度档位对上了。&lt;/p&gt;
-&lt;h3 id=&quot;三条条件通路&quot;&gt;三条条件通路&lt;/h3&gt;
-&lt;p&gt;身份、姿态、表情走三条完全分开的路，注入 UNet 的位置也各不相同。&lt;/p&gt;
-&lt;center&gt;
-&lt;p&gt;&lt;img src=&quot;/images/personalive-conditioning.svg&quot; alt=&quot;UNet 条件注入路径&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;/center&gt;
-&lt;p&gt;身份走注意力。参考图过 CLIP ViT 得到 1×768 嵌入走标准 cross-attention 提供全局语义；同时过 VAE 编码（乘 &lt;code&gt;0.18215&lt;/code&gt;）喂给一个和去噪 UNet 同构的 Reference UNet2D，前向时把每层的 &lt;code&gt;norm_hidden_states&lt;/code&gt; 存进 bank。去噪侧把这 16 层特征拼在自己的 KV 前面做空间自注意力——效果上等价于「一边看着参考图一边作画」。参考图只编码一次，整段直播都复用。&lt;/p&gt;
-&lt;p&gt;姿态走残差。MotionExtractor（convnextv2 主干）预测 21 个隐式 3D 关键点，以及 pitch / yaw / roll / 平移 / 尺度。重定向时保留参考图的规范关键点和尺度，只取驱动帧的旋转，平移按 0.5 缩放——所以你大幅晃头时照片里的人跟着转，但不会跟着你把脸怼到镜头上。然后从 21 点里挑 7 点画成彩色圆点图，PoseGuider（输出层零初始化）卷成 320 通道，加到 &lt;code&gt;conv_in&lt;/code&gt; 的输出上。&lt;/p&gt;
-&lt;p&gt;表情走交叉注意力。按关键点算出的框裁一张 224² 人脸，和全局姿态解耦，过 MotEncoder（FAN 沙漏网络）出 512 维，reshape 成 32 个 16 维 token 再加正弦位置编码。注意 &lt;code&gt;motion_module&lt;/code&gt; 的配置：&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;yaml&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;yaml&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt;cross_attention_dim&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;:&lt;/span&gt;&lt;span style=&quot;color:#2F798A;--shiki-dark:#4C9A91&quot;&gt; 16&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt;attention_block_types&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;:&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; [&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;Spatial_Cross&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;,&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; Spatial_Cross&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;]&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt;num_attention_heads&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;:&lt;/span&gt;&lt;span style=&quot;color:#2F798A;--shiki-dark:#4C9A91&quot;&gt; 8&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;交叉注意力的维度只有 16，注意力开销几乎可以忽略。表情单独走一路而不是和姿态揉在一起，是这套方案表情能做到「expressive」的关键——挑眉、眨眼、嘴型这些细节不会被头部大幅运动冲掉。&lt;/p&gt;
-&lt;h3 id=&quot;在线链路&quot;&gt;在线链路&lt;/h3&gt;
-&lt;center&gt;
-&lt;p&gt;&lt;img src=&quot;/images/personalive-online-sequence.svg&quot; alt=&quot;在线实时推理时序&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;/center&gt;
-&lt;p&gt;工程上分得很干净：FastAPI 主进程只做 WebSocket 协议和队列搬运，绝不碰 GPU；推理跑在 &lt;code&gt;mp.set_start_method(&amp;quot;spawn&amp;quot;)&lt;/code&gt; 起的守护子进程里，两边用 &lt;code&gt;mp.Queue&lt;/code&gt; 通信。&lt;/p&gt;
-&lt;p&gt;浏览器端是 SvelteKit，摄像头帧编码成 JPEG 走 WS 二进制推上来，驱动帧率 1–30 FPS 可调。服务端转张量归一化后入队。子进程侧凑够 4 帧才触发一次前向：&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;read_size = min(queue.qsize(), num_frames_needed * 3)&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;队列里超过需要的量时按等距索引抽样，宁可丢帧也不排队——这条决定了延迟不会随时间累积。README 里提到调延迟可以把这个乘数从 3 调大。&lt;/p&gt;
-&lt;p&gt;回传侧也限速。解码帧转 JPEG 进 asyncio 队列，推送协程用 EMA 估计帧间隔：&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;MIN_FPS = 10
-MAX_FPS = 30
-SMOOTHING = 0.8
-...
-ema_frame_interval = SMOOTHING * ema_frame_interval + (1 - SMOOTHING) * raw_interval
-sleep_time = min(max(ema_frame_interval, 1 / MAX_FPS), 1 / MIN_FPS)&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;钳在 1/30 到 1/10 秒之间，队列满了丢最旧帧。所以延迟的下界很清楚：4 帧采集时间 + 1 次前向时间。&lt;/p&gt;
-&lt;p&gt;控制面上 &lt;code&gt;pause&lt;/code&gt; 只清输入队列，&lt;code&gt;reset&lt;/code&gt; 才会清 bank 并要求重新上传参考图——因为参考图的编码结果是整段直播的身份基础，换人必须重来。&lt;/p&gt;
-&lt;h3 id=&quot;tensorrt-融合&quot;&gt;TensorRT 融合&lt;/h3&gt;
-&lt;center&gt;
-&lt;p&gt;&lt;img src=&quot;/images/personalive-tensorrt.svg&quot; alt=&quot;TensorRT 融合与运行期绑定&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;/center&gt;
-&lt;p&gt;官方说转 TensorRT 大约快 2 倍，做法比「把 UNet 单独转一下」激进得多：PoseGuider、MotEncoder、UNet3D、DDIM 一步、VAE 解码，五个模块被包进同一个 &lt;code&gt;nn.Module&lt;/code&gt; 前向，导出成一张图。&lt;/p&gt;
-&lt;p&gt;融合后的签名是 23 输入 6 输出：&lt;/p&gt;
-&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;inputs:  sample, encoder_hidden_states, motion_hidden_states, motion,
-         pose_cond_fea, pose, new_noise,
-         d00 d01 d10 d11 d20 d21 m u10 u11 u12 u20 u21 u22 u30 u31 u32
-outputs: pred_video, latents, pose_cond_fea_out,
-         motion_hidden_states_out, motion_out, latent_first&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;7 个常规输入加 16 个参考特征输入。注意这 16 个：PyTorch 版靠 Python 侧的 hook 把 Reference UNet 的特征塞进注意力，图里没法这么干，所以换成 16 个显式输入 &lt;code&gt;d00…u32&lt;/code&gt;，对应 UNet 各层。这也是为什么仓库里有一个 &lt;code&gt;unet_3d_explicit_reference.py&lt;/code&gt;。&lt;/p&gt;
-&lt;p&gt;导出走 ONNX opset 17，再用 polygraphy 建 fp16 引擎。动态维度只留给那 16 个参考特征的序列长度，按 1x / 2x / 4x 设 min / opt / max——正好覆盖「历史关键帧最多追加 3 次」，前面那个上限在这里闭环了。其余输入固定形状。&lt;/p&gt;
-&lt;p&gt;运行期最漂亮的一手是 &lt;code&gt;bind()&lt;/code&gt;：把输出的显存地址直接设成下一轮对应输入的地址。滚动状态（latents、pose、motion）在显存里自环，零拷贝。整轮只有一次 host 调用，省掉逐算子的 Python 调度开销。&lt;/p&gt;
-&lt;p&gt;代价也写清楚了：建引擎约 20 分钟；仓库自带的引擎是 H100 上产的，所有人都建议本机重建；导出前要把 &lt;code&gt;FAN_temporal&lt;/code&gt; 的 &lt;code&gt;pos_embed.requires_grad&lt;/code&gt; 置 False；TensorRT 优化会带来轻微画质波动。&lt;/p&gt;
-&lt;h3 id=&quot;三阶段训练&quot;&gt;三阶段训练&lt;/h3&gt;
-&lt;p&gt;训练代码 2026-05-15 才放出来，8×H100 上大约 13h / 15h / 20h。&lt;/p&gt;
-&lt;center&gt;
-&lt;p&gt;&lt;img src=&quot;/images/personalive-training.svg&quot; alt=&quot;三阶段训练流程&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;/center&gt;
-&lt;p&gt;Stage 1 图像级预热。随机采一个 timestep 加噪，网络预测 ε，换算回 x0 和真值算 latent MSE。额外对人脸、眼、嘴的掩码区域再算一遍 MSE 强化五官——数据预处理那步 &lt;code&gt;tools/get_boxes.py&lt;/code&gt; 抽的就是这三种框。10% 概率走无条件前向，给分类器自由引导留空间。&lt;/p&gt;
-&lt;p&gt;Stage 2 四步蒸馏加对抗精修。时间表固定成 &lt;code&gt;[999, 666, 333, 0]&lt;/code&gt;，随机取 1~4 步自举，只对最后一步回传梯度。损失搬到像素域：MSE + 掩码 MSE + LPIPS×2 + StyleGAN2 对抗×0.05，判别器从 FFHQ512 预训练权重起步，和生成器交替更新。这一阶段才是让 4 步能出好图的地方。&lt;/p&gt;
-&lt;p&gt;Stage 3 时序模块微调。冻结 VAE、CLIP、两个 UNet、MotEncoder、PoseGuider，只训 &lt;code&gt;temporal_modules&lt;/code&gt;。关键是训练里按 4×4 滑窗复现推理时的调度：窗口错位、逐步加噪、&lt;code&gt;pred_x0&lt;/code&gt; 覆盖，让时序模块在训练时就见过推理时那种「一批里各帧噪声档不同」的分布。同时参考特征 bank 以 0.3 的比例随机丢 token，逼时序模块不要只依赖参考图。&lt;/p&gt;
-&lt;p&gt;时序模块不是从零开始，是从 X-NeMo 的权重初始化的。三个阶段之间的衔接要手改 yaml 指向上一阶段 &lt;code&gt;exp_output&lt;/code&gt; 里的 checkpoint，没有自动串联。&lt;br&gt;
-另外注意推理时 stage1&amp;amp;2 和 stage3 用不同的 inference yaml，前者 &lt;code&gt;use_temporal_module=false&lt;/code&gt;。&lt;/p&gt;
-&lt;h3 id=&quot;运行&quot;&gt;运行&lt;/h3&gt;
-&lt;p&gt;环境是 torch 2.1.0 + diffusers 0.27.0 + transformers 4.36.2 + xformers 0.0.22 这一套，python 3.10。&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;conda&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; create&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -n&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; personalive&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; python=&lt;/span&gt;&lt;span style=&quot;color:#2F798A;--shiki-dark:#4C9A91&quot;&gt;3.10&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; &amp;#x26;&amp;#x26;&lt;/span&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt; conda&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; activate&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; personalive&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;pip&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; install&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -r&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; requirements_base.txt&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;python&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; tools/download_weights.py&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;权重六个 &lt;code&gt;.pth&lt;/code&gt;：&lt;code&gt;denoising_unet&lt;/code&gt; / &lt;code&gt;reference_unet&lt;/code&gt; / &lt;code&gt;motion_encoder&lt;/code&gt; / &lt;code&gt;motion_extractor&lt;/code&gt; / &lt;code&gt;pose_guider&lt;/code&gt; / &lt;code&gt;temporal_module&lt;/code&gt;，加上 &lt;code&gt;sd-vae-ft-mse&lt;/code&gt; 和 &lt;code&gt;sd-image-variations-diffusers&lt;/code&gt; 两个基座。&lt;/p&gt;
-&lt;p&gt;离线推理一条命令，流式策略默认开着，官方说 12GB 显存也能生成长视频：&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;python&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; inference_offline.py&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;在线要先起 WebUI，然后：&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;python&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; inference_online.py&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; --acceleration&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; none&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt; |&lt;/span&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt; xformers&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt; |&lt;/span&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt; tensorrt&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;浏览器开 &lt;code&gt;http://localhost:7860&lt;/code&gt;，流程是上传图片 → 融合参考 → 开始动画。&lt;/p&gt;
-&lt;p&gt;RTX 50 系（Blackwell）注意：xformers 还没完全适配，要 &lt;code&gt;--use_xformers False&lt;/code&gt; 或者 &lt;code&gt;--acceleration none&lt;/code&gt;，否则会崩。&lt;/p&gt;
-&lt;h3 id=&quot;要点&quot;&gt;要点&lt;/h3&gt;
-&lt;p&gt;抛开肖像动画这个具体领域，这套东西里有几个可迁移的想法：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;把「多步」侧过来变成「多流水级」。4 步去噪不是必须对同一批数据串行 4 次；让 4 批处于不同阶段的数据共享一次前向，吞吐立刻乘 4。这本质上是软件流水线，只是用在了扩散采样上。&lt;/li&gt;
-&lt;li&gt;恒定队列长度就是无限长。每轮进 4 出 4，状态不增长，于是不需要「片段」这个概念，拼接痕迹这个问题直接消失。&lt;/li&gt;
-&lt;li&gt;条件解耦要解到注入点。身份、姿态、表情不只是分开编码，而是分别注入自注意力 KV、&lt;code&gt;conv_in&lt;/code&gt; 残差、交叉注意力三个不同位置。三者互不挤占容量。&lt;/li&gt;
-&lt;li&gt;图优化要连调度器和解码器一起吞。只转 UNet 收益有限，把 DDIM 一步和 VAE 解码也融进同一张图，才省得下 host 往返；&lt;code&gt;bind()&lt;/code&gt; 让滚动状态在显存自环，这一手很省。&lt;/li&gt;
-&lt;li&gt;训练要复现推理时的分布。Stage 3 在训练里照抄推理的滑窗调度，是这类流式方案能不掉质量的前提。训练和推理的调度不一致，时序模块就学不到该学的东西。&lt;/li&gt;
-&lt;li&gt;上限要和下游对齐。「历史关键帧最多 3 次」这个数字，同时是抗漂移的预算和 TensorRT 动态维度的 4x 档位。两处对上不是巧合，是设计。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&quot;局限&quot;&gt;局限&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;学术研究用途授权，README 里写明不得用于生成有害、诽谤或违法内容，生成内容责任在使用者。这类技术的滥用风险是实打实的。&lt;/li&gt;
-&lt;li&gt;延迟强依赖算力。下界是 4 帧采集加一次前向，但一次前向多快取决于卡；调低驱动 FPS 或放大抽帧乘数只是在降负载，不是在降下界。&lt;/li&gt;
-&lt;li&gt;TensorRT 那条路摩擦不小：pycuda 装不上要走 conda，Windows 上转引擎有专门的 issue 讨论，引擎还得本机重建，而且画质有轻微波动。&lt;/li&gt;
-&lt;li&gt;三阶段训练之间靠手改 yaml 衔接，没有编排；8×H100 跑将近两天，复现门槛不低。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;仓库在 &lt;a href=&quot;https://github.com/GVCLab/PersonaLive&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;GVCLab/PersonaLive&lt;/a&gt;，论文 &lt;a href=&quot;https://arxiv.org/abs/2512.11253&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;arXiv:2512.11253&lt;/a&gt;，权重在 &lt;a href=&quot;https://huggingface.co/huaichang/PersonaLive&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;HuggingFace&lt;/a&gt; 和 ModelScope 都有。ComfyUI 也有社区实现。&lt;/p&gt;
-&lt;p&gt;读完最大的感受是，把扩散模型做到实时这件事，真正的杠杆不在模型也不在算子，在&lt;strong&gt;调度&lt;/strong&gt;。同样 4 步、同样的网络，换个排法就从离线变成了直播。&lt;/p&gt;
 </content>
   </entry>
 </feed>
