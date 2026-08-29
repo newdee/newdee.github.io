@@ -1,9 +1,9 @@
 /* 阁子 service worker —— 构建生成，勿手改 */
-const V = '67561d5ad7'
+const V = '9dfe9cb50d'
 const STATIC = 'static-' + V
 const PAGES = 'pages-v1'
 const MEDIA = 'media-v1'
-const PRECACHE = ["/assets/main-EFUKATL4.css","/assets/main-LYUQ4N5C.js","/assets/gl-home-HHBPXO4C.js","/assets/gl-404-L2OXET7T.js","/assets/chunk-6ATBPRIA.js","/assets/katex/katex.min.css","/assets/fonts/serif-400-d24a095c.woff2","/assets/fonts/serif-700-c78dd9c2.woff2","/assets/fonts/cao-400-06bf223f.woff2"]
+const PRECACHE = ["/assets/main-EFUKATL4.css","/assets/main-LYUQ4N5C.js","/assets/gl-home-HHBPXO4C.js","/assets/gl-404-L2OXET7T.js","/assets/chunk-6ATBPRIA.js","/assets/katex/katex.min.css","/assets/fonts/serif-400-d24a095c.woff2","/assets/fonts/serif-700-9f915c51.woff2","/assets/fonts/cao-400-06bf223f.woff2"]
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(STATIC).then((c) => c.addAll(PRECACHE)).then(() => self.skipWaiting()))

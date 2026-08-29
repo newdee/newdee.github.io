@@ -1005,7 +1005,7 @@
 ]]></style>
 
         <title id="archify-diagram-title">lamarck 的一轮进化</title>
-        <desc id="archify-diagram-description">钩子记账，轻循环判词，证据够了才提案，改完立刻验，变差就退回去</desc>
+        <desc id="archify-diagram-description">所有已装 skill 同时走这一条链，不用挑也不用写用例，够证据才提案，变差就退回去</desc>
         <!-- Definitions -->
         <defs>
           <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
@@ -1051,16 +1051,16 @@
         <path data-edge-from="gate" data-edge-to="verify" data-edge-label="有界的定点编辑" data-edge-key="3" data-edge-id="f4" data-composition-points="801,271;904,271" d="M 801 271 L 904 271" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
 
         <!-- Nodes -->
-        <g id="node-log" data-node-id="log" data-node-label="调用落一行" tabindex="0" role="button" aria-label="Focus 调用落一行, PostToolUse 钩子, 01 / 记账" aria-pressed="false" data-node-kind="external" data-node-sublabel="PostToolUse 钩子" data-node-tag="盖上基因哈希" data-node-context="01 / 记账">
-          <title>调用落一行 · PostToolUse 钩子 · 01 / 记账 · 盖上基因哈希</title>
+        <g id="node-log" data-node-id="log" data-node-label="任一 skill 被调用" tabindex="0" role="button" aria-label="Focus 任一 skill 被调用, 全部在观察下，无需配置, 01 / 记账" aria-pressed="false" data-node-kind="external" data-node-sublabel="全部在观察下，无需配置" data-node-tag="盖上基因哈希" data-node-context="01 / 记账">
+          <title>任一 skill 被调用 · 全部在观察下，无需配置 · 01 / 记账 · 盖上基因哈希</title>
           <rect x="44" y="242" width="112" height="58" rx="6" class="c-mask"/>
           <rect x="44" y="242" width="112" height="58" rx="6" class="c-external" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="external" class="semantic-sigil s-external" transform="translate(50 248) scale(0.6875)">
             <rect x="2.5" y="5" width="8.5" height="8" rx="1.5"/>
             <path d="M8 2.5h5.5V8M13.5 2.5 7.5 8.5"/>
           </g>
-          <text data-detail-anchor="" x="100" y="263" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">调用落一行</text>
-          <text data-detail="context" x="100" y="279" class="t-muted" font-size="7" text-anchor="middle">PostToolUse 钩子</text>
+          <text data-detail-anchor="" x="100" y="263" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">任一 skill 被调用</text>
+          <text data-detail="context" x="100" y="279" class="t-muted" font-size="7" text-anchor="middle">全部在观察下，无需配置</text>
         <text data-detail="fine" x="100" y="289" class="t-external" font-size="7" text-anchor="middle">盖上基因哈希</text>
         </g>
 
@@ -1089,8 +1089,8 @@
         <text data-detail="fine" x="530" y="289" class="t-database" font-size="7" text-anchor="middle">纠正过的蒸馏成回归用例</text>
         </g>
 
-        <g id="node-gate" data-node-id="gate" data-node-label="证据门" tabindex="0" role="button" aria-label="Focus 证据门, 八个条件同时成立, 04 / 提案" aria-pressed="false" data-node-kind="security" data-node-sublabel="八个条件同时成立" data-node-tag="用户三选一才施工" data-node-context="04 / 提案">
-          <title>证据门 · 八个条件同时成立 · 04 / 提案 · 用户三选一才施工</title>
+        <g id="node-gate" data-node-id="gate" data-node-label="证据门" tabindex="0" role="button" aria-label="Focus 证据门, 八个条件同时成立, 04 / 提案" aria-pressed="false" data-node-kind="security" data-node-sublabel="八个条件同时成立" data-node-tag="按信任阶梯决定问不问你" data-node-context="04 / 提案">
+          <title>证据门 · 八个条件同时成立 · 04 / 提案 · 按信任阶梯决定问不问你</title>
           <rect x="689" y="242" width="112" height="58" rx="6" class="c-mask"/>
           <rect x="689" y="242" width="112" height="58" rx="6" class="c-security" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="security" class="semantic-sigil s-security" transform="translate(695 248) scale(0.6875)">
@@ -1099,7 +1099,7 @@
           </g>
           <text data-detail-anchor="" x="745" y="263" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">证据门</text>
           <text data-detail="context" x="745" y="279" class="t-muted" font-size="7" text-anchor="middle">八个条件同时成立</text>
-        <text data-detail="fine" x="745" y="289" class="t-security" font-size="7" text-anchor="middle">用户三选一才施工</text>
+        <text data-detail="fine" x="745" y="289" class="t-security" font-size="7" text-anchor="middle">按信任阶梯决定问不问你</text>
         </g>
 
         <g id="node-verify" data-node-id="verify" data-node-label="三道验证" tabindex="0" role="button" aria-label="Focus 三道验证, 回放 · 盲评 · 版本分窗, 05 / 验证" aria-pressed="false" data-node-kind="cloud" data-node-sublabel="回放 · 盲评 · 版本分窗" data-node-tag="变差就回滚" data-node-context="05 / 验证">
