@@ -4,9 +4,65 @@
   <subtitle>dfine's Blog</subtitle>
   <link href="https://dfine.tech/atom.xml" rel="self"/>
   <link href="https://dfine.tech/"/>
-  <updated>2026-08-29T10:12:00+08:00</updated>
+  <updated>2026-08-31T14:20:00+08:00</updated>
   <id>https://dfine.tech/</id>
   <author><name>dfine</name></author>
+  <entry>
+    <title>LEANN 的重算式向量索引</title>
+    <link href="https://dfine.tech/posts/472f24da/"/>
+    <id>https://dfine.tech/posts/472f24da/</id>
+    <published>2026-08-31T14:20:00+08:00</published>
+    <updated>2026-08-31T14:20:00+08:00</updated>
+    <category term="检索"/>
+    <category term="架构"/>
+    <category term="Python"/>
+    <content type="html">&lt;p&gt;向量检索有个不太好看的账：索引往往比原始数据还大。六千万条文本切块，用传统办法建索引要 201 GB，而那堆文本本身没那么大。想在自己笔记本上索引邮件、浏览记录、聊天记录，这道门槛就卡在硬盘上。&lt;br&gt;
+&lt;a href=&quot;https://github.com/StarTrail-org/LEANN&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;LEANN&lt;/a&gt; 的选择是索引里干脆不存向量，只存一张剪过的图，搜索时走到哪一跳就现算哪一跳的向量。同样那六千万条，索引降到 6 GB。&lt;br&gt;
+论文是 &lt;a href=&quot;https://arxiv.org/abs/2506.08276&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;arXiv:2506.08276&lt;/a&gt;，伯克利那批人写的，作者名单里有 Ion Stoica、Matei Zaharia、Joseph Gonzalez。&lt;/p&gt;
+&lt;!--more--&gt;
+&lt;h3 id=&quot;存储开销&quot;&gt;存储开销&lt;/h3&gt;
+&lt;p&gt;摘要里的原话是索引「需要存储高维嵌入和大量索引元数据，其总大小可能是原始数据（例如文本块）的数倍」。占地方的是那一堆浮点数，文本本身反倒是小头。&lt;/p&gt;
+&lt;p&gt;一条 768 维的 float32 向量是 3 KB，六千万条就是 180 GB。存储曲线跟着向量维度和条数走，跟你实际有多少字没多大关系。&lt;/p&gt;
+&lt;p&gt;LEANN 的做法是把这部分从磁盘上删掉，改成用的时候现算。论文说索引最多能缩小到原来的五十分之一，占原始数据约 5%，而检索精度和延迟保持在可比范围。仓库里给的对比表是这样：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;六千万条维基文本：传统 201 GB，LEANN 6 GB，省 97%&lt;br&gt;
+两百一十万条 DPR：3.8 GB 对 324 MB，省 91%&lt;br&gt;
+七十八万封邮件：2.4 GB 对 79 MB，省 97%&lt;br&gt;
+三万八千条浏览记录：130 MB 对 6.4 MB，省 95%&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;这几个数是项目自己报的，我没复现。要当真得知道它们省略了什么：没写用的哪个嵌入模型、多少维、什么机器，而这三样直接决定分子和分母。后两行还标着是「部分个人数据」的测试结果。仓库里有 &lt;code&gt;benchmarks/run_evaluation.py&lt;/code&gt; 可以自己跑，会自动下评测数据。&lt;/p&gt;
+&lt;h3 id=&quot;检索流程&quot;&gt;检索流程&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&quot;/images/leann-search.svg&quot; alt=&quot;LEANN 的一次检索&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
+&lt;p&gt;先把查询嵌一次，这是整个流程里唯一必然发生的一次嵌入。然后进图，走一跳，需要跟哪些邻居比距离，就把这些节点的编号报出去，等向量算回来，比完再决定下一跳往哪走。&lt;/p&gt;
+&lt;p&gt;「报出去」这四个字是字面意思。后端不是自己写的，是 faiss 和 DiskANN 的分叉，加上 ZeroMQ 和 msgpack 两个子模块。C++ 那侧走到需要向量的时候，把一个装着 &lt;code&gt;node_ids&lt;/code&gt; 的 protobuf 从 ZeroMQ 发出来，Python 那侧收到编号、查回原文、成批过一遍嵌入模型，再把向量送回去。图遍历中途是真的停在一次跨进程往返上等着的。&lt;/p&gt;
+&lt;p&gt;我第一次读到这儿以为是自己看错了目录，跨进程做热路径，通常是设计出了问题才会这样。但它解释了另外几个机制为什么必须存在。既然每一跳都要付一次模型前向的代价，那就得让需要算的点尽可能少、尽可能扎堆：一跳要的邻居攒成一批送过去，GPU 才吃得饱；两级搜索先粗后精，把昂贵的精算留给真有希望的候选；剪枝则从源头减少要走的边。这几样单看都像常规优化，放在这个前提下才是必需品。&lt;/p&gt;
+&lt;h3 id=&quot;图剪枝&quot;&gt;图剪枝&lt;/h3&gt;
+&lt;p&gt;论文管这套叫高度数保留剪枝。图索引的邻接表本身也占地方，如果把向量删了但邻接表膨胀起来，账就白算了。&lt;/p&gt;
+&lt;p&gt;思路是保住高度数的枢纽节点、砍掉冗余连接。近邻图里少数节点承担了绝大部分的连通性，删掉它们的边会让搜索路径变长甚至走不通，而大量低度数节点之间的边是可以省的。剪完之后用压缩稀疏行格式存，省下来的空间不会被邻接表吃回去。&lt;/p&gt;
+&lt;h3 id=&quot;后端&quot;&gt;后端&lt;/h3&gt;
+&lt;p&gt;默认是 HNSW，走完全重算，存储省得最狠。另一个是 DiskANN，用乘积量化过的向量做图遍历、再实时重排，README 说这条路速度和精度的折中更好。&lt;/p&gt;
+&lt;p&gt;区别落到实处就是：HNSW 那条路索引里真的没有向量，DiskANN 那条留了一份压缩过的粗向量用来导航，精确距离仍然靠现算。前者省到极致，后者少几次往返。&lt;/p&gt;
+&lt;h3 id=&quot;参数&quot;&gt;参数&lt;/h3&gt;
+&lt;p&gt;检索侧的默认值摆在 &lt;code&gt;api.py&lt;/code&gt; 里：候选队列 &lt;code&gt;complexity=64&lt;/code&gt;、&lt;code&gt;beam_width=1&lt;/code&gt;、&lt;code&gt;prune_ratio=0.0&lt;/code&gt;、&lt;code&gt;recompute_embeddings=True&lt;/code&gt;，剪枝策略默认 &lt;code&gt;global&lt;/code&gt;，另有 &lt;code&gt;local&lt;/code&gt; 和 &lt;code&gt;proportional&lt;/code&gt; 两档。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;recompute_embeddings&lt;/code&gt; 可以关，关掉就退回普通的存向量模式，这在索引不大、又想要极限延迟的时候有意义。剪枝比率默认是零，也就是不额外剪，需要更省的时候再往上调。&lt;/p&gt;
+&lt;p&gt;顺带一提它还带一条 BM25 通路，用 SQLite 的 FTS5 建全文索引，和向量结果做融合，分词那里对中日韩做了 ngram 处理。这条跟主线关系不大，但对中文语料是实打实的差别。&lt;/p&gt;
+&lt;h3 id=&quot;安装与使用&quot;&gt;安装与使用&lt;/h3&gt;
+&lt;p&gt;装完之后建索引、搜索、对话是三条命令的事（下面这几条抄自 README，我没在本机跑过）：&lt;/p&gt;
+&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;uv&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; pip&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; install&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; leann&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;leann&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; build&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; my-docs&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; --docs&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; ./documents&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;leann&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; search&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; my-docs&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt; &quot;&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;这里写你想找的东西&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;leann&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; ask&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; my-docs&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; --interactive&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;仓库里给了一大堆现成的接入：文件系统、Apple Mail、浏览器历史、微信、iMessage、ChatGPT 与 Claude 的会话记录、Slack、Twitter 书签。还有一个 MCP 服务，可以直接给 Claude Code 当语义搜索用，它自带的只有 grep 那种关键词匹配。&lt;/p&gt;
+&lt;p&gt;生成模型那侧支持本地引擎（Ollama、vLLM 之类）和云端 API 两种，README 的推荐是本地，理由跟整个项目一致，数据不出机器。&lt;/p&gt;
+&lt;h3 id=&quot;代价&quot;&gt;代价&lt;/h3&gt;
+&lt;p&gt;省下来的磁盘换成了算力。&lt;/p&gt;
+&lt;p&gt;每次检索都要跑嵌入模型，所以机器得扛得动这个模型。门槛没有消失，只是从硬盘挪到了显卡，原来是装不下，现在是跑不动。&lt;/p&gt;
+&lt;p&gt;模型没就绪就搜不了。传统索引把向量落盘之后，检索本身是纯 IO 加算术，进程重启就能用；LEANN 得先把嵌入服务拉起来，那是一次冷启动。&lt;/p&gt;
+&lt;p&gt;延迟的说法要看清限定词。论文写的是 RAG 应用下延迟「可比」，不是更快。RAG 本来就要等一次大模型生成，检索多花的几十毫秒被盖住了；换成对延迟敏感的在线检索场景，这个结论不一定成立。&lt;/p&gt;
+&lt;p&gt;还有一处是我从子模块清单读出来的：真正的算法在 faiss 和 DiskANN 的分叉里，也就是 &lt;code&gt;yichuan-w/faiss&lt;/code&gt; 和 &lt;code&gt;yichuan-w/DiskANN&lt;/code&gt;。仓库主体是 Python 编排层，一百七十多个 py 文件，C++ 那侧要拉子模块才看得到。想读实现的话别只克隆主仓库。&lt;/p&gt;
+&lt;p&gt;要不要用，我的判断是分场景。个人机器上索引邮件、聊天记录、浏览历史这类，值得，因为那个量级传统索引根本放不下，而这些数据你本来也不会拿去查十万次。反过来，如果索引不大、机器没有像样的 GPU、或者检索延迟直接顶在用户面前，就别折腾了，&lt;code&gt;recompute_embeddings=False&lt;/code&gt; 关掉重算之后它退回成一个普通索引，那还不如一开始就用别的。分界线大概在这批数据的索引装不装得下，装得下就没必要，装不下才是它存在的理由。&lt;/p&gt;
+</content>
+  </entry>
   <entry>
     <title>lamarck 按真实调用进化全部 skill</title>
     <link href="https://dfine.tech/posts/689b2288/"/>
@@ -2026,60 +2082,6 @@ PREVIEW ONLY，不收 unsolicited PR，反馈走 issue 和 discussion。&lt;/p&g
 &lt;/blockquote&gt;
 &lt;p&gt;最后说一个印象：4900 行规格配 5.7 万行实现，连「考虑过又放弃的编码方案」都写进了文档，这个密度在预览期项目里少见。&lt;/p&gt;
 &lt;p&gt;写完有点手痒，想把自己博客的构建态也塞进 DO 里，转念一想静态站要什么权威态，睡了。&lt;/p&gt;
-</content>
-  </entry>
-  <entry>
-    <title>QM，给全公司用的 agent 平台</title>
-    <link href="https://dfine.tech/posts/53c0ead3/"/>
-    <id>https://dfine.tech/posts/53c0ead3/</id>
-    <published>2026-08-10T20:39:33+08:00</published>
-    <updated>2026-08-10T20:39:33+08:00</updated>
-    <category term="Agent"/>
-    <category term="Infrastructure"/>
-    <category term="TypeScript"/>
-    <content type="html">&lt;p&gt;市面上的 agent 几乎都按个人助理的样子设计，一个人用很顺，搬进公司就开始别扭：所有人共享一份记忆和一台沙箱，配置互相踩，权限一刀切。&lt;br&gt;
-QM 反过来，从第一天就按「多人」设计：每个人、每个频道各有一套隔离的工作空间，又能在同一个组织里协作。&lt;br&gt;
-上层目录里这份代码已经长到七万多行，值得完整写一写它的设计。&lt;/p&gt;
-&lt;!--more--&gt;
-&lt;h3 id=&quot;它是什么&quot;&gt;它是什么&lt;/h3&gt;
-&lt;p&gt;QM 是一个面向创业公司的 multiplayer agent harness：员工在 Slack 和 Web 两个入口使用同一个 agent，身份与配置在两端完全一致。&lt;br&gt;
-关键抽象是 &lt;strong&gt;scope&lt;/strong&gt;：每个人是一个 scope，每个频道、群组、项目也是一个 scope。memory、文件、keychain 视图、定时任务、Web 应用、durable sandbox，全部按 scope 隔离——你调教出来的 agent 是你的，频道里的 agent 是大家的，互不污染。&lt;/p&gt;
-&lt;p&gt;另一个立场是不绑供应商：Pi、OpenCode、Codex、Claude Code 四种 harness 驱动同一个 core，部署方选自己的模型和 harness，随时可换。&lt;/p&gt;
-&lt;h3 id=&quot;架构&quot;&gt;架构&lt;/h3&gt;
-&lt;center&gt;
-&lt;p&gt;&lt;img src=&quot;/images/qm-architecture.svg&quot; alt=&quot;QM 架构：入口插件、无头 core、按 scope 的沙箱与可插拔 harness&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;/center&gt;
-&lt;p&gt;core 是无头的：API、身份、策略、调度器加一个 agent loop，TypeScript 直接跑在 Node 上，HTTP 用 Fastify。Web UI、admin 面板、公开 portal 都是 core HTTP API 之上的可选插件；Slack 是 core 进程内启动并监督的插件（Bolt 实现）。&lt;br&gt;
-持久层是 Postgres：会话历史、memory、队列等全部耐久状态都在这。&lt;br&gt;
-每个 scope 有自己的沙箱——一台「durable computer」，装过的工具一直在，agent 的 &lt;code&gt;execute&lt;/code&gt; 工具就在这台机器里跑命令。&lt;/p&gt;
-&lt;h3 id=&quot;每回合怎么走&quot;&gt;每回合怎么走&lt;/h3&gt;
-&lt;center&gt;
-&lt;p&gt;&lt;img src=&quot;/images/qm-turn-flow.svg&quot; alt=&quot;一条消息的旅程：入口、身份与策略、安全姿态、harness 回合、沙箱执行&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;/center&gt;
-&lt;p&gt;每个回合都经过 core 中枢：入口插件收到消息，解析身份并落到对应 scope，策略层决定这个 scope 允许什么，然后交给所选 harness 生成回应。&lt;br&gt;
-工具面是刻意收小的固定集合，其中 &lt;code&gt;execute&lt;/code&gt; 负责一切命令执行，落进该 scope 自己的沙箱。harness 层做了统一适配：&lt;code&gt;pi-harness&lt;/code&gt; / &lt;code&gt;opencode-harness&lt;/code&gt; / &lt;code&gt;codex-harness&lt;/code&gt; / &lt;code&gt;claude-harness&lt;/code&gt; 四个实现落在同一接口上，还有 &lt;code&gt;mock-harness&lt;/code&gt; 供测试，上下文压缩（&lt;code&gt;context-compaction&lt;/code&gt;）和录制回放（&lt;code&gt;replay&lt;/code&gt; / &lt;code&gt;tape-fold&lt;/code&gt;）也做在这一层，换 harness 不用动业务。&lt;/p&gt;
-&lt;h3 id=&quot;安全姿态&quot;&gt;安全姿态&lt;/h3&gt;
-&lt;p&gt;QM 的信任模型与本地编码 agent（OpenCode、Codex、Claude Code）同源：agent 以使用者的身份行事，用他的凭证和权限，一切留审计。组织选一个安全姿态，更窄的 scope 只能收紧不能放松：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;Strict：除两个无副作用的回合终止工具外，每次 harness 工具调用都停下来等人工批准。&lt;br&gt;
-Auto（默认）：带来源标注的外部数据与工具结果，先过一个分类器再进模型；部署方可以把分类器指向自己的筛查代理。&lt;br&gt;
-Dangerous：不筛内容、不暂停。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;预声明命令策略是姿态之外的另一层：递归删除、破坏性 SQL 这类命令的批准规则与硬性拒绝，在任何姿态下都生效，Dangerous 也不例外。&lt;/p&gt;
-&lt;h3 id=&quot;deployment-directory&quot;&gt;deployment directory&lt;/h3&gt;
-&lt;p&gt;core 本身是通用的，一切公司特定的东西——组织配置、自定义工具与技能、沙箱镜像、基础设施——都放在一个独立的&lt;strong&gt;部署目录&lt;/strong&gt;里，由 &lt;code&gt;qm&lt;/code&gt; CLI 校验和部署：&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;npm&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; exec&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; --yes&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; --package=@yc-software/qm@latest&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; --&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; \&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;  qm&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; init&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; .&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; --org&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt; &amp;#x3C;&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;slu&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;g&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt;&gt;&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; --target&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt; &amp;#x3C;&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;fly-or-aw&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;s&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt;&gt;&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;npm&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; install&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;初始化会物化一个部署技能，带着 agent 走完基础设施、Web 登录、连接器凭证、Slack 接入、部署与线上验证，全程不需要 checkout 源码。每个部署跑在运营方自己的云账号里（Fly 或 AWS）。&lt;br&gt;
-想把定制和核心放在一个仓库里读的组织，走&lt;strong&gt;私有 fork&lt;/strong&gt;：用裸克隆 mirror 出一个独立私有仓，而不是 GitHub 的 Fork 按钮——GitHub fork 会继承上游仓库的可见性，公共仓库的 fork 私有不了，这个坑文档里点得很清楚。&lt;/p&gt;
-&lt;h3 id=&quot;工程规范&quot;&gt;工程规范&lt;/h3&gt;
-&lt;p&gt;代码之外的规矩同样能看出这个项目的性格：仓库标准是&lt;strong&gt;零注释&lt;/strong&gt;，意图全靠命名、结构和测试表达；合并前必须由没看过这个 diff 的新上下文做破坏性审查，作者自审不算数，绿色的 CI 也不算审查；本地只跑受影响的测试，全量交给 CI 分片并行。贡献方式更特别——只收人写的文字（ADR），不收代码，对齐之后由维护方实现。&lt;/p&gt;
-&lt;h3 id=&quot;边界和取舍&quot;&gt;边界和取舍&lt;/h3&gt;
-&lt;p&gt;固定小工具面意味着放弃各 harness 自带的工具生态，换来的是四种 harness 行为一致、审计一致。&lt;br&gt;
-agent 以人的身份行事，是把「agent 做了什么」等同于「这个人做了什么」——审计因此简单，但也要求组织真的信任姿态与命令策略这两层闸门。&lt;br&gt;
-多 scope 隔离的代价是运维面变宽：每个 scope 一台沙箱，状态耐久也就意味着状态要管。&lt;/p&gt;
-&lt;p&gt;回头看，这套东西像是把「本地编码 agent」的那套信任与工具哲学，抬到了组织级——个人的照样是个人的，公司的才是公司的。&lt;/p&gt;
 </content>
   </entry>
 </feed>
