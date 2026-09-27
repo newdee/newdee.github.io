@@ -4,9 +4,106 @@
   <subtitle>dfine's Blog</subtitle>
   <link href="https://dfine.tech/atom.xml" rel="self"/>
   <link href="https://dfine.tech/"/>
-  <updated>2026-08-31T14:20:00+08:00</updated>
+  <updated>2026-09-28T00:12:02+08:00</updated>
   <id>https://dfine.tech/</id>
   <author><name>dfine</name></author>
+  <entry>
+    <title>终端复用器 keepane</title>
+    <link href="https://dfine.tech/posts/626063bd/"/>
+    <id>https://dfine.tech/posts/626063bd/</id>
+    <published>2026-09-28T00:12:02+08:00</published>
+    <updated>2026-09-28T00:12:02+08:00</updated>
+    <category term="Rust"/>
+    <category term="终端"/>
+    <category term="Windows"/>
+    <category term="Agent"/>
+    <content type="html">&lt;p&gt;Windows 上没有 tmux，终端一关，跑着的编译、部署、agent 全跟着没，WSL 里的 tmux 又管不到 PowerShell 的 pane。&lt;br&gt;
+keepane 就是补这个的。脱离之后 pane 里的程序继续跑，重启电脑后 &lt;code&gt;keepane resume&lt;/code&gt; 把布局摆回来，tmux 的按键、命令和配置写法照旧。&lt;br&gt;
+另一半 tmux 没有，每个 pane 有名字、有收件箱、有工作模式，pane 之间能互发消息，也能让对方直接执行一条命令。&lt;/p&gt;
+&lt;!--more--&gt;
+&lt;h3 id=&quot;起因&quot;&gt;起因&lt;/h3&gt;
+&lt;p&gt;最早只是想在 Windows 上有个 tmux，第一个提交的标题就是「tmux-style terminal multiplexer for Windows」，那会儿还叫 wmux。&lt;br&gt;
+真用起来才发现分屏解决的只是摆放。几个窗口里各跑一个 Claude Code，让它们互相派活得靠人来回复制，人一离开活就停了。tmux 管排版不管通信，这部分只能自己加。&lt;br&gt;
+于是 pane 从一块屏幕改成了一个 actor，有名字、有收件箱、有工作模式。改名也是这时候的事，wmux 这名字 GitHub、winget、crates.io 上都有人在用了，0.14.0 起改叫 keepane，keep 加 pane，终端没了 pane 里的程序还在。&lt;/p&gt;
+&lt;h3 id=&quot;装和用&quot;&gt;装和用&lt;/h3&gt;
+&lt;p&gt;Windows 上 scoop 直接读仓库里的清单，不要管理员权限，另外有 MSI 和 zip；Linux 和 macOS 走 Homebrew。&lt;/p&gt;
+&lt;figure class=&quot;code&quot; data-lang=&quot;powershell&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;powershell&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;scoop install https:&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;//&lt;/span&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt;raw.githubusercontent.com&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;/&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;newdee&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;/&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;keepane&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;/&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;master&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;/&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;packaging&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;/&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;scoop&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;/&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;keepane.json&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;brew&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; install&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; newdee/tap/keepane&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;keepane&lt;/span&gt;&lt;span style=&quot;color:#A0ADA0;--shiki-dark:#758575DD&quot;&gt;                      # 新建 session 并进去&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;keepane&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; new&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -d&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -s&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; bg&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; htop&lt;/span&gt;&lt;span style=&quot;color:#A0ADA0;--shiki-dark:#758575DD&quot;&gt;    # 后台起一个&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;keepane&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; attach&lt;/span&gt;&lt;span style=&quot;color:#A65E2B;--shiki-dark:#C99076&quot;&gt; -t&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; work&lt;/span&gt;&lt;span style=&quot;color:#A0ADA0;--shiki-dark:#758575DD&quot;&gt;       # 换个终端窗口也能接回来&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;keepane&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; resume&lt;/span&gt;&lt;span style=&quot;color:#A0ADA0;--shiki-dark:#758575DD&quot;&gt;               # 重启之后把存过档的 session 都摆回来&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;前缀是 &lt;code&gt;C-b&lt;/code&gt;，&lt;code&gt;%&lt;/code&gt; &lt;code&gt;&amp;quot;&lt;/code&gt; 分屏，&lt;code&gt;[&lt;/code&gt; 进 copy mode，&lt;code&gt;:&lt;/code&gt; 命令行，配置文件是 tmux 语法。&lt;code&gt;keepane import-config&lt;/code&gt; 把现成的 &lt;code&gt;.tmux.conf&lt;/code&gt; 过一遍，不认的行注释掉并写上原因，不会悄悄丢。跟 tmux 逐条对着的差异在 &lt;code&gt;docs/tmux-parity.md&lt;/code&gt;。&lt;/p&gt;
+&lt;h3 id=&quot;消息&quot;&gt;消息&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&quot;/images/keepane-message.svg&quot; alt=&quot;一条消息从发出到执行&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
+&lt;p&gt;给 pane 起个名字，它就能收消息：&lt;/p&gt;
+&lt;figure class=&quot;code&quot; data-lang=&quot;powershell&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;powershell&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;keepane &lt;/span&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt;rename-pane&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; -&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;t &lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;%&lt;/span&gt;&lt;span style=&quot;color:#2F798A;--shiki-dark:#4C9A91&quot;&gt;3&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt; builder&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;keepane &lt;/span&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt;set-work&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;-&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;mode &lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;-&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;t &lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;%&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;builder shell&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;keepane &lt;/span&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt;send-message&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; -&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;t &lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;%&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;builder &lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;-&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;w &lt;/span&gt;&lt;span style=&quot;color:#2F798A;--shiki-dark:#4C9A91&quot;&gt;30&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt; &quot;&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;cargo test&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt;&quot;&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;keepane &lt;/span&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt;trace-message&lt;/span&gt;&lt;span style=&quot;color:#2F798A;--shiki-dark:#4C9A91&quot;&gt; 12&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; -&lt;/span&gt;&lt;span style=&quot;color:#393A34;--shiki-dark:#DBD7CAEE&quot;&gt;w &lt;/span&gt;&lt;span style=&quot;color:#2F798A;--shiki-dark:#4C9A91&quot;&gt;600&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;&lt;code&gt;-w&lt;/code&gt; 是等送达，&lt;code&gt;trace-message&lt;/code&gt; 是等做完，回来的是输出和成败。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/images/keepane-messages.gif&quot; alt=&quot;发给 builder 的命令在那边执行，trace-message 看结果&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; width=&quot;900&quot; height=&quot;638&quot;&gt;&lt;/p&gt;
+&lt;p&gt;发送方能填的只有 &lt;code&gt;--to&lt;/code&gt;、&lt;code&gt;--re&lt;/code&gt;、&lt;code&gt;--task&lt;/code&gt; 三样，其余由服务端盖章：&lt;/p&gt;
+&lt;figure class=&quot;code code-plain&quot;&gt;&lt;pre&gt;&lt;code&gt;[keepane id=12 task=12 from=$1:@1.%3 name=lead mode=ai to=$1:@2.%7 via=shell hop=0]&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;&lt;code&gt;from&lt;/code&gt;、&lt;code&gt;name&lt;/code&gt;、&lt;code&gt;mode&lt;/code&gt;、&lt;code&gt;id&lt;/code&gt;、&lt;code&gt;hop&lt;/code&gt;、&lt;code&gt;via&lt;/code&gt; 都不许发送方给，给了报错。来源可以伪造的话 &lt;code&gt;hop&lt;/code&gt; 上限就拦不住循环，两个 agent 能一直对着回信，现在超过 8 跳拒收。&lt;br&gt;
+字段顺序固定、中间不留空格，同一条消息每次生成的字节完全一样，写测试和给程序解析都省事；值里不会出现空格和 &lt;code&gt;]&lt;/code&gt;，按空格切开就读回来了。这行原本是 JSON，用了一阵实在看不下去，0.17 改成字段式，JSON 只留在事件日志里。&lt;/p&gt;
+&lt;h4 id=&quot;工作模式&quot;&gt;工作模式&lt;/h4&gt;
+&lt;p&gt;投递时机由收件方决定，一共三种：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;normal&lt;/code&gt;：不自动投递，程序自己用 &lt;code&gt;read-message&lt;/code&gt; 取，窗口标记上显示 &lt;code&gt;@&lt;/code&gt;&lt;br&gt;
+&lt;code&gt;shell&lt;/code&gt;：keepane 的提示符钩子看到 shell 回到提示符，就把命令打进去回车&lt;br&gt;
+&lt;code&gt;ai&lt;/code&gt;：agent 的轮次结束 hook 调过 &lt;code&gt;pane-ready&lt;/code&gt;，就把正文当提示词打进去&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;投给 shell 的那条，信封写成不执行任何东西的形式放在命令前面，PowerShell 里是行内注释 &lt;code&gt;&amp;lt;# … #&amp;gt; cargo test&lt;/code&gt;，bash 和 zsh 里是 &lt;code&gt;:&lt;/code&gt; 的参数。这样来源同时留在屏幕、shell 自己的历史和 keepane 的历史日志三处。&lt;br&gt;
+消息按发送当时对方的模式投递，不按现在的。写给 agent 的一段文字，不会因为这个 pane 中途被切成 shell 就被当命令执行。&lt;/p&gt;
+&lt;h4 id=&quot;空闲判断&quot;&gt;空闲判断&lt;/h4&gt;
+&lt;p&gt;这部分的规则最琐碎。&lt;/p&gt;
+&lt;p&gt;只认 keepane 自己的提示符标记（&lt;code&gt;OSC 7777;keepane-prompt&lt;/code&gt;），不认 OSC 133。ssh 到远端的 shell 也会发 OSC 133，认了就会把别人机器上的提示符当成本地空闲。&lt;br&gt;
+按键、粘贴、&lt;code&gt;send-keys&lt;/code&gt; 一律转成忙，免得消息插进正在打的字中间。麻烦的是提前打字：keepane 投的命令还在跑，人在那儿先敲了半行，这条命令结束时的提示符就不能算空闲，否则消息会接在那半行后面执行。所以状态机里除了「在提示符」还有一位记着「行上留着东西」，一直忙到有人再按键，把那行运行掉或者清掉。bash 每收到提前打的字会重画一次提示符，不记这一位就会被提前放行。&lt;br&gt;
+还有一处是 ConPTY 的顺序。提示符标记是个 OSC，ConPTY 立刻转发，而它前面那些文字要等下一帧才画出来，于是标记到达时命令最后几行输出还不在屏幕上，实测 &lt;code&gt;keepane-cmd&lt;/code&gt; 和 &lt;code&gt;9;9&lt;/code&gt; 都排到了它们之后才写出的输出前面。现在的做法是标记到达即判在提示符，但当前消息要等 60 ms 才算结束、才截输出，这期间不投递新的。&lt;/p&gt;
+&lt;p&gt;有一条一开始就写反了。&lt;code&gt;read-message&lt;/code&gt; 取走的消息应该取走就算完，不该算成这个 pane 正在处理的那条，当初按后者写，结果 agent 在自己一轮里先取回信、再发下一条，&lt;code&gt;hop&lt;/code&gt; 一路往上累，几轮往来之后就被跳数上限拒收了。&lt;/p&gt;
+&lt;h3 id=&quot;conpty&quot;&gt;ConPTY&lt;/h3&gt;
+&lt;p&gt;Windows 上伪终端只有 ConPTY 一条路。它跟 Unix 的 pty 不太一样，自己带一个屏幕模型，会重排也会补行，下面这两处都栽在这上面。&lt;/p&gt;
+&lt;h4 id=&quot;输出起点&quot;&gt;输出起点&lt;/h4&gt;
+&lt;p&gt;有个测试只在 Windows 的 CI 上偶发失败，最近 60 次里挂了 4 次，Linux 和 macOS 一次没挂，名字叫「命令正好写满行尾时输出的第一行还在」。&lt;br&gt;
+本机复现不了，加了临时诊断（环境变量打开，记每次的输出字节、送达时的光标与行、截取范围），把机器压到 2 核再挂 4 个空转进程，80 次里失败 6 次，6 次模式一模一样：前一条命令正好写满行尾时，ConPTY 把这一行和 shell 的换行分两帧发出来，第一帧后光标停在行尾等换行，第二帧才是 &lt;code&gt;\r\n&lt;/code&gt;，而 conhost 在最后一列已经换过行了，于是比终端多出一行。之后 PSReadLine 按 ConPTY 的行号用绝对坐标画下一条命令（&lt;code&gt;ESC[8;9H&lt;/code&gt;），比 keepane 看到的提示符低一行，按「送达时光标行加所占行数」推算出来的输出起点就落到命令自己的最后一行上，输出首行成了那行末尾的字符。负载低的时候两部分在同一帧，ConPTY 会补上空行，两边一致，所以平时看不出来。&lt;br&gt;
+修法是不再推算，命令结束时到屏幕上去找：从送达那行往下逐行拼接、去掉空白，第一次包含整条送入文字的那行就是命令末行，输出从下一行起；找不到（多行命令，或者 shell 中间画了别的东西）才退回推算。同样的压法，修完 80 次 0 次，去掉诊断的最终代码 31 次 0 次，同负载下耗时没变。&lt;/p&gt;
+&lt;h4 id=&quot;多行命令&quot;&gt;多行命令&lt;/h4&gt;
+&lt;p&gt;一条多行命令没法逐行打进 shell 执行。PSReadLine 不开括号粘贴，而 ConPTY 会把 Shift+Enter 的 Shift 丢掉（实测收到 &lt;code&gt;vk=13 state=0&lt;/code&gt;），逐行打就是每行各自回车各自执行，消息在第一个提示符就算结束了。&lt;br&gt;
+所以多行在打入前先改写成一行：PowerShell 走 &lt;code&gt;. ([scriptblock]::Create(…))&lt;/code&gt;，bash 和 zsh 走 &lt;code&gt;eval&lt;/code&gt;，都在 shell 自己的作用域里执行，成败取整块（bash 和 zsh 取最后一行的）。&lt;/p&gt;
+&lt;h3 id=&quot;剪贴板&quot;&gt;剪贴板&lt;/h3&gt;
+&lt;p&gt;这条是排查里最值钱的一次。验收时 e2e 有一次在打结果之前就退出了，退出码 &lt;code&gt;0xC0000374&lt;/code&gt;，堆损坏。&lt;br&gt;
+并行跑 8 次挂 2 次，串行跑 6 次一次不挂，所以问题出在同一个进程里多个 server 并发的时候。没有管理员权限用不了 Page Heap，也没有 nightly 和 cdb，只能做对照排除：关掉 sysinfo 还是崩，环境变量只设一次还是崩。想到进程级共享的东西还剩剪贴板，写了个 8 线程同时读写剪贴板 5 秒的压力测试，3 次运行 3 次都是堆损坏。&lt;br&gt;
+原因是 &lt;code&gt;OpenClipboard(NULL)&lt;/code&gt; 能挡住别的进程，挡不住同一进程的别的线程，一个线程的 &lt;code&gt;EmptyClipboard&lt;/code&gt; 会把另一个线程正在读、或者刚交出去的内存块释放掉。改成进程内自己加一把锁，从打开到关闭全程持有。修完压力测试 5 次全过，每次两三万次操作，e2e 并行 12 次加 10 次都干净；压力测试缩到 2 秒留作永久单元测试，测完把剪贴板原来的内容写回去。&lt;br&gt;
+真实使用里同样的风险也在，两个客户端同时复制，或者右键粘贴和 copy mode 同时发生，只是概率低得多。之前有一次「原因不明的中断」也被这条解释掉了。附带损失是修好之前那次崩溃没能把这台机器剪贴板里原来的东西还回来。&lt;/p&gt;
+&lt;h3 id=&quot;帧率&quot;&gt;帧率&lt;/h3&gt;
+&lt;p&gt;15 分钟的 soak，4 个 pane 满速刷屏，服务端 CPU 平均 165% 核。拆开看，没有客户端只解析是 113%，挂一个客户端做渲染是 166%，渲染自己吃掉半个核。&lt;br&gt;
+主循环每处理一批事件就 &lt;code&gt;render_all&lt;/code&gt; 一次，满速输出时每次读 pty 都重画一遍。加了 16 ms 的帧率上限，不足 16 ms 只记一个待画，在间隔末尾醒来补一帧，画面不会停在旧状态。同一个脚本前后对比，服务端从 166% 核降到 99%，客户端进程同样时长从 2719 ms 降到 62 ms，隔一阵之后来的按键仍然立刻画出来，打字延迟没变。&lt;/p&gt;
+&lt;h3 id=&quot;ssh&quot;&gt;SSH&lt;/h3&gt;
+&lt;p&gt;从 SSH 里 &lt;code&gt;C-b d&lt;/code&gt; 脱离、关掉连接，回来 session 全没了。server.log 里那个 server 没有任何退出记录，正常退出、panic、restart 都会记，所以它是被外面杀掉的。&lt;br&gt;
+OpenSSH 把每个会话放进一个 &lt;code&gt;KILL_ON_JOB_CLOSE | BREAKAWAY_OK&lt;/code&gt; 的 job，而起 server 的地方没带 &lt;code&gt;CREATE_BREAKAWAY_FROM_JOB&lt;/code&gt;，这参数之前只给 &lt;code&gt;restart-server&lt;/code&gt; 加了，起 server 的两处没跟上，server 就留在会话的 job 里，连接一断整个 job 被清掉。&lt;br&gt;
+起 server 的两处补上脱离标志，job 不许脱离（&lt;code&gt;CreateProcess&lt;/code&gt; 返回拒绝访问）就退回不带再起一次。&lt;/p&gt;
+&lt;h3 id=&quot;手机&quot;&gt;手机&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;keepane web&lt;/code&gt; 在终端里打一个二维码，手机扫了是一个列出所有 pane 的页面，按 session 和窗口分组，点进去看屏幕、带颜色，底下有输入框和一排手机键盘没有的键（Esc、Tab、方向、Ctrl+C）。跑的全在电脑上，手机只负责显示和输入。&lt;/p&gt;
+&lt;p&gt;&lt;picture&gt;&lt;source srcset=&quot;/images/keepane-phone.png.webp&quot; type=&quot;image/webp&quot;&gt;&lt;img src=&quot;/images/keepane-phone.png&quot; alt=&quot;手机上的 pane 列表和一个 pane 的屏幕&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; width=&quot;825&quot; height=&quot;844&quot;&gt;&lt;/picture&gt;&lt;/p&gt;
+&lt;p&gt;二维码里带着地址和一把每次启动新生成的 128 位随机密钥，除了页面本身，没这把钥匙什么都不回。它是纯 HTTP，给自己家网络用的，共享网络上有人抓包就能看到那把钥匙；从外面连要在中间放 Tailscale 这类私有网络，绑到它的地址上。&lt;/p&gt;
+&lt;h3 id=&quot;限制&quot;&gt;限制&lt;/h3&gt;
+&lt;p&gt;已知的几处：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;卡在忙：在 agent 输入框里打了字又删掉，或者 Ctrl+C 取消而提示符没重绘，这个 pane 会一直忙，得用 &lt;code&gt;pane-ready -t&lt;/code&gt; 手动解开&lt;br&gt;
+cmd、fish 和 WSL 里的 shell 没有 keepane 的提示符钩子，shell 模式下永远不空闲，消息只排队不执行，不会乱跑，但也确实用不了&lt;br&gt;
+跳数只拦得住处理中互相转发形成的循环，agent 空闲之后凭记忆重新发起的拦不住，靠收件箱上限兜底&lt;br&gt;
+投递和人手打字之间还有毫秒级的竞争窗口&lt;br&gt;
+shell 模式执行的命令带着信封注释，会进 PSReadLine 的持久历史，之后按上箭头看得见；要只留在当前会话，得在钩子里设 &lt;code&gt;AddToHistoryHandler&lt;/code&gt;，可能覆盖用户自己的，暂时不做&lt;br&gt;
+权限规则防的是失误，同一个 Windows 用户的任何程序本来就能连命名管道、对任意 pane &lt;code&gt;send-keys&lt;/code&gt;，挡不住存心的&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&quot;取舍&quot;&gt;取舍&lt;/h3&gt;
+&lt;p&gt;要不要从 tmux 换过来，分两种情况。&lt;br&gt;
+在 Linux 上、又不在 pane 里跑 agent 的，tmux 就够了，keepane 多出来的只有消息这一套，不需要的话换过来没有收益，何况 tmux 久经考验。Windows 上是另一回事，那里本来也没得选。&lt;br&gt;
+还有一条得说清楚，这东西写了半个月、一百八十几个提交，别当成成熟软件用。三平台 CI 每次提交跑全量，但上面那几条坑都是这半个月里现撞出来的，后面肯定还有。&lt;/p&gt;
+&lt;p&gt;剩下的都写在 &lt;a href=&quot;https://github.com/newdee/keepane&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;README&lt;/a&gt; 和 &lt;code&gt;keepane man&lt;/code&gt; 里了，也挂了一份&lt;a href=&quot;https://dfine.tech/keepane/&quot;&gt;功能一览&lt;/a&gt;。手机那页做完之后，我最常拿它干的事是躺着看编译跑完，大概不算什么好习惯。&lt;/p&gt;
+</content>
+  </entry>
   <entry>
     <title>LEANN 的重算式向量索引</title>
     <link href="https://dfine.tech/posts/472f24da/"/>
@@ -1951,137 +2048,6 @@ CLI —— &lt;code&gt;push / pull / search / route&lt;/code&gt;&lt;/p&gt;
 &lt;p&gt;另外 Postgres 那条路虽然跑通了 e2e，但 CAS 还在本地文件系统，多实例部署要先把对象库换成共享对象存储。&lt;/p&gt;
 &lt;p&gt;代码在 &lt;a href=&quot;https://github.com/newdee/skill-shelf&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;newdee/skill-shelf&lt;/a&gt;，MIT。设计细节在仓库的 &lt;code&gt;DESIGN.md&lt;/code&gt; 里，比这篇更啰嗦。&lt;/p&gt;
 &lt;p&gt;skill 这东西现在还处在「各人自己一个文件夹」的阶段，跟十几年前配置文件散在各台机器上是一个局面。所以这个项目真正想验证的不是某个功能，而是：&lt;strong&gt;skill 值不值得一个中心化的服务。&lt;/strong&gt; 我自己用了这些天，答案是值得——尤其是路由那部分，一旦 agent 能问「这活儿谁来干」，写 skill 的方式都跟着变了，description 会认真写成「什么时候用我」，而不是「我是什么」。&lt;/p&gt;
-</content>
-  </entry>
-  <entry>
-    <title>Cloudflare Computer，装在 Durable Object 里的文件系统</title>
-    <link href="https://dfine.tech/posts/752fbec9/"/>
-    <id>https://dfine.tech/posts/752fbec9/</id>
-    <published>2026-08-10T20:41:34+08:00</published>
-    <updated>2026-08-10T20:41:34+08:00</updated>
-    <category term="Cloudflare"/>
-    <category term="Durable Objects"/>
-    <category term="FUSE"/>
-    <content type="html">&lt;p&gt;Cloudflare 最近放出了一个叫 Cloudflare Computer 的预览仓库，把「给 agent 一台电脑」拆成了两半：文件系统和执行环境。&lt;br&gt;
-文件系统住进 Durable Object 的 SQLite，执行环境退化成可插拔的外设，容器只是三种外设之一。&lt;br&gt;
-这个拆法跟我对沙箱的直觉正好相反，翻完二十篇规格文档，值得记一篇。&lt;/p&gt;
-&lt;!--more--&gt;
-&lt;h3 id=&quot;它是什么&quot;&gt;它是什么&lt;/h3&gt;
-&lt;p&gt;&lt;code&gt;@cloudflare/computer&lt;/code&gt; 是一个跑在 Durable Object 里的虚拟文件系统：整棵树落在 DO 自带的 SQLite 里，&lt;br&gt;
-对外是 &lt;code&gt;workspace.fs&lt;/code&gt;（用起来像 &lt;code&gt;node:fs/promises&lt;/code&gt;）加 &lt;code&gt;workspace.runtime.exec(source, { backend })&lt;/code&gt; 一个执行入口。&lt;br&gt;
-今天有三种后端：container（真容器加 FUSE 挂载）、isolate shell（Dynamic Worker 里跑 just-bash）、isolate JavaScript（Dynamic Worker 里求值 ES module）。&lt;br&gt;
-也可以一个后端都不配，纯当持久文件系统用——&lt;code&gt;fs&lt;/code&gt; 照常工作，&lt;code&gt;exec&lt;/code&gt; 才抛错。&lt;/p&gt;
-&lt;p&gt;丑话在前：README 顶上就是 &lt;strong&gt;PREVIEW ONLY&lt;/strong&gt;，API 不稳定，不适合生产；&lt;code&gt;docs/&lt;/code&gt; 下二十篇规格自称 forward-looking，要当设计意图读，不能当代码现状读。&lt;br&gt;
-下文尽量把两者分开标：比如 R2 只读挂载在 schema 里留好了座位（&lt;code&gt;_vfs_mounts&lt;/code&gt; 表、&lt;code&gt;stub_size&lt;/code&gt; 列），但运行时还没接线，就属于「规格意图」。&lt;/p&gt;
-&lt;h3 id=&quot;为什么不是沙箱&quot;&gt;为什么不是沙箱&lt;/h3&gt;
-&lt;p&gt;给 agent 配环境，常规做法是发一个容器：文件在容器盘上，跑完要么整包丢弃，要么自己往对象存储打包搬运。&lt;br&gt;
-状态的权威在容器里，而容器天生要被回收，这两件事是拧着的。isolate 倒是轻，但 Workers 里压根没有像样的持久文件系统。&lt;/p&gt;
-&lt;p&gt;这个项目把关系倒过来：&lt;strong&gt;权威态只有一份&lt;/strong&gt;，住在 DO 的 SQLite 里（DO 本来就是带事务的有状态单点），&lt;br&gt;
-执行环境全部变成无状态外设，注册在稳定 ID 下、首次使用才懒连接，用完随便死。容器重启、isolate 回收，树还在。&lt;/p&gt;
-&lt;center&gt;
-&lt;p&gt;&lt;img src=&quot;/images/cf-computer-backends.svg&quot; alt=&quot;Cloudflare Computer 三后端架构&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;/center&gt;
-&lt;h3 id=&quot;权威态怎么存&quot;&gt;权威态怎么存&lt;/h3&gt;
-&lt;p&gt;schema 是经典 inode 设计，三个机制点值得说：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;code&gt;vfs_dirents (parent_inode, name) → child_inode&lt;/code&gt; 加一张 &lt;code&gt;vfs_nodes&lt;/code&gt; 节点表，路径解析走间接层：&lt;br&gt;
-本地 rename 是一条 &lt;code&gt;UPDATE&lt;/code&gt;，O(1)；硬链接就是两条 dirent 指同一个 inode，白送。&lt;br&gt;
-文件内容切成 512 KiB 的 chunk，按哈希落进内容寻址的 &lt;code&gt;vfs_blobs&lt;/code&gt;；节点行上冗余一个 &lt;code&gt;size&lt;/code&gt; 列，&lt;code&gt;stat&lt;/code&gt; 不用每次去 &lt;code&gt;SUM&lt;/code&gt;。&lt;br&gt;
-&lt;code&gt;vfs_meta&lt;/code&gt; 里一行单调递增的 &lt;code&gt;rev&lt;/code&gt; 计数器，每次变更原子自增并盖到节点上——整套增量同步就悬在这一个数上。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;计数器是刻意的单写者设计：所有变更先过 Workspace 的 FIFO 串行化，单行永不争用；哪天要加并发写者，得先动它。&lt;br&gt;
-&lt;code&gt;vfs_nodes&lt;/code&gt; 上按 &lt;code&gt;rev&lt;/code&gt; 建了索引，同步端枚举「上次游标之后动过的东西」就是一次索引扫描，不用全表比对。&lt;/p&gt;
-&lt;h3 id=&quot;同步协议&quot;&gt;同步协议&lt;/h3&gt;
-&lt;p&gt;只有 container 后端需要同步——另外两个后端根本没有第二份存储。同步双向增量，各自带单调游标。&lt;/p&gt;
-&lt;p&gt;push（DO 到容器）发生在每次 &lt;code&gt;exec&lt;/code&gt; 之前，把容器没见过的 rev 全推过去。同一路径中间改写五次，线上只有终态一条；&lt;br&gt;
-条目不带字节，只带 chunk 哈希，发送方先 &lt;code&gt;hasObjects&lt;/code&gt; 探测，缺的块才 &lt;code&gt;pushObjects&lt;/code&gt;。&lt;/p&gt;
-&lt;p&gt;pull（容器回 DO）发生在 &lt;code&gt;exec&lt;/code&gt; 返回之后，&lt;code&gt;fetchChanges({ after: 游标 })&lt;/code&gt;，游标是 &lt;code&gt;(rev, path)&lt;/code&gt; 二元组。&lt;br&gt;
-DO 按 256 条一批收流：查本地缺哪些块、&lt;code&gt;fetchObjects&lt;/code&gt; 补齐、&lt;code&gt;applyChanges&lt;/code&gt; 落库，再把游标推进到这一批最后一条。&lt;br&gt;
-中途崩溃从上个批次续传，重复工作的上界是一批而不是整条流；接收侧 &lt;code&gt;alreadyApplied&lt;/code&gt; 把重复条目原地丢弃，重放廉价且幂等。&lt;/p&gt;
-&lt;p&gt;线协议里没有 rename opcode：只有新路径的活条目加旧路径的墓碑，apply 因此不需要按操作顺序重放。&lt;br&gt;
-代价是目录改名要给整棵子树逐个盖新 rev，O(子树) 条条上线；类型冲突走 last-writer-wins，上游节点直接顶掉本地整棵子树。&lt;/p&gt;
-&lt;p&gt;还有两处取舍写得很直白：硬链接跨线不保身份，一个 inode 挂几个名字就每个名字发一条，落到对端是内容相同的独立文件；&lt;br&gt;
-目录条目的幂等判定只看 mode 不看 mtime，两边目录 mtime 有漂移，不会变成同步流量。&lt;/p&gt;
-&lt;center&gt;
-&lt;p&gt;&lt;img src=&quot;/images/cf-computer-container-sync.svg&quot; alt=&quot;container 后端一次 exec 的同步回路&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;/center&gt;
-&lt;h3 id=&quot;容器后端&quot;&gt;容器后端&lt;/h3&gt;
-&lt;p&gt;容器里跑的守护进程叫 &lt;code&gt;computerd&lt;/code&gt;，是个 Node SEA 单二进制：Node 运行时、&lt;code&gt;fuse-native&lt;/code&gt; 预编译件、&lt;code&gt;libfuse&lt;/code&gt; 全部内嵌，&lt;br&gt;
-宿主镜像不需要装 Node，Debian slim 加个 &lt;code&gt;fuse3&lt;/code&gt; 就能起。&lt;/p&gt;
-&lt;p&gt;它把容器内 VFS 用 FUSE 挂到 &lt;code&gt;/workspace&lt;/code&gt;，容器里任何工具——shell、npm、编译器——看到的就是 DO 里那棵树，路径一致。&lt;br&gt;
-建连是反向拨号：后端调 &lt;code&gt;computerd&lt;/code&gt; 的 &lt;code&gt;POST /connect&lt;/code&gt;，让它主动拨一条 WebSocket 出来，capnweb 会话的 bootstrap stub 是 &lt;code&gt;WorkspaceRPC&lt;/code&gt;（&lt;code&gt;sync&lt;/code&gt; 与 &lt;code&gt;shell&lt;/code&gt; 两个子 stub）。&lt;br&gt;
-容器侧 VFS 放在内存里，容器重启就丢，下一次 push 重新基线——权威态从来不在这一边。&lt;/p&gt;
-&lt;p&gt;命令执行的括号是固定的：push、spawn、流事件或 result、pull，把 &lt;code&gt;result()&lt;/code&gt; 或事件流耗尽，收尾的 pull 才算完成。&lt;br&gt;
-&lt;code&gt;computerd&lt;/code&gt; 自己的默认端口是 45678，Cloudflare 后端把镜像内监听钉在 8080；&lt;br&gt;
-它保留进程日志，断线后 &lt;code&gt;getExec&lt;/code&gt; 能重新挂回去看回放、补信号——三个后端里生命周期最全的一个。&lt;/p&gt;
-&lt;h3 id=&quot;isolate-shell&quot;&gt;isolate shell&lt;/h3&gt;
-&lt;p&gt;第二种后端不要容器：just-bash 解释器跑在 &lt;code&gt;env.LOADER&lt;/code&gt; 拉起的 Dynamic Worker 里，&lt;br&gt;
-shell 发出的每个文件系统调用走 Workers RPC 打回宿主 DO，直接读写权威态。零第二存储、零同步回路，result 里 &lt;code&gt;pushed&lt;/code&gt; 和 &lt;code&gt;pulled&lt;/code&gt; 恒为 0。&lt;/p&gt;
-&lt;p&gt;有个实现细节挺有意思：&lt;code&gt;DurableObjectNamespace&lt;/code&gt; 过不了 Worker Loader &lt;code&gt;env&lt;/code&gt; 的 structured clone，&lt;br&gt;
-所以塞进 isolate 的是一个叫 &lt;code&gt;WorkspaceServiceProxy&lt;/code&gt; 的回环入口，每次 &lt;code&gt;env.HOST.getWorkspace()&lt;/code&gt; 由宿主侧代查命名空间。&lt;br&gt;
-isolate 的 &lt;code&gt;globalOutbound&lt;/code&gt; 置 null，&lt;code&gt;fetch&lt;/code&gt; 和 &lt;code&gt;connect&lt;/code&gt; 全封死，唯一出口就是这个回环；&lt;br&gt;
-&lt;code&gt;git&lt;/code&gt; 和 &lt;code&gt;assets publish&lt;/code&gt; 是仅有的两个内建转发命令，R2 桶绑定和签名密钥永远不进 isolate。&lt;/p&gt;
-&lt;p&gt;命令集是 just-bash 的子集：&lt;code&gt;cat&lt;/code&gt;、&lt;code&gt;grep&lt;/code&gt;、&lt;code&gt;awk&lt;/code&gt;、&lt;code&gt;sed&lt;/code&gt;、&lt;code&gt;jq&lt;/code&gt; 这类文本活够用；要编译、装包、跑浏览器，回容器。&lt;/p&gt;
-&lt;p&gt;隔离粒度是每个 workspace 一个 isolate，Worker Loader 按 &lt;code&gt;workspace-shell:${workspace.id}&lt;/code&gt; 缓存：&lt;br&gt;
-同一工作区的并发 exec 共享热 isolate，一段跑飞的脚本最多把自己工作区的 isolate 撑爆，宿主 DO 和别的工作区不受影响。&lt;br&gt;
-这一版是一次调用、缓冲结果的语义，不保留执行记录供事后重挂；&lt;code&gt;timeoutMs&lt;/code&gt; 和并发的 &lt;code&gt;killExec&lt;/code&gt; 只在语句边界协作式中止。&lt;/p&gt;
-&lt;h3 id=&quot;isolate-javascript&quot;&gt;isolate JavaScript&lt;/h3&gt;
-&lt;p&gt;第三种后端把 &lt;code&gt;source&lt;/code&gt; 当真正的 ES module 求值，也在 Dynamic Worker 里：&lt;/p&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;javascript&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;javascript&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt;const&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; handle&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; =&lt;/span&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt; await&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; workspace&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt;runtime&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;exec&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;(&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt;  `&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;    import fs from &quot;node:fs/promises&quot;;&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;    export default async (input) =&gt; {&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;      await fs.writeFile(&quot;/workspace/result.txt&quot;, String(input.value));&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;      return { persisted: await fs.readFile(&quot;/workspace/result.txt&quot;, &quot;utf8&quot;) };&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;    }&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt;  `&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;,&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;  {&lt;/span&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt; backend&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;:&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt; &quot;&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;worker-javascript&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;,&lt;/span&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt; input&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;:&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; {&lt;/span&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt; value&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;:&lt;/span&gt;&lt;span style=&quot;color:#2F798A;--shiki-dark:#4C9A91&quot;&gt; 21&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; }&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; },&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;);&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt;const&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; result&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; =&lt;/span&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt; await&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; handle&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;result&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;();&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;默认导出函数收到 &lt;code&gt;options.input&lt;/code&gt;，返回值原样回到 &lt;code&gt;result().value&lt;/code&gt;——这是结构化的值通道，不是 stdout 文本协议。&lt;br&gt;
-相对导入从 &lt;code&gt;cwd&lt;/code&gt; 出发经权威文件系统解析，而且是先静态解析完整个模块图再起 Worker：拒绝符号链接穿越，&lt;br&gt;
-深度、模块数、总字节都有上限，动态 &lt;code&gt;import&lt;/code&gt; 只认字符串字面量。&lt;br&gt;
-&lt;code&gt;node:fs/promises&lt;/code&gt; 是 Workspace 后端的，isolate 里写文件就是写 DO 的 SQLite；&lt;code&gt;ws:git&lt;/code&gt;、&lt;code&gt;ws:artifacts&lt;/code&gt; 两个受信模块管提交与发布。&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;process&lt;/code&gt; 是个 shim：&lt;code&gt;env&lt;/code&gt; 只是调用方传入的快照，DO 自己的绑定和密钥永不合并进来；&lt;code&gt;stdin&lt;/code&gt; 是一次性异步迭代；&lt;code&gt;argv&lt;/code&gt;、&lt;code&gt;platform&lt;/code&gt; 给的是占位假值。&lt;br&gt;
-限额给得很足：默认并发 24，超了直接 &lt;code&gt;EEXEC_BUSY&lt;/code&gt;；执行记录保留 100 条或 60 分钟，可回放；&lt;br&gt;
-取消先停新的宿主能力调用、等已受理的调用排空，然后才发布 exit 130——正常完成同样排空，不存在 exit 0 之后还有未落账的写。&lt;/p&gt;
-&lt;p&gt;有个容易踩的点：&lt;code&gt;runtime.exec()&lt;/code&gt; 在 Dynamic Worker 跑完之前就返回，靠悬着的宿主调用把 DO 顶在内存里；&lt;br&gt;
-handle 拿了不读，DO 一闲置执行就可能被驱逐——要么把事件流排干，要么给必须活过驱逐的工作配 &lt;code&gt;ctx.storage.setAlarm()&lt;/code&gt;。&lt;/p&gt;
-&lt;center&gt;
-&lt;p&gt;&lt;img src=&quot;/images/cf-computer-isolate-js.svg&quot; alt=&quot;isolate JavaScript 执行面数据流&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
-&lt;/center&gt;
-&lt;h3 id=&quot;怎么用&quot;&gt;怎么用&lt;/h3&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;npm&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; install&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; @cloudflare/computer&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;figure class=&quot;code&quot; data-lang=&quot;javascript&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;javascript&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;import&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; {&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; Workspace&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; }&lt;/span&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt; from&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt; &quot;&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;@cloudflare/computer&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;;&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt;import&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; {&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; WorkerJavaScriptBackend&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; }&lt;/span&gt;&lt;span style=&quot;color:#1E754F;--shiki-dark:#4D9375&quot;&gt; from&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt; &quot;&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;@cloudflare/computer/backends/worker-javascript&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;;&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt;const&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; workspace&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; =&lt;/span&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt; new&lt;/span&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt; Workspace&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;({&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt;  storage&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;:&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; ctx&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt;storage&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;,&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt;  backends&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;:&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; [&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#AB5959;--shiki-dark:#CB7676&quot;&gt;    new&lt;/span&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt; WorkerJavaScriptBackend&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;({&lt;/span&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt; loader&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;:&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt; env&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#B07D48;--shiki-dark:#BD976A&quot;&gt;LOADER&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;,&lt;/span&gt;&lt;span style=&quot;color:#998418;--shiki-dark:#B8A965&quot;&gt; root&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;:&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt; &quot;&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt;/workspace&lt;/span&gt;&lt;span style=&quot;color:#B5695977;--shiki-dark:#C98A7D77&quot;&gt;&quot;&lt;/span&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt; }),&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;  ],&lt;/span&gt;&lt;/span&gt;
-&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#999999;--shiki-dark:#666666&quot;&gt;});&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-&lt;p&gt;后端按子路径导入，不用的后端连带 just-bash 载荷一起被 tree-shake 掉。能做的事：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;code&gt;workspace.fs&lt;/code&gt;：mkdir、readFile、writeFile、rm、symlink、stat，全异步、绝对路径、跨 DO 重启持久；&lt;br&gt;
-&lt;code&gt;workspace.runtime&lt;/code&gt;：exec、getExec、killExec、disposeExec，handle 既是事件流又能 &lt;code&gt;result()&lt;/code&gt;；&lt;br&gt;
-命令后端的 result 带 &lt;code&gt;pushed&lt;/code&gt;、&lt;code&gt;pulled&lt;/code&gt; 和 &lt;code&gt;sync&lt;/code&gt; 状态，命令成功而 pull 失败时可配 &lt;code&gt;SyncRetryScheduler&lt;/code&gt; 只重试同步、不重跑命令；&lt;br&gt;
-&lt;code&gt;@cloudflare/computer/tools&lt;/code&gt;：现成的 AI SDK 工具面（read、write、edit、ls，可选 exec 与 publish）；&lt;br&gt;
-R2 只读挂载：规格已写、schema 留座，运行时未接线（规格意图，非今日代码）。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;省略 &lt;code&gt;backend&lt;/code&gt; 就用第一个配置项。文档特意提醒：路由不是鉴权，公网网关要自己校验 backend 参数。&lt;br&gt;
-仓库的 8 个 examples 里，&lt;code&gt;think-compare-runtimes&lt;/code&gt; 把同一个 agent 任务在容器和 worker 两种运行时上并排跑，最能看出取舍。&lt;/p&gt;
-&lt;h3 id=&quot;边界与限制&quot;&gt;边界与限制&lt;/h3&gt;
-&lt;blockquote&gt;
-&lt;p&gt;工作区约 10 GB 上限，跟 DO 存储共享；容器侧整棵树在内存里，放 agent 级工作区合适，放 monorepo 不行。&lt;br&gt;
-FUSE 在大文件顺序 IO 上吃亏。官方 fs-bench 对 &lt;code&gt;cloudflare/sandbox-sdk&lt;/code&gt; 做全量 &lt;code&gt;npm install&lt;/code&gt;（854 个包、36675 个文件）：computerd 124.7 秒，容器 ext4 63.9 秒，tmpfs 34.3 秒，比真盘慢约一倍。&lt;br&gt;
-反直觉的是元数据操作赢真盘：&lt;code&gt;stat&lt;/code&gt; 0.91x、&lt;code&gt;rm&lt;/code&gt; 0.66x、&lt;code&gt;mkdir&lt;/code&gt; 树 0.74x、&lt;code&gt;find&lt;/code&gt; 0.72x、&lt;code&gt;git init&lt;/code&gt; 加提交 0.72x——内存 inode 表的功劳。&lt;br&gt;
-大文件才是重灾区：纯读 64 MiB 比真盘慢 30 倍、&lt;code&gt;copy&lt;/code&gt; 慢 40 倍；但 &lt;code&gt;npm init&lt;/code&gt; 加小安装 0.95x 追平真盘，日常负载的大头本来就是元数据。&lt;br&gt;
-慢的根源在写路径每 512 KiB 就哈希一次进内容寻址库，换来的是按块增量同步和内容去重。&lt;br&gt;
-PREVIEW ONLY，不收 unsolicited PR，反馈走 issue 和 discussion。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;最后说一个印象：4900 行规格配 5.7 万行实现，连「考虑过又放弃的编码方案」都写进了文档，这个密度在预览期项目里少见。&lt;/p&gt;
-&lt;p&gt;写完有点手痒，想把自己博客的构建态也塞进 DO 里，转念一想静态站要什么权威态，睡了。&lt;/p&gt;
 </content>
   </entry>
 </feed>
