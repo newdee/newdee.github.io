@@ -23,8 +23,9 @@ keepane 是按后面这个前提写的。每个 pane 有名字、有收件箱、
 &lt;!--more--&gt;
 &lt;h3 id=&quot;起因&quot;&gt;起因&lt;/h3&gt;
 &lt;p&gt;一开始是想找个现成的用，找了一圈没有合预期的。能用的那些都还是按「有人看着」写的，pane 里跑的是什么它不关心，更不会让两个 pane 说上话。于是自己写，第一个提交的标题是「tmux-style terminal multiplexer for Windows」，那会儿还叫 wmux。&lt;br&gt;
-真用起来才发现分屏解决的只是摆放。几个窗口里各跑一个 Claude Code，session 内部派子 agent 它自己会，可那是一轮之内的事，不占 pane、看不见、轮次结束就收了；跨窗口的两个 session 之间没有地址，谁也叫不动谁，各自跑完就停在那儿等人敲下一句。派活、回结果、随时知道谁卡住了，这三样都得有个地方落。&lt;br&gt;
-于是 pane 从一块屏幕改成了一个 actor，有名字、有收件箱、有工作模式。改名也是这时候的事，wmux 这名字 GitHub、winget、crates.io 上都有人在用了，0.14.0 起改叫 keepane，keep 加 pane，终端没了 pane 里的程序还在。&lt;/p&gt;
+真用起来才发现分屏解决的只是摆放。几个窗口里各跑一个 agent，想让它们配合起来，眼下就两条路。一条是用各家自己的协议，Claude Code 一套、Codex 一套、Gemini 又一套，谁也不认谁，换个工具就得重接一遍。另一条是用 agent 内部那套派子任务，它跑在一轮之内，不占 pane、看不见、也接管不了，断了就断了。&lt;br&gt;
+那就往下挪一层。不管跑的是哪家 agent，还是一个普通 shell、一个脚本，它都坐在一个 pane 里，pane 是大家都有的那层东西。通信放在这一层，给每个 pane 一个名字和一个收件箱，里面跑的是谁就不重要了。&lt;br&gt;
+pane 于是从一块屏幕变成了一个 actor。改名也是这时候的事，wmux 这名字 GitHub、winget、crates.io 上都有人在用了，0.14.0 起改叫 keepane，keep 加 pane，终端没了 pane 里的程序还在。&lt;/p&gt;
 &lt;h3 id=&quot;消息&quot;&gt;消息&lt;/h3&gt;
 &lt;p&gt;&lt;img src=&quot;/images/keepane-message.svg&quot; alt=&quot;一条消息从发出到执行&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/p&gt;
 &lt;p&gt;给 pane 起个名字，它就能收消息：&lt;/p&gt;
