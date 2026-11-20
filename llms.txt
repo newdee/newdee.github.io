@@ -6,7 +6,7 @@
 
 ## 文章（109 篇，新到旧）
 
-- [UnifyTerm，三个系统里同一个终端](https://dfine.tech/posts/8a12e862/)：一个面向开发者和 AI Agent 的跨平台终端。统一命令、保留上下文、支持多媒体内容，让终端不再只是一个执行命令的窗口。 GitHub： https://github.com/newdee/unifyterm 项目主页： https:/…（2026-11-20）
+- [UnifyTerm: 跨平台统一终端](https://dfine.tech/posts/8a12e862/)：一个面向开发者和 AI Agent 的跨平台终端。统一命令、保留上下文、支持多媒体内容，让终端不再只是一个执行命令的窗口。 GitHub： https://github.com/newdee/unifyterm 项目主页： https:/…（2026-11-20）
 - [keepane，AI 时代的终端多路复用](https://dfine.tech/posts/626063bd/)：Pane as an Actor. 让终端不只是运行命令的地方，而成为可以独立运行、持续存在、相互通信和协同工作的执行单元。（2026-09-28）
 - [LEANN 的重算式向量索引](https://dfine.tech/posts/472f24da/)：向量检索有个不太好看的账：索引往往比原始数据还大。六千万条文本切块，用传统办法建索引要 201 GB，而那堆文本本身没那么大。想在自己笔记本上索引邮件、浏览记录、聊天记录，这道门槛就卡在硬盘上。 LEANN 的选择是索引里干脆不存向量，只…（2026-08-31）
 - [lamarck 按真实调用进化全部 skill](https://dfine.tech/posts/689b2288/)：现在优化 skill 的工具都是一次挑一个：你选中某个 skill，给它写一批测试 prompt，跑评委打分，改完再跑一遍。有几十上百个 skill 的时候这条路走不通，瓶颈根本不是优化算法，是你没空逐个去挑、逐个编测试用例。 lamar…（2026-08-29）
