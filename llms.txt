@@ -7,7 +7,7 @@
 ## 文章（109 篇，新到旧）
 
 - [UnifyTerm: 跨平台统一终端](https://dfine.tech/posts/8a12e862/)：UnifyTerm 是一个用 Rust 和 GPUI 开发的跨平台终端，支持 Windows、macOS 和 Linux。 它保留系统 Shell，另外提供一套常用 Unix 命令、按目录检索的命令历史，以及供 Agent 查询环境的 M…（2026-11-20）
-- [Keepane：终端会话与 Agent 协作](https://dfine.tech/posts/626063bd/)：Keepane 是一个支持 Windows、Linux 和 macOS 的终端复用工具，用 Rust 实现。 除了 Session、Window 和 Pane，它还管理 Pane 的名称、收件箱、就绪状态和事件记录，供 Shell、脚本与…（2026-09-28）
+- [keepane，AI 时代的终端多路复用](https://dfine.tech/posts/626063bd/)：Keepane 是一个支持 Windows、Linux 和 macOS 的终端复用工具，用 Rust 实现。 除了 Session、Window 和 Pane，它还管理 Pane 的名称、收件箱、就绪状态和事件记录，供 Shell、脚本与…（2026-09-28）
 - [LEANN 的重算式向量索引](https://dfine.tech/posts/472f24da/)：LEANN 通过检索时重算向量，减少近邻索引的磁盘占用。 其 HNSW 后端只保留图结构，遍历到候选节点时再读取原文、计算嵌入；DiskANN 后端则保留压缩向量用于导航。 两条路径都将一部分离线存储成本转移到在线计算。这篇按 论文 与仓…（2026-08-31）
 - [lamarck：基于真实调用的 Skill 评估与改进](https://dfine.tech/posts/689b2288/)：lamarck 持续记录已安装 Skill 的真实调用，从用户纠正、失败与重复问题中提出局部修改。 它把调用记录、评估标准、修改提案和回归验证连在一起，默认只观察；是否允许提出或应用修改，按每个 Skill 单独配置。 下面按数据采集、证…（2026-08-29）
 - [FrontierAgent 的上下文压缩与重复抑制](https://dfine.tech/posts/d7c1648/)：FrontierAgent 是 Apodex 的 Agent 运行时，提供单 Agent ReAct 与多 Agent 协作工作流。 这里关注两个相互影响的失败模式：请求在压缩前超过上下文上限，以及旧检索结果压缩后出现重复搜索。 仓库记录…（2026-08-25）
