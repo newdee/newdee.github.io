@@ -11,7 +11,7 @@
 - [LEANN 的重算式向量索引](https://dfine.tech/posts/472f24da/)：LEANN 通过检索时重算向量，减少近邻索引的磁盘占用。 其 HNSW 后端只保留图结构，遍历到候选节点时再读取原文、计算嵌入；DiskANN 后端则保留压缩向量用于导航。 两条路径都将一部分离线存储成本转移到在线计算。这篇按 论文 与仓…（2026-08-31）
 - [lamarck：基于真实调用的 Skill 评估与改进](https://dfine.tech/posts/689b2288/)：lamarck 持续记录已安装 Skill 的真实调用，从用户纠正、失败与重复问题中提出局部修改。 它把调用记录、评估标准、修改提案和回归验证连在一起，默认只观察；是否允许提出或应用修改，按每个 Skill 单独配置。 下面按数据采集、证…（2026-08-29）
 - [FrontierAgent 的上下文压缩与重复抑制](https://dfine.tech/posts/d7c1648/)：FrontierAgent 是 Apodex 的 Agent 运行时，提供单 Agent ReAct 与多 Agent 协作工作流。 这里关注两个相互影响的失败模式：请求在压缩前超过上下文上限，以及旧检索结果压缩后出现重复搜索。 仓库记录…（2026-08-25）
-- [magpie：本地混合检索的实现](https://dfine.tech/posts/88b0593b/)：magpie 将本地文件、GitHub 星标、书签和剪贴板历史放进同一个搜索面板，也支持应用启动与图像检索。 按 Alt+Space 唤出后，可以按关键词、描述或图片查询；索引范围由用户指定，嵌入和检索在本机执行。 本文对应 v0.1.2…（2026-08-21）
+- [magpie：本地混合检索的实现](https://dfine.tech/posts/88b0593b/)：只记得发票是最近一个月存的 PDF，可以在 magpie 里搜 发票 ext:pdf 30d 。只记得某张幻灯片出现在录屏里，可以搜画面上的字，直接跳到对应镜头。这两次查询共用一个桌面面板，背后读的却是不同的索引。 这篇文章最初写于 v0…（2026-08-21）
 - [OpenViking 的上下文组织与检索](https://dfine.tech/posts/befcc948/)：OpenViking 将资源、记忆和技能组织成 viking:// 虚拟文件系统，通过目录摘要和分层检索按需加载上下文。 文件内容是可恢复的持久数据，向量库用于检索；目录层级同时参与导航和摘要维护。 这篇按 afa5aae9 对应版本说明…（2026-08-19）
 - [munder-difflin：消息路由与终端输入](https://dfine.tech/posts/36d537a0/)：munder-difflin 用 Electron 包装已有 Agent CLI，以终端展示真实输出，以办公室动画展示工具活动。 多 Agent 协作由本地文件、路由器和终端消息队列实现。这里重点看一个输入竞争问题：用户、自动消息和 Ag…（2026-08-19）
 - [ai-memory：跨 CLI 的记忆与会话交接](https://dfine.tech/posts/8e7c317d/)：ai-memory 用一个 Rust 二进制，为多个 Agent CLI 提供共享记忆、会话交接和检索。 生命周期 Hook 采集必要观测，Markdown 保存可维护的记忆页面，SQLite 保存查询与调度状态，MCP 提供调用入口。 …（2026-08-18）
