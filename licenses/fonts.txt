@@ -1,0 +1,56 @@
+阁子（dfine.tech）网页字体的版权与许可
+最后更新：2026-11-24
+
+本站把下列字体按页面实际用到的字做子集化，转成 woff2 作为网页字体使用。
+三款都采用 SIL Open Font License 1.1（OFL-1.1），许可全文随附在本目录下。
+CSS 里的家族名（阁子宋、阁子楷、阁子草）是子集产物的名字，不使用任何一款
+字体的保留名称。
+
+
+一、思源宋体 SC / Noto Serif SC —— 标题
+
+  Copyright 2017-2024 Adobe (http://www.adobe.com/). Noto is a trademark of
+  Google Inc.
+
+  来源：https://github.com/notofonts/noto-cjk
+  许可：SIL OFL 1.1，全文见本目录 noto-cjk-OFL.txt
+
+
+二、霞鹜文楷 / LXGW WenKai —— 正文
+
+  Copyright 2021-2026 LXGW (https://github.com/lxgw/LxgwWenKai), with Reserved
+  Font Name '霞鹜', '霞鶩', '落霞孤鹜', '落霞孤鶩' and 'LXGW'.
+  Copyright 2020 The Klee Project Authors
+  (https://github.com/fontworks-fonts/Klee)
+
+  来源：https://github.com/lxgw/LxgwWenKai
+  许可：SIL OFL 1.1，全文见本目录 lxgw-wenkai-OFL.txt
+
+  该许可带一条附加许可，明确允许「仅为网页字体分发而做子集化、或转换为
+  WOFF/WOFF2」的修改版继续使用保留名称，条件是不得作为可安装的桌面字体
+  提供下载。本站的用法在这个范围内：只在页面上引用子集化后的 woff2，不提供
+  任何可安装的字体文件。
+
+
+三、钟齐流江毛草 / Liu Jian Mao Cao —— 首页挂轴上的十五个字
+
+  Copyright 2018 The Liu Jian Mao Cao Project Authors
+  (https://www.github.com/googlefonts/liujianmaocao)
+
+  来源：https://github.com/google/fonts/tree/main/ofl/liujianmaocao
+  许可：SIL OFL 1.1，全文见本目录 liujianmaocao-OFL.txt
+
+
+OFL 1.1 的几条要求，以及本站对应的做法
+
+  随分发附带版权声明和许可全文
+    即本文件，加上同目录下的三份 OFL 全文。
+
+  不得单独出售字体文件
+    本站不提供字体下载，只在页面上引用子集。
+
+  修改版不得使用保留名称
+    子集的家族名是阁子宋、阁子楷、阁子草。
+
+  修改版同样采用 OFL
+    本站产出的 woff2 子集同样受 OFL 1.1 约束。
