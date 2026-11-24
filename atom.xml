@@ -23,6 +23,7 @@
 &lt;p&gt;GitHub：&lt;a href=&quot;https://github.com/newdee/unifyterm&quot; target=&quot;_blank&quot; rel=&quot;noopener external nofollow&quot;&gt;https://github.com/newdee/unifyterm&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;项目主页：&lt;a href=&quot;https://dfine.tech/unifyterm/&quot;&gt;https://dfine.tech/unifyterm/&lt;/a&gt;&lt;/p&gt;
 &lt;!--more--&gt;
+&lt;p&gt;&lt;img src=&quot;/images/unifyterm-hero.png&quot; alt=&quot;在 Windows 的 PowerShell 里用 cat、grep、jq，再用 ut view 直接看一张图片&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; width=&quot;960&quot; height=&quot;430&quot;&gt;&lt;/p&gt;
 &lt;h3 id=&quot;一为什么还要做一个终端&quot;&gt;一、为什么还要做一个终端？&lt;/h3&gt;
 &lt;p&gt;如果你经常在 Windows、macOS 和 Linux 之间切换开发环境，应该遇到过类似的问题。&lt;/p&gt;
 &lt;p&gt;在 macOS 上习惯使用 &lt;code&gt;ls&lt;/code&gt;、&lt;code&gt;grep&lt;/code&gt;、&lt;code&gt;sed&lt;/code&gt;、&lt;code&gt;jq&lt;/code&gt;，换到 Linux 后基本没有问题。但到了 Windows，情况就不一样了。&lt;/p&gt;
@@ -1107,6 +1108,7 @@ Linux:
     +---- PTY 3 ---- Codex
     |
     +---- PTY 4 ---- npm run dev&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;&lt;img src=&quot;/images/keepane-panes.png&quot; alt=&quot;一个窗口里的三块 Pane，右上角 list-panes 列出它们的编号和大小&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; width=&quot;900&quot; height=&quot;638&quot;&gt;&lt;/p&gt;
 &lt;p&gt;每个程序都认为自己运行在一个正常的终端中。&lt;/p&gt;
 &lt;p&gt;它可以读取键盘输入、输出 ANSI 控制序列、修改光标位置、切换颜色以及进入 Alternate Screen。&lt;/p&gt;
 &lt;p&gt;这意味着 Vim、htop、Claude Code 等交互式程序不需要知道自己正在被 Keepane 管理。&lt;/p&gt;
@@ -1212,6 +1214,7 @@ Terminal Display&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;p&gt;也可以通过命令：&lt;/p&gt;
 &lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;keepane&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; resume&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;p&gt;恢复已保存的工作环境。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/images/keepane-resume.gif&quot; alt=&quot;一个三块的 Session 保存之后，Server 像重启时那样停掉，再运行一次 keepane，布局、名字、目录和屏幕内容都回来了&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; width=&quot;900&quot; height=&quot;638&quot;&gt;&lt;/p&gt;
 &lt;p&gt;恢复时，Keepane 可以重建：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;Session 结构。&lt;/li&gt;
@@ -1945,6 +1948,8 @@ Deliver Next Message&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 &lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;# Detach&lt;/span&gt;&lt;/span&gt;
 &lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;Ctrl + B&lt;/span&gt;&lt;/span&gt;
 &lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;D&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;p&gt;按下前缀之后停顿半秒，会自动弹出一个按键提示面板，按 Pane、Window、Session 和工具分组列出每个键的作用：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/images/keepane-keys.png&quot; alt=&quot;按下 C-b 之后弹出的按键面板，分成 Panes、Windows、Sessions 和 Tools 四组&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; width=&quot;900&quot; height=&quot;638&quot;&gt;&lt;/p&gt;
 &lt;p&gt;同时支持常用的 tmux 命令形式：&lt;/p&gt;
 &lt;figure class=&quot;code&quot; data-lang=&quot;bash&quot;&gt;&lt;figcaption class=&quot;code-head&quot;&gt;&lt;span class=&quot;code-lang&quot;&gt;bash&lt;/span&gt;&lt;/figcaption&gt;&lt;pre class=&quot;shiki shiki-themes vitesse-light vitesse-dark&quot; style=&quot;background-color:#ffffff;--shiki-dark-bg:#121212;color:#393a34;--shiki-dark:#dbd7caee&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;keepane&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; split-window&lt;/span&gt;&lt;/span&gt;
 &lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#59873A;--shiki-dark:#80A665&quot;&gt;keepane&lt;/span&gt;&lt;span style=&quot;color:#B56959;--shiki-dark:#C98A7D&quot;&gt; select-pane&lt;/span&gt;&lt;/span&gt;
